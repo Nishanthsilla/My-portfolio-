@@ -105,7 +105,7 @@ export class FilmEngine {
     const dot = L.name.font * 0.15;
     const pad = Math.max(12, Math.min(L.card.maxW, L.card.maxH) * 0.08);
     const cards = this.visSize.map(({ w, h }) => {
-      const s = Math.min((L.card.maxW - pad * 2) / w, (L.card.maxH - pad * 2) / h, 1.3);
+      const s = Math.min((L.card.maxW - pad * 2) / w, (L.card.maxH - pad * 2) / h, 1.6);
       return { w: w * s + pad * 2, h: h * s + pad * 2, s };
     });
     this.vis.forEach((v, i) => v.style.setProperty("--s", String(cards[i].s)));

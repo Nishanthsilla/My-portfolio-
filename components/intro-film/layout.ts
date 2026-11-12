@@ -50,7 +50,7 @@ export function computeLayout(vw: number, vh: number, sans: string, mono: string
   const headY = land ? cy - headBlockH / 2 : Math.max(vh * 0.13, 56);
   const headBottom = headY + headBlockH;
   const card = land
-    ? { cx: frameL + frameW * 0.765, cy, maxW: frameW * 0.33, maxH: Math.min(vh * 0.58, frameW * 0.36) }
+    ? { cx: frameL + frameW * 0.757, cy, maxW: frameW * 0.38, maxH: Math.min(vh * 0.68, frameW * 0.42, vh - controls * 1.6) }
     : (() => {
         const top = headBottom + vh * 0.04;
         const maxH = Math.max(120, vh - controls - top);

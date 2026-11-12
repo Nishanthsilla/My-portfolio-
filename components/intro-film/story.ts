@@ -4,13 +4,15 @@
  *
  * One product runs through the story — the Agent Control Room (CR):
  *   2  floating artefacts (research, insights, requirements, decisions…)
- *   3  …are linked, gathered and assembled into the CR wireframe
+ *   3  "I make it clear." — the mess arrives from both sides and passes, piece
+ *      by piece, through a transform frame that turns it into the clean CR
  *   4  the proof row (all three stats roll together)
- *   5  "I design it in Figma," — the cursor hovers "Figma"; the canvas opens
- *   6  "then ship it in code." — the cursor hovers "code"; editor + live preview
- *   7  the product: wireframe → polished; hover, click, success; camera zoom
+ *   5  "I design it in Figma," — read, then the cursor hovers "Figma"; canvas opens
+ *   6  "then ship it in code." — read, then the cursor hovers "code"; editor + preview
+ *   7  the product: wireframe → polished; hover, click, success; pull back to the whole
  * Everything is a pure function of time r.
  */
+import styles from "./IntroFilm.module.css";
 import { T, inOutQuint, inQuint, lerp, outCubic, outQuint, prog, span } from "./timeline";
 
 type Rect = { x: number; y: number; w: number; h: number };
@@ -19,28 +21,44 @@ type Geo = {
   W: number; H: number;
   head: { y: number; font: number };
   crW: number; crH: number;
-  cr3: Place; cr5: Place; cr6: Place; cr7: Place;
+  cr3: Place; cr5: Place; cr6: Place; cr7: Place; crFinal: Place;
   sent: { x: number; y: number; w: number; font: number };
   ws: Rect; editor: Rect; preview: Rect;
   arts: Record<string, [number, number]>;
+  /** Chapter 3 staging: x of the left/right columns, y slots, scale, off-screen entry x. */
+  sides: { lx: number; rx: number; ys: number[]; sc: number; offL: number; offR: number };
   stats: { xs: number[]; y: number; font: number; labelFont: number; labelW: number; ruleY: number };
 };
 
-const ART_KEYS = ["research", "workflow", "decision", "requirement", "idea", "insight", "dependency", "kpi", "chart", "button"] as const;
-const ART_TARGET: Record<(typeof ART_KEYS)[number], string> = {
-  research: "n0", workflow: "n1", decision: "n2", requirement: "n3", idea: "appr",
-  insight: "head", dependency: "intent", kpi: "logB", chart: "logA", button: "btn",
+const ART_KEYS = ["research", "workflow", "decision", "requirement", "idea", "insight", "dependency", "kpi", "chart", "button", "sketch", "sticky"] as const;
+type ArtKey = (typeof ART_KEYS)[number];
+/** Each piece of the mess becomes one part of the product. */
+const ART_TARGET: Record<ArtKey, string> = {
+  research: "n0", workflow: "n1", decision: "n2", requirement: "n3", idea: "appr", sticky: "appr",
+  insight: "head", dependency: "intent", kpi: "logB", chart: "logA", button: "btn", sketch: "flow",
 };
+/** Which side each piece waits on, and its slot (index into sides.ys). Extras enter from off-screen. */
+const SIDE: Record<ArtKey, ["L" | "R", number]> = {
+  sketch: ["L", 0], insight: ["L", 1], research: ["L", 2], sticky: ["L", 3], chart: ["L", 4], dependency: ["L", 5],
+  workflow: ["R", 0], decision: ["R", 1], requirement: ["R", 2], idea: ["R", 3], kpi: ["R", 4], button: ["R", 5],
+};
+const EXTRAS: ArtKey[] = ["sketch", "sticky"];
+/** The order in which pieces pass through the transform frame (alternating sides). */
+const FLOW: ArtKey[] = ["sketch", "insight", "workflow", "dependency", "research", "decision", "requirement", "sticky", "idea", "chart", "kpi", "button"];
+/** Clean regions revealed as their pieces land. */
+const REGIONS = ["head", "intent", "n0", "n1", "n2", "n3", "appr", "logA", "logB"];
 const GROUPS = [["research", "workflow", "decision", "requirement"], ["idea", "button"], ["insight", "dependency"], ["kpi", "chart"]];
+const TILT: Record<string, number> = { sketch: -7, insight: 5, research: -4, sticky: 8, chart: -6, dependency: 4, workflow: 6, decision: -5, requirement: 3, idea: -8, kpi: 5, button: -3 };
 
 const GEO_LAND: Geo = {
   W: 1200, H: 700,
   head: { y: 30, font: 58 },
   crW: 1000, crH: 500,
-  cr3: { cx: 600, cy: 420, s: 1 },
+  cr3: { cx: 600, cy: 440, s: 0.66 },
   cr5: { cx: 805, cy: 472, s: 0.6 },
   cr6: { cx: 805, cy: 504, s: 0.53 },
   cr7: { cx: 600, cy: 360, s: 1.06 },
+  crFinal: { cx: 600, cy: 372, s: 0.9 },
   sent: { x: 40, y: 0, w: 370, font: 52 },
   ws: { x: 440, y: 50, w: 730, h: 615 },
   editor: { x: 440, y: 50, w: 730, h: 262 },
@@ -48,17 +66,20 @@ const GEO_LAND: Geo = {
   arts: {
     research: [190, 235], insight: [600, 205], decision: [1010, 245], requirement: [215, 470], workflow: [985, 470],
     idea: [610, 585], dependency: [420, 355], kpi: [790, 360], chart: [345, 615], button: [880, 625],
+    sketch: [-200, 300], sticky: [-200, 500],
   },
+  sides: { lx: 135, rx: 1065, ys: [200, 290, 380, 470, 560, 650], sc: 0.72, offL: -260, offR: 1460 },
   stats: { xs: [230, 600, 970], y: 345, font: 150, labelFont: 24, labelW: 300, ruleY: 205 },
 };
 const GEO_PORT: Geo = {
   W: 640, H: 1060,
   head: { y: 34, font: 50 },
   crW: 580, crH: 800,
-  cr3: { cx: 320, cy: 620, s: 1 },
+  cr3: { cx: 320, cy: 620, s: 0.55 },
   cr5: { cx: 320, cy: 762, s: 0.5 },
   cr6: { cx: 320, cy: 856, s: 0.42 },
   cr7: { cx: 320, cy: 540, s: 1.02 },
+  crFinal: { cx: 320, cy: 560, s: 0.9 },
   sent: { x: 30, y: 30, w: 580, font: 44 },
   ws: { x: 20, y: 300, w: 600, h: 740 },
   editor: { x: 20, y: 300, w: 600, h: 330 },
@@ -66,7 +87,9 @@ const GEO_PORT: Geo = {
   arts: {
     research: [170, 235], insight: [465, 300], decision: [180, 440], requirement: [460, 535], workflow: [175, 650],
     idea: [455, 760], dependency: [300, 870], kpi: [165, 950], chart: [470, 975], button: [330, 1030],
+    sketch: [-200, 300], sticky: [-200, 500],
   },
+  sides: { lx: 84, rx: 556, ys: [260, 400, 540, 680, 820, 960], sc: 0.46, offL: -220, offR: 860 },
   stats: { xs: [110, 320, 530], y: 470, font: 78, labelFont: 22, labelW: 190, ruleY: 360 },
 };
 
@@ -80,7 +103,6 @@ const show = (el: Element, on: boolean) => {
 const rise = (el: HTMLElement, p: number, dir = 1) => {
   el.style.transform = p >= 1 ? "none" : `translate3d(0,${((1 - p) * 140 * dir).toFixed(2)}%,0)`;
 };
-/** Offset of an element inside an (untransformed) ancestor. */
 function offsetIn(el: HTMLElement, root: HTMLElement): Rect {
   let x = 0, y = 0, n: HTMLElement | null = el;
   while (n && n !== root) {
@@ -91,6 +113,12 @@ function offsetIn(el: HTMLElement, root: HTMLElement): Rect {
   return { x, y, w: el.offsetWidth, h: el.offsetHeight };
 }
 const lerpP = (a: Place, b: Place, t: number): Place => ({ cx: lerp(a.cx, b.cx, t), cy: lerp(a.cy, b.cy, t), s: lerp(a.s, b.s, t) });
+/** When a piece starts travelling into the frame, and when it lands. */
+const flowTimes = (k: ArtKey) => {
+  const i = FLOW.indexOf(k);
+  const a = T.flowStart + i * T.flowStagger;
+  return { a, b: a + T.flowTravel };
+};
 
 export class Story {
   g: Geo = GEO_LAND;
@@ -99,6 +127,8 @@ export class Story {
   private arts: Record<string, HTMLElement> = {};
   private artSize: Record<string, { w: number; h: number }> = {};
   private targets: Record<string, Rect> = {};
+  private regionEls: Record<string, HTMLElement> = {};
+  private scans: Record<string, HTMLElement> = {};
   private links: SVGLineElement[];
   private builds: HTMLElement[];
   private nodes: HTMLElement[];
@@ -107,7 +137,7 @@ export class Story {
   private codeLines: HTMLElement[];
   private words: { figma: Rect; code: Rect } = { figma: { x: 0, y: 0, w: 0, h: 0 }, code: { x: 0, y: 0, w: 0, h: 0 } };
   private editRects: Rect[] = [];
-  private btnView = { x: 0, y: 0, r: 0 };
+  private finaleView = { x: 0, y: 0, r: 0 };
 
   constructor(private root: HTMLElement) {
     const q = (s: string) => $(root, s);
@@ -133,6 +163,20 @@ export class Story {
     this.stats = $$(root, "[data-stat]");
     this.statStrips = this.stats.map((s) => $$(s, "[data-strip]"));
     this.codeLines = $$(root, "[data-line]");
+    REGIONS.forEach((k) => {
+      const t = $(this.el.cr, `[data-t="${k}"]`);
+      // the intent chip reveals together with its label
+      this.regionEls[k] = k === "intent" ? (t.parentElement as HTMLElement) : t;
+    });
+    // orange scan highlights for the transformation (one per landing spot)
+    [...REGIONS, "flow", "btn"].forEach((k) => {
+      const d = document.createElement("div");
+      d.className = styles.scan;
+      d.setAttribute("aria-hidden", "true");
+      d.dataset.scan = k;
+      this.el.board.appendChild(d);
+      this.scans[k] = d;
+    });
   }
 
   layout(vw: number, vh: number) {
@@ -153,13 +197,11 @@ export class Story {
       h.style.fontSize = `${g.head.font}px`;
       h.style.top = `${g.head.y}px`;
     });
-    // The two sentences: one column (left on landscape, top on portrait)
     const sent = this.el.sent;
     Object.assign(sent.style, { left: `${g.sent.x}px`, width: `${g.sent.w}px`, fontSize: `${g.sent.font}px` });
     sent.style.top = "0px";
     const sh = sent.offsetHeight;
     sent.style.top = `${port ? g.sent.y : (g.H - sh) / 2}px`;
-    // Product + workspace geometry
     const cr = this.el.cr;
     cr.style.width = `${g.crW}px`;
     cr.style.height = `${g.crH}px`;
@@ -168,11 +210,16 @@ export class Story {
     setRect(this.el.editor, g.editor);
     setRect(this.el.preview, g.preview);
     $$(cr, "[data-t]").forEach((t) => (this.targets[t.dataset.t!] = offsetIn(t, cr)));
-    Object.entries(this.arts).forEach(([k, a]) => (this.artSize[k] = { w: a.offsetWidth, h: a.offsetHeight }));
+    Object.entries(this.arts).forEach(([k, a]) => {
+      a.style.width = "";
+      a.style.height = "";
+      this.artSize[k] = { w: a.offsetWidth, h: a.offsetHeight };
+    });
     this.editRects = ["appr", "head", "btn", "flow"].map((k) => this.targets[k]);
-    // Words the cursor hovers (board coordinates; units have no layout transform)
     const board = this.el.board;
     this.words = { figma: offsetIn(this.el.wFigma, board), code: offsetIn(this.el.wCode, board) };
+    // scan highlights sit on their regions in the chapter-3 placement
+    Object.entries(this.scans).forEach(([k, d]) => setRect(d, this.crRect(g.cr3, k)));
     this.stats.forEach((st, i) => {
       st.style.left = `${g.stats.xs[i]}px`;
       st.style.top = `${g.stats.y}px`;
@@ -193,33 +240,37 @@ export class Story {
     return { x: this.bx + x * this.bs, y: this.by + y * this.bs };
   }
 
-  /** The Approve button (viewport px) where the finale's orange circle begins. */
+  /** Where the finale's orange circle begins: the product's "Complete" status dot. */
   approveCenter() {
-    return this.btnView;
+    return this.finaleView;
   }
 
-  /** Final product placement, including the camera zoom onto the button. */
+  /** Final product camera: a gentle push toward the approval panel, then a pull back to the whole. */
   private livePlace(r: number): Place {
-    const g = this.g, p = g.cr7;
-    const z = inOutQuint(span(r, T.zoom));
-    if (z <= 0) return p;
-    const bt = this.targets.btn;
-    const bx = bt.x + bt.w / 2, by = bt.y + bt.h / 2;
-    const s2 = p.s * lerp(1, 1.75, z);
-    const x0 = p.cx - (g.crW * p.s) / 2, y0 = p.cy - (g.crH * p.s) / 2;
-    const fromX = x0 + bx * p.s, fromY = y0 + by * p.s;
-    const toX = lerp(fromX, g.W / 2, z), toY = lerp(fromY, g.H / 2, z);
-    const nx0 = toX - bx * s2, ny0 = toY - by * s2;
-    return { cx: nx0 + (g.crW * s2) / 2, cy: ny0 + (g.crH * s2) / 2, s: s2 };
+    const g = this.g;
+    const push = inOutQuint(span(r, T.pushIn)) * (1 - inOutQuint(span(r, T.pullBack)));
+    const pull = inOutQuint(span(r, T.pullBack));
+    let p = g.cr7;
+    if (push > 0) {
+      const a = this.targets.appr;
+      const s2 = g.cr7.s * 1.08;
+      // keep the approval panel's centre where it is while scaling slightly
+      const x0 = g.cr7.cx - (g.crW * g.cr7.s) / 2, y0 = g.cr7.cy - (g.crH * g.cr7.s) / 2;
+      const ax = x0 + (a.x + a.w / 2) * g.cr7.s, ay = y0 + (a.y + a.h / 2) * g.cr7.s;
+      const toX = ax, toY = ay;
+      const pushed = { cx: toX - (a.x + a.w / 2 - g.crW / 2) * s2, cy: toY - (a.y + a.h / 2 - g.crH / 2) * s2, s: s2 };
+      p = lerpP(g.cr7, pushed, push);
+    }
+    if (pull > 0) p = lerpP(p, g.crFinal, pull);
+    return p;
   }
 
   private placeCR(r: number): { p: Place; a: number } | null {
     const g = this.g;
-    if (r < T.wireIn[0] || r >= T.sweep[1]) return null;
-    if (r < T.sent1In[0]) return { p: g.cr3, a: outCubic(span(r, T.wireIn)) * (1 - span(r, T.wireOut)) };
+    if (r < T.gateIn[0] || r >= T.sweep[1]) return null;
+    if (r < T.sent1In[0]) return { p: g.cr3, a: outCubic(span(r, T.gateIn)) * (1 - span(r, T.wireOut)) };
     if (r < T.codeReveal[0]) return { p: g.cr5, a: outCubic(span(r, T.figmaReveal)) };
     if (r < T.toLive[0]) return { p: lerpP(g.cr5, g.cr6, inOutQuint(span(r, T.codeReveal))), a: 1 };
-    // product: the built preview fades away; the product returns full-size as a wireframe
     const q = span(r, T.toLive);
     if (q < 0.45) return { p: g.cr6, a: 1 - q / 0.45 };
     return { p: this.livePlace(r), a: outCubic((q - 0.5) / 0.5) };
@@ -240,54 +291,97 @@ export class Story {
     line(e.hComplex, e.hComplexU, T.complexIn, T.complexOut);
     line(e.hClear, e.hClearU, T.clearIn, T.clearOut);
 
-    /* ---------- 2 → 3: artefacts float, link, gather, assemble ---------- */
-    const artsOn = r < T.wireIn[1] + 0.05;
-    const assemble = inOutQuint(span(r, T.assemble));
+    /* ---------- 2: artefacts float, link, gather — 3: both sides → the frame → clean ---------- */
     const gather = inOutQuint(span(r, T.gather));
+    const spread = inOutQuint(span(r, T.spread));
     const centroids = GROUPS.map((grp) => {
       const pts = grp.map((k) => g.arts[k]);
       return [pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length];
     });
     const groupOf = (k: string) => GROUPS.findIndex((grp) => grp.includes(k));
     const artPos: Record<string, { x: number; y: number }> = {};
+    const lastLand = flowTimes(FLOW[FLOW.length - 1]).b;
     ART_KEYS.forEach((k, i) => {
       const a = this.arts[k];
-      if (!artsOn && k !== "button") return show(a, false);
+      const extra = EXTRAS.includes(k);
+      const ft = flowTimes(k);
       const size = this.artSize[k];
-      const [hx, hy] = g.arts[k];
-      const t = Math.max(0, r - T.scatter[0]);
-      const fx = hx + Math.sin(t * (0.55 + i * 0.06) + i) * 12;
-      const fy = hy + Math.cos(t * (0.45 + i * 0.05) + i * 1.7) * 10;
-      const enter = outQuint(prog(r, T.scatter[0] + i * 0.035, T.scatter[0] + i * 0.035 + 0.65));
-      const c = centroids[groupOf(k)];
-      let x = lerp(lerp(origin.x, fx, enter), lerp(fx, c[0], 0.38), gather);
-      let y = lerp(lerp(origin.y, fy, enter), lerp(fy, c[1], 0.38), gather);
-      const tgt = this.crRect(g.cr3, ART_TARGET[k]);
-      x = lerp(x, tgt.x + tgt.w / 2, assemble);
-      y = lerp(y, tgt.y + tgt.h / 2, assemble);
-      let w = lerp(size.w, tgt.w, assemble), h = lerp(size.h, tgt.h, assemble);
-      let alpha = enter * (1 - prog(r, T.wireIn[0], T.wireIn[1]));
-      if (k === "button") {
+      const [side, slot] = SIDE[k];
+      const sx = side === "L" ? g.sides.lx : g.sides.rx, sy = g.sides.ys[slot];
+      let x: number, y: number, sc = 1, rot = 0, alpha: number;
+      if (extra) {
+        // extras slide in from off-screen to their side
+        const p = outQuint(prog(r, T.extrasIn[0] + (slot % 2) * 0.12, T.extrasIn[1] + (slot % 2) * 0.12));
+        x = lerp(side === "L" ? g.sides.offL : g.sides.offR, sx, p);
+        y = sy;
+        sc = g.sides.sc;
+        rot = TILT[k] * p;
+        alpha = p;
+      } else {
+        const [hx, hy] = g.arts[k];
+        const t = Math.max(0, r - T.scatter[0]);
+        const fx = hx + Math.sin(t * (0.55 + i * 0.06) + i) * 12;
+        const fy = hy + Math.cos(t * (0.45 + i * 0.05) + i * 1.7) * 10;
+        const enter = outQuint(prog(r, T.scatter[0] + i * 0.035, T.scatter[0] + i * 0.035 + 0.65));
+        const c = centroids[groupOf(k)];
+        x = lerp(lerp(origin.x, fx, enter), lerp(fx, c[0], 0.38), gather);
+        y = lerp(lerp(origin.y, fy, enter), lerp(fy, c[1], 0.38), gather);
+        // the frame opens: the mess is pushed to both sides, tilted and uneven
+        x = lerp(x, sx, spread);
+        y = lerp(y, sy, spread);
+        sc = lerp(1, g.sides.sc, spread);
+        rot = TILT[k] * spread;
         alpha = enter;
+      }
+      // the transformation: travel into the frame, straighten, become the clean part
+      const tp = inOutQuint(prog(r, ft.a, ft.b));
+      if (tp > 0) {
+        const tgt = this.crRect(g.cr3, ART_TARGET[k]);
+        x = lerp(x, tgt.x + tgt.w / 2, tp);
+        y = lerp(y, tgt.y + tgt.h / 2, tp);
+        rot = lerp(rot, 0, tp);
+        const w = lerp(size.w * sc, tgt.w, tp), h = lerp(size.h * sc, tgt.h, tp);
+        a.style.width = `${w.toFixed(1)}px`;
+        a.style.height = `${h.toFixed(1)}px`;
+        a.style.setProperty("--detail", String(1 - tp));
+        alpha *= 1 - prog(r, lerp(ft.a, ft.b, 0.5), ft.b + 0.04);
+      } else {
+        a.style.width = "";
+        a.style.height = "";
+        a.style.setProperty("--detail", "1");
+      }
+      if (k === "button") {
+        // the button stays on the clean product, then becomes the stats' accent rule
+        alpha = r < ft.b ? alpha : 1;
         const toRule = inOutQuint(span(r, T.accentToRule));
+        if (r >= ft.b) {
+          const tgt = this.crRect(g.cr3, "btn");
+          x = tgt.x + tgt.w / 2; y = tgt.y + tgt.h / 2;
+          a.style.width = `${tgt.w}px`;
+          a.style.height = `${tgt.h}px`;
+          sc = 1; rot = 0;
+        }
         x = lerp(x, g.W / 2, toRule);
         y = lerp(y, g.stats.ruleY, toRule);
-        w = lerp(w, 120, toRule);
-        h = lerp(h, 6, toRule);
+        if (toRule > 0) {
+          const tgt = this.crRect(g.cr3, "btn");
+          a.style.width = `${lerp(tgt.w, 120, toRule)}px`;
+          a.style.height = `${lerp(tgt.h, 6, toRule)}px`;
+        }
         a.style.setProperty("--label", String(1 - prog(r, T.accentToRule[0], T.accentToRule[0] + 0.2)));
         alpha *= 1 - span(r, T.statsOut);
         if (r >= T.sent1In[0]) alpha = 0;
-      }
+      } else if (r > lastLand + 0.3) alpha = 0;
       artPos[k] = { x, y };
       show(a, alpha > 0.001);
       a.style.opacity = alpha.toFixed(3);
-      a.style.width = `${w.toFixed(1)}px`;
-      a.style.height = `${h.toFixed(1)}px`;
-      a.style.transform = `translate3d(${(x - w / 2).toFixed(1)}px,${(y - h / 2).toFixed(1)}px,0)`;
-      a.style.setProperty("--detail", String(1 - assemble));
+      a.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) translate(-50%,-50%) rotate(${rot.toFixed(2)}deg) scale(${tp > 0 ? 1 : sc})`;
+      const messy = String((spread > 0.5 || extra) && tp < 0.5);
+      if (a.dataset.messy !== messy) a.dataset.messy = messy;
     });
+    // relationship lines (chapter 2)
     const linkDraw = outCubic(span(r, T.links));
-    const linkFade = 1 - span(r, [T.assemble[0], T.assemble[0] + 0.5]);
+    const linkFade = 1 - span(r, [T.spread[0], T.spread[0] + 0.4]);
     show(e.linksSvg, linkDraw > 0 && linkFade > 0);
     let li = 0;
     GROUPS.forEach((grp) => {
@@ -301,6 +395,17 @@ export class Story {
         L.setAttribute("y2", lerp(p.y, q.y, linkDraw).toFixed(1));
         L.style.opacity = (0.75 * linkFade).toFixed(3);
       }
+    });
+    // orange scan as each piece is transformed into its clean part
+    Object.entries(this.scans).forEach(([k, d]) => {
+      const pieces = FLOW.filter((f) => ART_TARGET[f] === k);
+      let s = 0;
+      pieces.forEach((f) => {
+        const { b } = flowTimes(f);
+        s = Math.max(s, Math.sin(Math.PI * prog(r, b - 0.12, b + 0.38)));
+      });
+      show(d, s > 0.01);
+      d.style.opacity = s.toFixed(3);
     });
 
     /* ---------- 4: proof — all three together ---------- */
@@ -325,7 +430,7 @@ export class Story {
       });
     }
 
-    /* ---------- 5 + 6: the two sentences (always whole) ---------- */
+    /* ---------- 5 + 6: the two sentences — whole first, then the cursor ---------- */
     const sentOn = r >= T.sent1In[0] && r < T.toLive[1];
     show(e.sent, sentOn);
     if (sentOn) {
@@ -334,7 +439,6 @@ export class Story {
       rise(e.s1u, outQuint(span(r, T.sent1In)));
       show(e.s2, r >= T.sent2In[0]);
       rise(e.s2u, outQuint(span(r, T.sent2In)));
-      // the first sentence quietens once the second takes over (still fully visible)
       e.s1.style.opacity = (1 - 0.55 * outCubic(span(r, T.sent2In))).toFixed(3);
       const hvF = outCubic(prog(r, T.cursorToFigma[1] - 0.12, T.cursorToFigma[1] + 0.12)) * (1 - outCubic(span(r, [T.cursorToCode[0], T.cursorToCode[0] + 0.25])));
       const hvC = outCubic(prog(r, T.cursorToCode[1] - 0.12, T.cursorToCode[1] + 0.12));
@@ -351,17 +455,18 @@ export class Story {
       const x0 = place.cx - (g.crW * place.s) / 2, y0 = place.cy - (g.crH * place.s) / 2;
       e.cr.style.transform = `translate3d(${x0.toFixed(2)}px,${y0.toFixed(2)}px,0) scale(${place.s.toFixed(4)})`;
       const live = r >= T.toLive[1] - 0.3;
-      // fidelity: wireframe (3) → designed by the Figma edits (5) → built (6);
+      // fidelity: clean (3) · wireframe designed by the Figma edits (5) · built (6) ·
       // in 7 it restarts as a wireframe and is polished region by region
       let f: number[];
-      if (r < T.sent1In[0]) f = [0, 0, 0, 0];
+      if (r < T.sent1In[0]) f = [1, 1, 1, 1];
       else if (r < T.toLive[0] + 0.25) f = T.edits.map((ed) => outCubic(prog(r, ed[0] + 0.1, ed[1])));
       else if (r < T.polish[0][0]) f = [0, 0, 0, 0];
       else f = T.polish.map((pp) => inOutQuint(prog(r, pp[0], pp[1])));
-      // map polish order (type, components, cards, colour) onto the four regions
       const order = r >= T.polish[0][0] ? [f[2], f[0], f[3], f[1]] : f;
       order.forEach((v, i) => e.cr.style.setProperty(`--f${i + 1}`, v.toFixed(3)));
-      e.cr.dataset.polished = String(r >= T.polish[3][1]);
+      // chapter 3: the frame glows orange while the pieces are transformed, then calms
+      const gate = r < T.sent1In[0] ? outCubic(span(r, T.gateIn)) * (1 - outCubic(prog(r, flowTimes(FLOW[FLOW.length - 1]).b, flowTimes(FLOW[FLOW.length - 1]).b + 0.6))) : 0;
+      e.cr.style.setProperty("--gate", gate.toFixed(3));
       // build-up in the live preview: each part appears as its code line completes
       const cd = T.code[1] - T.code[0];
       const buildAt = [0.42, 0.57, 0.72, 0.86, 1.0].map((fr) => T.code[0] + fr * cd).concat(T.accept);
@@ -373,6 +478,14 @@ export class Story {
         b.style.opacity = p.toFixed(3);
         b.style.transform = p >= 1 ? "" : `translate3d(0,${((1 - p) * 10).toFixed(2)}px,0)`;
       });
+      // chapter 3: each clean region appears as its piece lands in the frame
+      if (r < T.sent1In[0]) {
+        REGIONS.forEach((k) => {
+          const pieces = FLOW.filter((f) => ART_TARGET[f] === k);
+          const land = Math.min(...pieces.map((f) => flowTimes(f).b));
+          this.regionEls[k].style.opacity = outCubic(prog(r, land - 0.32, land + 0.12)).toFixed(3);
+        });
+      } else if (r < T.codeReveal[0]) REGIONS.forEach((k) => (this.regionEls[k].style.opacity = ""));
       // live states (chapter 7)
       const dp = live ? inOutQuint(span(r, T.draftDone)) : 0;
       e.progress.style.transform = `scaleX(${(live ? lerp(0.35, 1, dp) : 0.35).toFixed(4)})`;
@@ -389,20 +502,21 @@ export class Story {
       });
       const complete = flowDone >= 1;
       if (e.crPill.dataset.complete !== String(complete)) e.crPill.dataset.complete = String(complete);
-      const hover = live ? outCubic(span(r, T.hover)) : 0;
+      const hover = live ? outCubic(span(r, T.hover)) * (1 - prog(r, T.click + 0.2, T.click + 0.5)) : 0;
       const press = r >= T.click && r < T.click + 0.16 ? 1 - Math.sin((Math.PI * (r - T.click)) / 0.16) * 0.06 : 1;
       e.cr.style.setProperty("--hover", hover.toFixed(3));
       e.cr.style.setProperty("--press", press.toFixed(4));
       e.cr.style.setProperty("--approved", String(live ? outCubic(prog(r, T.click + 0.08, T.click + 0.4)) : 0));
       if (r >= T.toLive[0]) {
-        const bt = this.crRect(place, "btn");
-        this.btnView = { ...this.toView(bt.x + bt.w / 2, bt.y + bt.h / 2), r: (Math.min(bt.w, bt.h) / 2) * this.bs };
+        const d = this.crRect(place, "pilldot");
+        this.finaleView = { ...this.toView(d.x + d.w / 2, d.y + d.h / 2), r: Math.max(4, (d.w / 2) * this.bs) };
       }
     }
 
-    /* ---------- 5: Figma workspace + selection (revealed by hovering "Figma") ---------- */
+    /* ---------- 5: Figma workspace + selection (opened by hovering "Figma") ---------- */
     const figOn = r >= T.figmaReveal[0] && r < T.codeReveal[1];
     show(e.figma, figOn);
+    if (!figOn) show(e.sel, false);
     if (figOn) {
       const inP = outQuint(span(r, T.figmaReveal)), outP = inOutQuint(span(r, T.codeReveal));
       e.figma.style.opacity = (inP * (1 - outP)).toFixed(3);
@@ -428,7 +542,7 @@ export class Story {
       }
     }
 
-    /* ---------- 6: editor (top) + developed product (bottom), revealed by hovering "code" ---------- */
+    /* ---------- 6: editor (top) + developed product (bottom), opened by hovering "code" ---------- */
     const codeOn = r >= T.codeReveal[0] && r < T.toLive[1];
     show(e.editor, codeOn);
     show(e.preview, codeOn);
@@ -473,17 +587,16 @@ export class Story {
 
     /* ---------- the cursor: Figma → code → the Approve button ---------- */
     const curA = r >= T.cursorToFigma[0] && r < T.toLive[0] + 0.35;
-    const curB = r >= T.cursorIn[0] && r < T.flowDone[1] + 0.1;
+    const curB = r >= T.cursorIn[0] && r < T.pullBack[0] + 0.45;
     show(e.pcur, curA || curB);
     if (curA || curB) {
       const wf = this.words.figma, wc = this.words.code;
-      const atF = { x: wf.x + wf.w * 0.62, y: wf.y + wf.h * 0.72 };
-      const atC = { x: wc.x + wc.w * 0.55, y: wc.y + wc.h * 0.72 };
+      const atF = { x: wf.x + wf.w * 0.62, y: wf.y + wf.h * 0.78 };
+      const atC = { x: wc.x + wc.w * 0.55, y: wc.y + wc.h * 0.78 };
       let x: number, y: number, a = 1;
       if (curA) {
         if (r < T.cursorToCode[0]) {
           const p = inOutQuint(span(r, T.cursorToFigma));
-          // enter from the lower right along a gentle arc
           x = lerp(g.W * 0.58, atF.x, p);
           y = lerp(g.H * 0.98, atF.y, p) - Math.sin(Math.PI * p) * 30;
           a = outCubic(prog(r, T.cursorToFigma[0], T.cursorToFigma[0] + 0.2));
@@ -494,17 +607,11 @@ export class Story {
         }
         a *= 1 - outCubic(span(r, [T.toLive[0], T.toLive[0] + 0.3]));
       } else {
-        const btn = this.crRect(g.cr7, "btn");
+        const btn = this.crRect(this.livePlace(r), "btn");
         const p = inOutQuint(span(r, T.cursorIn));
         x = lerp(g.W * 0.86, btn.x + btn.w * 0.62, p);
         y = lerp(g.H * 0.98, btn.y + btn.h * 0.66, p) - Math.sin(Math.PI * p) * 24;
-        a = outCubic(prog(r, T.cursorIn[0], T.cursorIn[0] + 0.2)) * (1 - prog(r, T.flowDone[1] - 0.15, T.flowDone[1] + 0.1));
-        // follow the camera once it starts to zoom (the cursor rests on the button)
-        if (r >= T.zoom[0]) {
-          const zb = this.crRect(this.livePlace(r), "btn");
-          x = zb.x + zb.w * 0.62;
-          y = zb.y + zb.h * 0.66;
-        }
+        a = outCubic(prog(r, T.cursorIn[0], T.cursorIn[0] + 0.2)) * (1 - prog(r, T.pullBack[0] + 0.1, T.pullBack[0] + 0.45));
       }
       const press = r >= T.click && r < T.click + 0.14 ? 0.86 : 1;
       e.pcur.style.opacity = a.toFixed(3);

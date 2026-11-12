@@ -1,6 +1,6 @@
 /**
  * The film's single clock (seconds). Every visual and audio cue is in this
- * table so pacing can be tuned in one place. ~32 s, seven chapters:
+ * table so pacing can be tuned in one place. ~36 s, seven chapters:
  *   Prologue + 1 (intro) · 2 complexity · 3 clarity · 4 proof ·
  *   5 Figma · 6 AI-assisted code · 7 finished product + reveal
  */
@@ -15,23 +15,25 @@ export const T = {
   verbs: [4.25, 4.82, 5.39, 5.96, 6.53, 7.1], verbStep: 0.57, thing: 7.67,
   highlight: [7.8, 8.1], cardToDot: [7.67, 8.0], headOut: [8.55, 8.85],
   // 2 — Even when it's complex,
-  scatter: [8.7, 9.5], complexIn: [9.0, 9.5], links: [10.5, 11.2], gather: [11.1, 12.3], complexOut: [12.2, 12.5],
-  // 3 — I make it clear.
-  assemble: [12.2, 13.4], wireIn: [13.2, 13.6], clearIn: [13.1, 13.6], clearOut: [15.2, 15.5], wireOut: [15.2, 15.6],
+  scatter: [8.7, 9.5], complexIn: [9.0, 9.5], links: [10.5, 11.2], gather: [11.1, 12.0], complexOut: [11.95, 12.25],
+  // 3 — I make it clear.  chaos (both sides) → the transform frame → clarity
+  spread: [12.05, 12.8], extrasIn: [12.25, 13.05], gateIn: [12.2, 12.85], clearIn: [12.35, 12.9],
+  flowStart: 13.2, flowStagger: 0.17, flowTravel: 0.72,
+  clearOut: [16.6, 16.9], wireOut: [16.6, 17.0],
   // 4 — proof: all three together
-  accentToRule: [15.25, 15.9], statsIn: [15.6, 16.0], roll: [15.7, 17.1], labelsIn: [16.6, 17.0], statsOut: [18.6, 18.95],
-  // 5 — Figma: the sentence is set, the cursor finds "Figma", the canvas opens
-  sent1In: [18.85, 19.4], cursorToFigma: [19.3, 19.95], figmaReveal: [20.0, 20.5],
-  edits: [[20.55, 20.95], [21.0, 21.4], [21.45, 21.85], [21.9, 22.3]],
-  // 6 — code: the second sentence, the cursor moves to "code", editor + preview
-  sent2In: [22.6, 23.1], cursorToCode: [22.8, 23.45], codeReveal: [23.5, 24.0],
-  code: [24.0, 24.9], ghost: [25.0, 25.4], accept: 25.45, codeHold: 25.9,
-  // 7 — the product: wireframe → polished, hover, click, success, camera zoom
-  toLive: [25.9, 26.5], polish: [[26.6, 27.0], [26.9, 27.3], [27.2, 27.6], [27.5, 27.9]],
-  draftDone: [27.85, 28.3], cursorIn: [28.2, 28.85], hover: [28.75, 28.95], click: 29.05,
-  flowDone: [29.15, 29.6], zoom: [29.35, 30.3],
-  sweep: [30.4, 30.9], handoff: [31.0, 31.8],
-  end: 31.85,
+  accentToRule: [16.65, 17.3], statsIn: [17.0, 17.4], roll: [17.1, 18.5], labelsIn: [18.0, 18.4], statsOut: [20.0, 20.35],
+  // 5 — Figma: whole sentence → reading pause → cursor to "Figma" → canvas
+  sent1In: [20.25, 20.8], cursorToFigma: [21.75, 22.4], figmaReveal: [22.45, 22.95],
+  edits: [[23.0, 23.4], [23.45, 23.85], [23.9, 24.3], [24.35, 24.75]],
+  // 6 — code: whole sentence → reading pause → cursor to "code" → editor + preview
+  sent2In: [25.05, 25.55], cursorToCode: [26.45, 27.1], codeReveal: [27.15, 27.65],
+  code: [27.65, 28.55], ghost: [28.65, 29.05], accept: 29.1, codeHold: 29.55,
+  // 7 — the product: wireframe → polished; hover, click, success; pull back to the whole product
+  toLive: [29.55, 30.15], polish: [[30.25, 30.65], [30.55, 30.95], [30.85, 31.25], [31.15, 31.55]],
+  draftDone: [31.5, 31.95], cursorIn: [31.85, 32.5], pushIn: [31.85, 32.55], hover: [32.4, 32.6], click: 32.7,
+  flowDone: [32.8, 33.25], pullBack: [32.95, 33.95],
+  sweep: [34.55, 35.05], handoff: [35.15, 35.95],
+  end: 36.0,
 } as const;
 
 /** The level-clear sound's held note lands as the orange dot reaches the logo. */

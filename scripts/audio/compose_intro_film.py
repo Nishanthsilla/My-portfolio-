@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 
 SR = 48000
-DUR = 33.4
+DUR = 37.6
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "public" / "audio"
 rng = np.random.default_rng(7)
@@ -208,7 +208,7 @@ for k, v in enumerate([4.25, 4.82, 5.39, 5.96, 6.53, 7.1, 7.67]):
 place(swoosh(0.3, 2400, 5200, 0.06), 7.8)
 place(swoosh(0.35, 1600, 400, 0.07, "down"), 8.55)
 
-# ---------- 2: Even when it's complex, (8.7 – 12.5) ----------
+# ---------- 2: Even when it's complex, (8.7 – 12.05) ----------
 place(swoosh(0.8, 900, 5200, 0.09), 8.7)
 place(pad([midi(n) for n in BB7], 3.6, 0.06, 0.5, 0.9, 1300), 8.75)
 place(pop(560, 0.11, 0.11), 9.05)
@@ -216,76 +216,89 @@ for k in range(10):  # quiet clockwork: many things happening
     place(hat(0.032 + 0.003 * k, 0.03), 9.6 + k * 0.17, pan=0.3 if k % 2 else -0.3)
 for k in range(6):  # each relationship line connects
     place(pop(midi([72, 74, 77, 79, 81, 84][k]) * 0.5, 0.05, 0.06), 10.55 + k * 0.1, pan=-0.4 + k * 0.16)
-place(riser(1.1, 0.12), 11.15)
+place(riser(1.0, 0.1), 11.1)
 
-# ---------- 3: I make it clear. (12.2 – 15.6) ----------
-for k in range(10):  # pieces landing in place
-    place(pop(midi([72, 74, 77, 79, 81][k % 5]) * 0.5, 0.055, 0.06), 12.6 + k * 0.07, pan=-0.5 + k / 10)
-place(impact(0.45), 13.15)
-groove(13.15, 15.6, kick_g=0.6, bass_g=0.28, pluck_g=0.085, every_beat=True, bar0=2)
-place(pad([midi(n) for n in FMAJ7[:4]], 2.4, 0.045, 0.05, 0.6), 13.15)
-place(swoosh(0.45, 1400, 400, 0.06, "down"), 15.2)
+# ---------- 3: I make it clear. chaos → transform frame → clarity (12.05 – 16.9) ----------
+place(swoosh(0.7, 3200, 700, 0.08, "down"), 12.05)        # the mess parts to both sides
+place(pop(520, 0.12, 0.1), 12.4)                           # headline + frame
+for k, x in enumerate([12.3, 12.42]):                      # extra pieces slide in from the edges
+    place(swoosh(0.5, 700, 2600, 0.045), x, pan=-0.6 + 1.2 * k)
+place(pad([midi(n) for n in DM9[:4]], 1.4, 0.04, 0.3, 0.5, 1200), 12.2)
+NOTES = [69, 72, 74, 76, 77, 79, 81, 84, 86, 88, 89, 91]
+for i in range(12):                                        # each piece transformed: a soft rising pluck
+    land = 13.2 + i * 0.17 + 0.72
+    side = -0.45 if i % 2 == 0 else 0.45
+    place(swoosh(0.4, 1200, 3000, 0.022), land - 0.45, pan=side)
+    place(pluck(midi(NOTES[i]), 0.065, 0.7, 4200), land - 0.04, pan=side * 0.5)
+groove(13.95, 16.6, kick_g=0.5, bass_g=0.24, pluck_g=0.05, hats=True, bar0=2)
+place(pad([midi(n) for n in FMAJ7[:4]], 2.8, 0.045, 0.5, 0.8), 14.0)
+for k, n in enumerate([77, 81, 84]):                        # clean: resolves
+    place(pluck(midi(n), 0.08, 1.2, 3600), 16.05 + k * 0.06, pan=-0.4 + 0.4 * k)
+place(swoosh(0.4, 1400, 400, 0.06, "down"), 16.6)
 
-# ---------- 4: proof — all three roll together (15.6 – 18.95) ----------
-place(pop(1250, 0.13, 0.1), 15.3)
-place(pad([midi(n) for n in FMAJ7], 3.4, 0.05, 0.4, 0.9, 1500), 15.6)
-place(kick(0.45), 15.7)
+# ---------- 4: proof — all three roll together (16.65 – 20.35) ----------
+place(pop(1250, 0.13, 0.1), 16.75)                          # the button becomes the rule
+place(pad([midi(n) for n in FMAJ7], 3.4, 0.05, 0.4, 0.9, 1500), 17.0)
+place(kick(0.45), 17.1)
 tt_ = 0.0
 for i in range(12):  # rolling ticks that slow as the numbers settle
-    place(click(0.07, 6200 + 200 * (i % 3)), 15.72 + tt_, pan=-0.3 + 0.3 * (i % 3))
+    place(click(0.07, 6200 + 200 * (i % 3)), 17.12 + tt_, pan=-0.3 + 0.3 * (i % 3))
     tt_ += 0.03 + i * 0.012
-place(bass(midi(41), 0.28, 1.2), 17.1)
+place(bass(midi(41), 0.28, 1.2), 18.5)
 for k, n in enumerate([77, 81, 84]):
-    place(pluck(midi(n), 0.09, 1.2, 3600), 17.1 + k * 0.05, pan=-0.4 + 0.4 * k)
-place(swoosh(0.4, 1500, 500, 0.06, "down"), 18.6)
+    place(pluck(midi(n), 0.09, 1.2, 3600), 18.5 + k * 0.05, pan=-0.4 + 0.4 * k)
+place(swoosh(0.4, 1500, 500, 0.06, "down"), 20.0)
 
-# ---------- 5: Figma (18.85 – 22.6) ----------
-place(swoosh(0.5, 500, 2000, 0.06), 18.85)
-place(pad([midi(n) for n in DM9[:4]], 4.0, 0.04, 0.4, 0.8, 1300), 18.9)
-groove(19.0, 22.6, kick_g=0.42, bass_g=0.2, pluck_g=0.06, hats=True, bar0=1)
-place(click(0.07, 3000), 19.9, pan=0.15)                  # cursor settles on "Figma"
-place(pop(1320, 0.1, 0.09), 19.98)                        # hover → canvas opens
-place(swoosh(0.45, 900, 3600, 0.06), 20.0)
-for k, ed in enumerate([20.55, 21.0, 21.45, 21.9]):       # design activity (select + snap)
+# ---------- 5: Figma — read, then the cursor (20.25 – 25.0) ----------
+place(swoosh(0.5, 500, 2000, 0.06), 20.2)
+place(pop(760, 0.09, 0.08), 20.35)                          # the whole sentence rises
+place(pad([midi(n) for n in DM9[:4]], 4.6, 0.04, 0.4, 0.8, 1300), 20.3)
+groove(20.5, 25.0, kick_g=0.4, bass_g=0.19, pluck_g=0.055, hats=True, bar0=1)
+place(click(0.07, 3000), 22.38, pan=0.15)                   # cursor settles on "Figma"
+place(pop(1320, 0.1, 0.09), 22.45)                          # hover → canvas opens
+place(swoosh(0.45, 900, 3600, 0.06), 22.45)
+for k, ed in enumerate([23.0, 23.45, 23.9, 24.35]):         # design activity (select + snap)
     place(pop(1400 + 110 * k, 0.08, 0.07), ed)
     place(click(0.08, 3800), ed + 0.28, pan=0.25)
 
-# ---------- 6: code (22.6 – 25.9) ----------
-place(pop(760, 0.08, 0.08), 22.65)                        # second sentence rises
-place(click(0.07, 3000), 23.4, pan=0.15)                  # cursor settles on "code"
-place(swoosh(0.55, 400, 3800, 0.11), 23.45)               # Figma → code transition
-place(impact(0.18), 23.98)
-t = 24.0
+# ---------- 6: code — read, then the cursor (25.05 – 29.55) ----------
+place(pop(760, 0.09, 0.08), 25.1)                           # second sentence rises
+place(pad([midi(n) for n in BB7[:4]], 2.0, 0.035, 0.3, 0.6, 1200), 25.1)
+place(click(0.07, 3000), 27.08, pan=0.15)                   # cursor settles on "code"
+place(swoosh(0.55, 400, 3800, 0.1), 27.1)                   # editor + preview open
+place(impact(0.16), 27.62)
+t = 27.65
 k = 0
-while t < 25.9 - 1e-6:
-    place(bass(midi(38 if t < 25.45 else 41), 0.26 if k % 2 == 0 else 0.15, 0.24), t)
+while t < 29.55 - 1e-6:
+    place(bass(midi(38 if t < 29.1 else 41), 0.26 if k % 2 == 0 else 0.15, 0.24), t)
     if k % 2 == 0:
         place(kick(0.42), t)
     t += 0.25
     k += 1
-for i in range(26):                                       # code being written
-    place(click(0.05, 5400 + 250 * (i % 4)), 24.0 + i * 0.034, pan=0.2)
-place(pop(1900, 0.08, 0.07), 25.0)                        # AI suggestion appears
-place(pop(1500, 0.13, 0.1), 25.45)                        # accepted
+for i in range(26):                                         # code being written
+    place(click(0.05, 5400 + 250 * (i % 4)), 27.65 + i * 0.034, pan=0.2)
+place(pop(1900, 0.08, 0.07), 28.65)                         # AI suggestion appears
+place(pop(1500, 0.13, 0.1), 29.1)                           # accepted
 
-# ---------- 7: the product (25.9 – 30.4) ----------
-place(swoosh(0.5, 2200, 600, 0.07, "down"), 25.9)
-place(pad([midi(n) for n in FMAJ7], 4.4, 0.055, 0.4, 0.8, 2200), 26.3)
-for k, pp in enumerate([26.6, 26.9, 27.2, 27.5]):          # wireframe → polished, one region at a time
+# ---------- 7: the product (29.55 – 34.55) ----------
+place(swoosh(0.5, 2200, 600, 0.07, "down"), 29.55)
+place(pad([midi(n) for n in FMAJ7], 5.0, 0.055, 0.4, 0.9, 2200), 29.95)
+for k, pp in enumerate([30.25, 30.55, 30.85, 31.15]):       # wireframe → polished, one region at a time
     place(pop(midi([72, 76, 79, 84][k]) * 0.5, 0.06, 0.08), pp + 0.1, pan=-0.3 + 0.2 * k)
-groove(26.6, 30.4, kick_g=0.5, bass_g=0.24, pluck_g=0.07, bar0=2)
-place(pop(1100, 0.1, 0.09), 28.3)                          # Draft done
-place(click(0.06, 2800), 28.82, pan=0.2)                   # hover
-place(click(0.2, 3300), 29.05)                             # the click
-place(pop(900, 0.12, 0.06), 29.07)
+groove(30.25, 34.55, kick_g=0.48, bass_g=0.23, pluck_g=0.065, bar0=2)
+place(pop(1100, 0.1, 0.09), 31.95)                          # Draft done
+place(swoosh(0.7, 500, 1500, 0.035), 31.85)                 # gentle push toward the approval
+place(click(0.06, 2800), 32.45, pan=0.2)                    # hover
+place(click(0.2, 3300), 32.7)                               # the click
+place(pop(900, 0.12, 0.06), 32.72)
 for k, n in enumerate([76, 81, 84, 88]):                    # completion chime
-    place(pluck(midi(n), 0.11, 1.1, 4600), 29.2 + k * 0.085, pan=-0.3 + 0.2 * k)
-place(swoosh(0.9, 600, 2400, 0.06), 29.35)                  # the camera pushes in
+    place(pluck(midi(n), 0.11, 1.1, 4600), 32.85 + k * 0.085, pan=-0.3 + 0.2 * k)
+place(swoosh(1.0, 2400, 700, 0.05, "down"), 32.95)          # the camera pulls back to the whole
 
-# ---------- Finale (30.4 – 31.85) ----------
-place(swoosh(0.5, 500, 6000, 0.16), 30.4)
-place(impact(0.3), 30.9)
-place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.6, 0.075, 0.05, 1.5, 2800), 30.9)
+# ---------- Finale (34.55 – 36.0) ----------
+place(swoosh(0.5, 500, 6000, 0.16), 34.55)
+place(impact(0.3), 35.05)
+place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.6, 0.075, 0.05, 1.5, 2800), 35.05)
 # (the level-clear jingle plays separately as the dot lands)
 
 # ---------- master ----------
