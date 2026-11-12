@@ -1,0 +1,132 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: hidden;
+  /* Transparent: the homepage is only hidden by .scene, so the aperture can expose it. */
+  pointer-events: auto;
+  /* Failsafe if JavaScript never takes over: get out of the way. */
+  animation: intro-failsafe 400ms linear 10s forwards;
+}
+
+/* Once the JS timeline has control it owns the failsafe (see FAILSAFE_MS). */
+.root[data-js] {
+  animation: none;
+}
+
+@keyframes intro-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+/* ── Scene: opaque base + atmosphere. The aperture mask is applied here. ── */
+.scene {
+  position: absolute;
+  inset: 0;
+  background: var(--intro-base);
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+}
+
+.atmos {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.meshWrap {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+}
+
+/* ── Glass diffusion: soft backdrop blur, low neutral tint, no edges. ── */
+.glass {
+  position: absolute;
+  inset: 0;
+  background: rgba(168, 176, 204, 0.035);
+  -webkit-backdrop-filter: blur(28px) saturate(112%);
+  backdrop-filter: blur(28px) saturate(112%);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  /* Without backdrop-filter keep the mesh fully visible; only a whisper of tint. */
+  .glass {
+    background: rgba(168, 176, 204, 0.025);
+  }
+}
+
+@media (max-width: 767px) {
+  .glass {
+    -webkit-backdrop-filter: blur(14px) saturate(110%);
+    backdrop-filter: blur(14px) saturate(110%);
+  }
+}
+
+/* ── Typography: sharp, never blurred or masked by the aperture. ── */
+.type {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-inline: 1rem;
+  /* No will-change: the glyphs must re-rasterise at every scale to stay sharp. */
+}
+
+.statement {
+  margin: 0;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-weight: 600;
+  color: var(--intro-ink);
+  font-size: clamp(3rem, min(12.5vw, 24vh), 12.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.045em;
+  text-align: center;
+  font-kerning: normal;
+}
+
+.mask {
+  display: block;
+  overflow: clip;
+  /* Room for ascenders/descenders (the "p") inside the clip window. */
+  padding-block: 0.06em 0.16em;
+  margin-block: -0.06em -0.16em;
+}
+
+.line {
+  display: block;
+  white-space: nowrap;
+  /* Initial hidden state so server-rendered HTML never flashes the text. */
+  transform: translate3d(0, 108%, 0);
+}
+
+.baseline {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  vertical-align: baseline;
+}
+
+.skip {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  padding: 0.5rem 0.9rem;
+  font: 500 0.85rem/1 var(--font-geist-sans), system-ui, sans-serif;
+  color: var(--intro-ink);
+  background: transparent;
+  border: 1px solid rgba(245, 245, 245, 0.3);
+  border-radius: 999px;
+  cursor: pointer;
+  /* Visually hidden until keyboard focus. */
+  opacity: 0;
+  pointer-events: none;
+}
+
+.skip:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}

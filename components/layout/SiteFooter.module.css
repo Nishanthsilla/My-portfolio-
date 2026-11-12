@@ -1,0 +1,13 @@
+.footer {
+  padding: 3rem var(--gutter);
+  border-top: 1px solid var(--page-line);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--page-muted);
+}
+
+.small {
+  font-size: 0.875rem;
+}
