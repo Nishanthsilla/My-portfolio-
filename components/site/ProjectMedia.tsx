@@ -5,6 +5,7 @@ import {
   ABTestVisual, AnalyticsVisual, DesignSystemVisual, LearningVisual, OrchestrationVisual, SalesVisual,
 } from "@/components/portfolio/visuals/Visuals";
 import type { Project, VisualId } from "@/lib/site/content";
+import { CoverScene } from "./selfready/Scenes";
 import s from "./site.module.css";
 
 const VISUALS: Record<VisualId, () => React.JSX.Element> = {
@@ -48,7 +49,9 @@ export default function ProjectMedia({ project, className = "", fill, eager = fa
   return (
     <div className={`${s.media} ${className}`} style={p.kind === "image" && p.bg ? { background: p.bg } : undefined}>
       <div className={s.mediaInner}>
-        {p.kind === "visual" ? (
+        {p.kind === "scene" ? (
+          <CoverScene />
+        ) : p.kind === "visual" ? (
           <FitVisual id={p.id} fill={fill} />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element

@@ -19,7 +19,7 @@ export default function WorkTabs() {
     () => null,
   );
   const [chosen, setActive] = useState<CategoryId | null>(null);
-  const active: CategoryId = chosen ?? (categories.some((k) => k.id === fromUrl) ? (fromUrl as CategoryId) : "visual-craft");
+  const active: CategoryId = chosen ?? (categories.some((k) => k.id === fromUrl) ? (fromUrl as CategoryId) : "product-strategy");
   const [switched, setSwitched] = useState(0);
   const tabsRef = useRef<HTMLDivElement>(null);
   const gridTop = useRef<HTMLDivElement>(null);

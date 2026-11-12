@@ -33,7 +33,13 @@ export type Project = {
   tags?: string[];
   /** Role bullets from the CV, verbatim. */
   contribution?: string[];
-  preview: { kind: "visual"; id: VisualId } | { kind: "image"; src: string; alt: string; fit?: "cover" | "contain"; bg?: string };
+  preview:
+    | { kind: "visual"; id: VisualId }
+    | { kind: "image"; src: string; alt: string; fit?: "cover" | "contain"; bg?: string }
+    /** an animated product-UI cover (Self-Ready) */
+    | { kind: "scene"; id: "self-ready" };
+  /** featured projects have their own overview + full case-study routes and a full-width card */
+  featured?: { overview: string; caseStudy: string; tags: string[] };
   /** Projects whose case study lives elsewhere for now (Notion, Behance, live site). */
   external?: { href: string; label: string };
   source: "site" | "webflow";
@@ -41,6 +47,20 @@ export type Project = {
 
 export const projects: Project[] = [
   // ---------- Product Strategy ----------
+  {
+    slug: "self-ready",
+    category: "product-strategy",
+    title: "Self-Ready",
+    eyebrow: "AI / Retail Intelligence",
+    description: "Making AI-powered retail shelf intelligence easier to review, understand, and act on.",
+    preview: { kind: "scene", id: "self-ready" },
+    featured: {
+      overview: "/work/self-ready",
+      caseStudy: "/work/self-ready/case-study",
+      tags: ["Product Design", "AI / Retail Intelligence"],
+    },
+    source: "site",
+  },
   {
     slug: "salespulze",
     category: "product-strategy",
@@ -218,6 +238,8 @@ export const projects: Project[] = [
 
 export const projectsIn = (c: CategoryId) => projects.filter((p) => p.category === c);
 export const caseStudies = projects.filter((p) => !p.external);
+/** projects rendered by the shared /work/[slug] template */
+export const templateStudies = projects.filter((p) => !p.external && !p.featured);
 export const projectBySlug = (slug: string) => projects.find((p) => p.slug === slug);
 
 /** Homepage introduction — the current portfolio's hero, verbatim. */

@@ -6,6 +6,7 @@ import s from "./site.module.css";
 /** One project in the work grid. Case studies open inside the site; older work opens its original page. */
 export default function ProjectCard({ project }: { project: Project }) {
   const p = project;
+  if (p.featured) return <FeaturedCard project={p} />;
   const meta = [p.org, p.year].filter(Boolean).join(" · ") || p.external?.label;
   const inner = (
     <>
@@ -39,6 +40,34 @@ export default function ProjectCard({ project }: { project: Project }) {
     <Link className={s.card} href={`/work/${p.slug}`}>
       {inner}
     </Link>
+  );
+}
+
+/**
+ * A featured project (Self-Ready): full-width, animated product cover, a short
+ * introduction and a direct "Read full case study" action.
+ */
+function FeaturedCard({ project: p }: { project: Project }) {
+  const f = p.featured!;
+  return (
+    <div className={`${s.card} ${s.featured}`}>
+      <Link href={f.overview} className={s.featuredMedia} aria-label={`${p.title} — project overview`}>
+        <ProjectMedia project={p} className={s.featuredFrame} />
+      </Link>
+      <div className={s.featuredBody}>
+        <span className={s.eyebrow}>{p.eyebrow}</span>
+        <Link href={f.overview} className={s.featuredTitle}>
+          {p.title} <span className={s.arrow} aria-hidden="true">→</span>
+        </Link>
+        <p className={s.cardDesc}>{p.description}</p>
+        <ul className={s.tags} aria-label="Discipline and domain">
+          {f.tags.map((t) => <li key={t} className={s.tag}>{t}</li>)}
+        </ul>
+        <Link href={f.caseStudy} className={`${s.btn} ${s.btnSecondary}`} style={{ marginTop: 16, width: "max-content" }}>
+          Read full case study <span aria-hidden="true">→</span>
+        </Link>
+      </div>
+    </div>
   );
 }
 
