@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "preview:file": "rm -rf out && STATIC_EXPORT=1 next build && python3 scripts/make-preview.py"
   },
   "dependencies": {
     "geist": "^1.9.2",
