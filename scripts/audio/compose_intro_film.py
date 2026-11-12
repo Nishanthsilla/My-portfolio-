@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 
 SR = 48000
-DUR = 37.6
+DUR = 33.6
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "public" / "audio"
 rng = np.random.default_rng(7)
@@ -190,8 +190,9 @@ def groove(t0, t1, kick_g=0.6, bass_g=0.28, pluck_g=0.09, hats=True, every_beat=
 place(pad([midi(n) for n in DM9[:4]], 2.6, 0.045, 0.8, 0.6, 1400), 0.0)
 for i in range(17):
     place(click(0.12 + 0.04 * rng.random(), 5000 + 1600 * rng.random()), 0.1 + i * 0.029, pan=rng.uniform(-0.2, 0.2))
-place(swoosh(0.35, 2800, 800, 0.07, "down"), 1.05)
-place(pop(1180, 0.2, 0.11), 1.35)
+place(swoosh(0.45, 700, 2600, 0.05), 0.7)                   # settles to Semibold; the marks part
+place(swoosh(0.35, 2800, 800, 0.07, "down"), 1.3)
+place(pop(1180, 0.2, 0.11), 1.45)
 place(swoosh(0.55, 500, 2200, 0.07), 1.45)
 place(pop(1480, 0.15, 0.09), 2.05)
 place(pluck(midi(74), 0.11, 0.9), 1.65)
@@ -249,56 +250,40 @@ for k, n in enumerate([77, 81, 84]):
     place(pluck(midi(n), 0.09, 1.2, 3600), 18.5 + k * 0.05, pan=-0.4 + 0.4 * k)
 place(swoosh(0.4, 1500, 500, 0.06, "down"), 20.0)
 
-# ---------- 5: Figma — read, then the cursor (20.25 – 25.0) ----------
+# ---------- 5–6: typography + selection (20.25 – 25.35) ----------
 place(swoosh(0.5, 500, 2000, 0.06), 20.2)
-place(pop(760, 0.09, 0.08), 20.35)                          # the whole sentence rises
-place(pad([midi(n) for n in DM9[:4]], 4.6, 0.04, 0.4, 0.8, 1300), 20.3)
+place(pop(760, 0.09, 0.08), 20.3)                           # "I design it in Figma," rises
+place(pad([midi(n) for n in DM9[:4]], 5.0, 0.04, 0.4, 0.9, 1300), 20.3)
 groove(20.5, 25.0, kick_g=0.4, bass_g=0.19, pluck_g=0.055, hats=True, bar0=1)
-place(click(0.07, 3000), 22.38, pan=0.15)                   # cursor settles on "Figma"
-place(pop(1320, 0.1, 0.09), 22.45)                          # hover → canvas opens
-place(swoosh(0.45, 900, 3600, 0.06), 22.45)
-for k, ed in enumerate([23.0, 23.45, 23.9, 24.35]):         # design activity (select + snap)
-    place(pop(1400 + 110 * k, 0.08, 0.07), ed)
-    place(click(0.08, 3800), ed + 0.28, pan=0.25)
+place(swoosh(0.5, 600, 1800, 0.03), 21.0)                   # the cursor glides in
+place(click(0.08, 3200), 21.52, pan=0.15)                   # click: "Figma," selected
+place(pop(1400, 0.09, 0.08), 21.56)
+place(pop(840, 0.09, 0.08), 22.3)                           # "then ship it in code." rises
+place(swoosh(0.5, 900, 2400, 0.035), 23.2)                  # the selection moves to "code."
+place(click(0.08, 3600), 23.72, pan=0.2)
+for k, n in enumerate([81, 84, 88]):                        # "code." turns orange
+    place(pluck(midi(n), 0.08, 0.9, 4200), 23.74 + k * 0.06, pan=-0.2 + 0.2 * k)
+place(swoosh(0.4, 1500, 500, 0.06, "down"), 24.95)
 
-# ---------- 6: code — read, then the cursor (25.05 – 29.55) ----------
-place(pop(760, 0.09, 0.08), 25.1)                           # second sentence rises
-place(pad([midi(n) for n in BB7[:4]], 2.0, 0.035, 0.3, 0.6, 1200), 25.1)
-place(click(0.07, 3000), 27.08, pan=0.15)                   # cursor settles on "code"
-place(swoosh(0.55, 400, 3800, 0.1), 27.1)                   # editor + preview open
-place(impact(0.16), 27.62)
-t = 27.65
-k = 0
-while t < 29.55 - 1e-6:
-    place(bass(midi(38 if t < 29.1 else 41), 0.26 if k % 2 == 0 else 0.15, 0.24), t)
-    if k % 2 == 0:
-        place(kick(0.42), t)
-    t += 0.25
-    k += 1
-for i in range(26):                                         # code being written
-    place(click(0.05, 5400 + 250 * (i % 4)), 27.65 + i * 0.034, pan=0.2)
-place(pop(1900, 0.08, 0.07), 28.65)                         # AI suggestion appears
-place(pop(1500, 0.13, 0.1), 29.1)                           # accepted
+# ---------- 7: the product (25.25 – 30.55) ----------
+place(swoosh(0.5, 500, 2200, 0.07), 25.2)                   # the product arrives, complete
+place(pad([midi(n) for n in FMAJ7], 5.3, 0.055, 0.4, 0.9, 2200), 25.3)
+groove(25.5, 30.5, kick_g=0.48, bass_g=0.23, pluck_g=0.065, bar0=2)
+place(pop(1100, 0.1, 0.09), 26.45)                          # Draft done
+place(swoosh(0.6, 700, 1700, 0.03), 27.0)                   # the cursor moves to the button
+place(click(0.06, 2800), 27.6, pan=0.2)                     # hover
+place(click(0.2, 3300), 27.9)                               # the click
+place(pop(900, 0.12, 0.06), 27.92)
+for k, n in enumerate([76, 81, 84, 88]):                    # approved & sent
+    place(pluck(midi(n), 0.11, 1.1, 4600), 28.05 + k * 0.085, pan=-0.3 + 0.2 * k)
+place(pop(1250, 0.1, 0.08), 28.7)                           # Review done · Complete
+place(riser(1.2, 0.06), 28.45)                              # the zoom to full screen
+place(impact(0.14), 29.65)
 
-# ---------- 7: the product (29.55 – 34.55) ----------
-place(swoosh(0.5, 2200, 600, 0.07, "down"), 29.55)
-place(pad([midi(n) for n in FMAJ7], 5.0, 0.055, 0.4, 0.9, 2200), 29.95)
-for k, pp in enumerate([30.25, 30.55, 30.85, 31.15]):       # wireframe → polished, one region at a time
-    place(pop(midi([72, 76, 79, 84][k]) * 0.5, 0.06, 0.08), pp + 0.1, pan=-0.3 + 0.2 * k)
-groove(30.25, 34.55, kick_g=0.48, bass_g=0.23, pluck_g=0.065, bar0=2)
-place(pop(1100, 0.1, 0.09), 31.95)                          # Draft done
-place(swoosh(0.7, 500, 1500, 0.035), 31.85)                 # gentle push toward the approval
-place(click(0.06, 2800), 32.45, pan=0.2)                    # hover
-place(click(0.2, 3300), 32.7)                               # the click
-place(pop(900, 0.12, 0.06), 32.72)
-for k, n in enumerate([76, 81, 84, 88]):                    # completion chime
-    place(pluck(midi(n), 0.11, 1.1, 4600), 32.85 + k * 0.085, pan=-0.3 + 0.2 * k)
-place(swoosh(1.0, 2400, 700, 0.05, "down"), 32.95)          # the camera pulls back to the whole
-
-# ---------- Finale (34.55 – 36.0) ----------
-place(swoosh(0.5, 500, 6000, 0.16), 34.55)
-place(impact(0.3), 35.05)
-place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.6, 0.075, 0.05, 1.5, 2800), 35.05)
+# ---------- Finale (30.55 – 32.0) ----------
+place(swoosh(0.5, 500, 6000, 0.16), 30.55)
+place(impact(0.3), 31.05)
+place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.5, 0.075, 0.05, 1.5, 2800), 31.05)
 # (the level-clear jingle plays separately as the dot lands)
 
 # ---------- master ----------
