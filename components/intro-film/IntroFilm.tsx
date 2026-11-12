@@ -288,10 +288,7 @@ export default function IntroFilm() {
 
         {/* Chapters 2–7: the story board (design space, scaled to fit) */}
         <div className={styles.darkbg} data-darkbg aria-hidden="true" />
-        {/* 7: Gradient ASCII bridge into the product */}
-        <div className={styles.ascii} data-ascii>
-          <AsciiBridge />
-        </div>
+
         <div className={styles.board} data-board>
           {/* headlines */}
           <div className={styles.bh} data-h="complex"><Mask><span className={styles.unit} data-u>{film.complex}</span></Mask></div>
@@ -367,6 +364,11 @@ export default function IntroFilm() {
 
       {/* Ch7 */}
       <div className={styles.wipe} data-wipe aria-hidden="true" />
+
+      {/* After the push-through: a brief full-screen Gradient ASCII bridge, then the website */}
+      <div className={styles.ascii} data-ascii aria-hidden="true">
+        <AsciiBridge />
+      </div>
 
       <div className={styles.controls} data-film-controls>
         <button type="button" className={styles.ctrl} onClick={toggleSound} aria-pressed={sound === "on"}>

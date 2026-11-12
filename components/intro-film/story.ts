@@ -16,7 +16,7 @@
  * Everything is a pure function of time r.
  */
 import styles from "./IntroFilm.module.css";
-import { COLORS, T, inCubic, inOutQuint, inQuint, lerp, outCubic, outQuint, prog, span } from "./timeline";
+import { COLORS, T, inCubic, inOutCubic, inOutQuint, inQuint, lerp, outCubic, outQuint, prog, span } from "./timeline";
 
 type Rect = { x: number; y: number; w: number; h: number };
 type Place = { cx: number; cy: number; s: number };
@@ -161,7 +161,6 @@ export class Story {
   private lastR = 0;
   private user: { k: WordKey; at: number; prev: WordKey | null } | null = null;
   private asciiOn = false;
-  private btnView = { x: 0, y: 0, w: 0, h: 0, r: 0 };
 
   constructor(private root: HTMLElement) {
     const q = (s: string) => $(root, s);
@@ -369,18 +368,45 @@ export class Story {
     return { x: this.bx + x * this.bs, y: this.by + y * this.bs };
   }
 
-  /** The approved button in viewport pixels: where the full-screen orange surface starts. */
-  buttonView() {
-    return this.btnView;
+  /**
+   * The camera push-through. The whole product is one plane; the camera travels
+   * toward a point on the button's orange surface (left of its label, so we
+   * never fly into the text). Scale grows exponentially — constant forward
+   * speed — while that point drifts to the centre of the screen. The dashboard
+   * leaves the frame on its own and the orange surface overruns every edge.
+   */
+  private pushPlace(base: Place, r: number): Place {
+    const g = this.g, b = this.targets.btn;
+    if (!b || r <= T.push[0]) return base;
+    const p = prog(r, T.push[0], T.push[1]);
+    // focus point in the product's own units
+    const fx = b.x + b.w * 0.16, fy = b.y + b.h * 0.5;
+    // how far the camera must travel so the surface covers the viewport (with room for the rounded corners)
+    const need = Math.max(this.vw / (2 * b.w * 0.16), this.vh / b.h) / this.bs;
+    const sEnd = need * 1.9;
+    const travel = inOutCubic(p) * 0.85 + inCubic(p) * 0.15;
+    const sc = base.s * Math.pow(sEnd / base.s, travel);
+    // where the focus point sits on screen: from its place on the dashboard to the centre
+    const f0x = base.cx + (fx - g.crW / 2) * base.s, f0y = base.cy + (fy - g.crH / 2) * base.s;
+    const c = this.fullCenter();
+    const drift = outCubic(prog(p, 0, 0.7));
+    const sx = lerp(f0x, c.x, drift), sy = lerp(f0y, c.y, drift);
+    return { cx: sx - (fx - g.crW / 2) * sc, cy: sy - (fy - g.crH / 2) * sc, s: sc };
+  }
+
+  /** The centre of the viewport, in board units. */
+  private fullCenter() {
+    return { x: (this.vw / 2 - this.bx) / this.bs, y: (this.vh / 2 - this.by) / this.bs };
   }
 
   private placeCR(r: number): { p: Place; a: number } | null {
     const g = this.g;
     if (r >= T.gateIn[0] && r < T.wireOut[1]) return { p: g.cr3, a: outCubic(span(r, T.gateIn)) * (1 - span(r, T.wireOut)) };
-    if (r >= T.crIn[0] && r < T.handoff[1]) {
+    if (r >= T.crIn[0] && r < T.asciiIn[1]) {
       const inP = outQuint(span(r, T.crIn));
       const p = g.cr7;
-      return { p: { cx: p.cx, cy: p.cy + (1 - inP) * 28, s: p.s * (0.97 + 0.03 * inP) }, a: outCubic(span(r, T.crIn)) };
+      const base = { cx: p.cx, cy: p.cy + (1 - inP) * 28, s: p.s * (0.97 + 0.03 * inP) };
+      return { p: this.pushPlace(base, r), a: outCubic(span(r, T.crIn)) };
     }
     return null;
   }
@@ -390,15 +416,15 @@ export class Story {
     this.lastR = r;
     if (this.user && (r < T.sent1In[0] || r >= T.sentOut[1])) this.user = null;
     // Gradient ASCII mounts shortly before it is shown, so its own intro plays on cue
-    const asciiOn = r >= T.asciiMount && r < T.asciiOut[1] + 0.2;
+    const asciiOn = r >= T.asciiMount && r < T.handoff[1] + 0.2;
     if (asciiOn !== this.asciiOn) {
       this.asciiOn = asciiOn;
       this.root.dispatchEvent(new CustomEvent("film-ascii", { detail: asciiOn }));
     }
-    const asciiA = outCubic(span(r, T.asciiIn)) * (1 - inOutQuint(span(r, T.asciiOut)));
+    const asciiA = outCubic(span(r, T.asciiIn)) * (1 - inOutQuint(span(r, T.handoff)));
     show(e.ascii, asciiA > 0.001);
     e.ascii.style.opacity = asciiA.toFixed(3);
-    const boardOn = r >= T.scatter[0] && r < T.handoff[1];
+    const boardOn = r >= T.scatter[0] && r < T.asciiIn[1];
     show(e.board, boardOn);
     if (!boardOn) return;
 
@@ -689,16 +715,14 @@ export class Story {
       e.cr.style.setProperty("--hover", hover.toFixed(3));
       e.cr.style.setProperty("--press", press.toFixed(4));
       e.cr.style.setProperty("--approved", approvedP.toFixed(3));
-      if (!ch3) {
-        const b = this.crRect(place, "btn");
-        const v = this.toView(b.x, b.y);
-        this.btnView = { x: v.x, y: v.y, w: b.w * this.bs, h: b.h * this.bs, r: 11 * place.s * this.bs };
-      }
+      // the camera is moving: keep the plane on the compositor
+      const moving = r > T.push[0] && r < T.asciiIn[1];
+      if (e.cr.style.willChange !== (moving ? "transform" : "")) e.cr.style.willChange = moving ? "transform" : "";
     }
 
     /* ---------- the named cursor: "Figma" → "code" → the real Approve & send ---------- */
     const curA = r >= T.cursorIn5[0] && r < T.sentOut[1] && !this.user;
-    const curB = r >= T.cursorIn[0] && r < T.expand[0] + 0.3;
+    const curB = r >= T.cursorIn[0] && r < T.push[0] + 0.3;
     show(e.pcur, curA || curB);
     let mode = "arrow";
     if (curA || curB) {
@@ -720,11 +744,12 @@ export class Story {
         y -= out * 16;
         a = outCubic(prog(r, T.cursorIn5[0], T.cursorIn5[0] + 0.2)) * (1 - out);
       } else {
-        const btn = this.crRect(this.placeCR(Math.min(r, T.expand[0]))!.p, "btn");
+        // the cursor rides with the dashboard for the moment it stays on screen
+        const btn = this.crRect(this.placeCR(r)!.p, "btn");
         const p = inOutQuint(span(r, T.cursorIn));
         x = lerp(g.W * 0.9, btn.x + btn.w * 0.6, p);
         y = lerp(g.H * 1.02, btn.y + btn.h * 0.62, p) - Math.sin(Math.PI * p) * 24;
-        a = outCubic(prog(r, T.cursorIn[0], T.cursorIn[0] + 0.2)) * (1 - prog(r, T.expand[0], T.expand[0] + 0.3));
+        a = outCubic(prog(r, T.cursorIn[0], T.cursorIn[0] + 0.2)) * (1 - prog(r, T.push[0], T.push[0] + 0.25));
       }
       const press = r >= T.click && r < T.click + 0.14 ? 0.86 : 1;
       e.pcur.style.opacity = a.toFixed(3);
