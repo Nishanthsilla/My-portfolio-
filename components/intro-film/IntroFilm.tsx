@@ -60,7 +60,10 @@ export default function IntroFilm() {
     victory.preload = "auto";
     victory.volume = 0.55;
     let raf = 0, last = 0, t = 0, started = false, done = false, paused = false, ending = false, skipped = false, victoryPlayed = false;
+    // Sound is ON by default. If the browser blocks autoplay, the first click,
+    // tap or key press anywhere turns it on — unless the visitor muted it.
     let soundWanted = true;
+    let userMuted = false;
 
     const finish = () => {
       if (done) return;
@@ -81,15 +84,19 @@ export default function IntroFilm() {
       if (done) return;
       const dt = last ? Math.min((now - last) / 1000, 0.1) : 1 / 60;
       last = now;
-      if (started && !paused) t += dt;
+      if (started && !paused) {
+        // While the score plays it is the master clock; otherwise the frame clock.
+        const at = soundWanted && !skipped ? audio.time(now) : null;
+        if (at === null) t += dt;
+        else if (at > t || t - at > 0.05) t = at; // never let picture and sound drift
+      }
       engine.render(t);
       const tone = t >= DARK_RANGE[0] && t < DARK_RANGE[1] ? "dark" : "light";
       if (root.dataset.tone !== tone) root.dataset.tone = tone;
-      if (soundWanted) audio.sync(t);
       // The reward: only on natural completion, only with sound on.
       if (!victoryPlayed && !skipped && !paused && t >= VICTORY_AT) {
         victoryPlayed = true;
-        if (soundWanted && !audio.el.paused) victory.play().catch(() => {});
+        if (soundWanted && audio.playing) victory.play().catch(() => {});
       }
       if (t >= T.handoff[0]) {
         announceReveal();
@@ -107,10 +114,33 @@ export default function IntroFilm() {
       if (done) return;
       engine.layout();
       engine.render(0);
+      // Start picture and sound together; if the audio is slow to begin, the
+      // film starts anyway and the audio joins at the film's time when ready.
+      const attempt = audio.play(0);
+      const first = await Promise.race([attempt, new Promise<"slow">((r) => setTimeout(() => r("slow"), 900))]);
+      if (done) return;
       started = true;
       last = 0;
-      setSound(await audio.play(0));
+      if (first === "slow") {
+        setSound("loading");
+        attempt.then((s) => {
+          if (done) return;
+          if (s === "on") audio.el.currentTime = t;
+          setSound(s);
+        });
+      } else setSound(first);
     };
+
+    // First interaction anywhere unlocks sound (browsers require a gesture).
+    const unlock = (ev: Event) => {
+      // the sound/skip controls handle themselves
+      if ((ev.target as Element | null)?.closest?.("[data-film-controls]")) return;
+      if (done || skipped || userMuted || audio.playing) return;
+      soundWanted = true;
+      audio.play(t).then((s) => !done && setSound(s));
+    };
+    const unlockEvents = ["pointerdown", "keydown", "touchend"] as const;
+    unlockEvents.forEach((ev) => addEventListener(ev, unlock, { capture: true }));
 
     let resizeRaf = 0;
     const onResize = () => {
@@ -134,12 +164,14 @@ export default function IntroFilm() {
       window.setTimeout(finish, 480);
     };
     api.current.toggleSound = async () => {
-      if (soundWanted && !audio.el.paused) {
+      if (soundWanted && audio.playing) {
         soundWanted = false;
+        userMuted = true;
         audio.mute();
         setSound("off");
       } else {
         soundWanted = true;
+        userMuted = false;
         setSound(await audio.play(t));
       }
     };
@@ -160,6 +192,7 @@ export default function IntroFilm() {
         play: () => {
           paused = false;
         },
+        state: () => ({ t, audio: audio.el.currentTime, playing: audio.playing }),
       };
     }
 
@@ -170,6 +203,7 @@ export default function IntroFilm() {
       window.clearTimeout(failsafe);
       removeEventListener("resize", onResize);
       removeEventListener("keydown", onKey);
+      unlockEvents.forEach((ev) => removeEventListener(ev, unlock, { capture: true }));
       html.classList.remove("intro-lock");
       audio.destroy();
     };
@@ -319,13 +353,13 @@ export default function IntroFilm() {
       {/* Ch7 */}
       <div className={styles.wipe} data-wipe aria-hidden="true" />
 
-      <div className={styles.controls}>
+      <div className={styles.controls} data-film-controls>
         <button type="button" className={styles.ctrl} onClick={toggleSound} aria-pressed={sound === "on"}>
           <svg viewBox="0 0 20 20" aria-hidden="true">
             <path d="M3 8h3l4-3.5v11L6 12H3z" />
             {sound === "on" ? <path d="M13 7.5a3.5 3.5 0 0 1 0 5M15 5a7 7 0 0 1 0 10" fill="none" /> : <path d="M13 8l4 4M17 8l-4 4" fill="none" />}
           </svg>
-          {sound === "blocked" ? "Tap for sound" : sound === "on" ? "Sound on" : sound === "loading" ? "Sound" : "Sound off"}
+          {sound === "blocked" ? "Tap anywhere for sound" : sound === "on" ? "Sound on" : sound === "loading" ? "Sound" : "Sound off"}
         </button>
         <button type="button" className={styles.ctrl} onClick={skip}>
           Skip intro <span aria-hidden="true">→</span>
