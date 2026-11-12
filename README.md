@@ -1,8 +1,8 @@
 # Nishanth in Motion — React
 
 The "Nishanth in Motion" portfolio, migrated from a single HTML file into Next.js (App Router)
-+ TypeScript, introduced by a 14 s motion film (with an original soundtrack) that hands off
-into the homepage. The earlier gradient-mesh loader is kept, inactive.
++ TypeScript, introduced by a ~36 s motion film (original score + retro level-clear sound)
+that hands off into the homepage. The earlier gradient-mesh loader is kept, inactive.
 
 ## Choosing the intro
 
@@ -45,9 +45,9 @@ components/
   intro-film/               ACTIVE intro: the motion film
     IntroFilm.tsx           markup, clock, controls (sound, skip), handoff
     engine.ts               render(t): every scene as a pure function of time (S1–S17)
-    particles.ts            burst + tile grid (canvas)
+    system.ts               chapter 4: UI fragments → assembled system (canvas)
     layout.ts               responsive layout (landscape frame / portrait recomposition)
-    timeline.ts, content.ts timings, easing, palette; all film copy
+    timeline.ts, content.ts all timings (one table), easing, palette; all film copy
     audio.ts                audio synced to the film clock (autoplay-safe)
   legacy-loader/            INACTIVE: the gradient-mesh "Ideas into experiences." loader
   backgrounds/Grainient/    React Bits <Grainient /> (gradient mesh)
@@ -73,7 +73,9 @@ The loader knows nothing about the portfolio. It announces:
 ## Film soundtrack
 
 `public/audio/intro-film.{mp3,ogg}` is an original score synthesised by
-`scripts/audio/compose_intro_film.py` (NumPy, 120 BPM, cue points matched to the film).
+`scripts/audio/compose_intro_film.py` (NumPy, 120 BPM, cued to every beat in `timeline.ts`).
+`public/audio/level-clear.mp3` (`scripts/audio/compose_level_clear.py`) is an original
+retro jingle that plays only when the film completes — never on skip or when muted.
 To use a licensed track instead, put the file in `public/audio/` and point `FILM_AUDIO_SRC` at it.
 
 ## Legacy loader behaviour

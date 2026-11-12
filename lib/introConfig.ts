@@ -1,6 +1,6 @@
 /**
  * Which introduction plays before the portfolio.
- *  - "motion-film":   the 13.7 s motion film (components/intro-film) — ACTIVE
+ *  - "motion-film":   the ~36 s motion film (components/intro-film) — ACTIVE
  *  - "gradient-mesh": the cinematic gradient-mesh loader (components/legacy-loader) — kept, inactive
  *  - "none":          no intro
  * Only one intro is ever mounted.
@@ -18,3 +18,6 @@ export const FILM_REPLAY: FilmReplay = "every-load";
 
 /** Audio track for the film (original score). Swap for a licensed file here. */
 export const FILM_AUDIO_SRC = { mp3: "/audio/intro-film.mp3", ogg: "/audio/intro-film.ogg" };
+
+/** Original retro "level clear" sound — plays only when the film completes (never on skip). */
+export const FILM_VICTORY_SRC = "/audio/level-clear.mp3";

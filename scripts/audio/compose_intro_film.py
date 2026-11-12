@@ -1,12 +1,14 @@
 """
 Original score + sound design for the intro film — synthesised from scratch
-(NumPy only, no samples), on the same 120 BPM grid and cue points as the
-reference film's edit.
+(NumPy only, no samples), on a 120 BPM grid, cued to every beat of the
+film's storyboard.
 
     python3 scripts/audio/compose_intro_film.py
     -> public/audio/intro-film.{wav,mp3,ogg}
 
-Times below are FILM seconds (= reference seconds + 0.2 s typing pre-roll).
+Cue times mirror components/intro-film/timeline.ts (film seconds). The
+level-clear sound is a separate file (compose_level_clear.py) so it only
+plays when the film completes.
 """
 import subprocess
 import wave
@@ -15,18 +17,13 @@ from pathlib import Path
 import numpy as np
 
 SR = 48000
-DUR = 15.6
-OFF = 0.2  # film time = reference time + OFF
+DUR = 37.6
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "public" / "audio"
 rng = np.random.default_rng(7)
 
 L = np.zeros(int(SR * DUR))
 R = np.zeros(int(SR * DUR))
-
-
-def ref(t):
-    return t + OFF
 
 
 def place(sig, t, gain=1.0, pan=0.0):
@@ -160,137 +157,130 @@ def impact(gain=0.8):
     return np.tanh((body + air) * 1.4) * gain
 
 
-# ---------- harmony ----------
-# D minor colour: Dm9 · Bbmaj7 · Fmaj7 · Csus — one chord per bar (2 s at 120 BPM)
-CHORDS = [[62, 65, 69, 72, 76], [58, 62, 65, 69, 74], [53, 57, 60, 64, 69], [60, 62, 67, 72, 74]]
-BASS = [38, 34, 41, 36]
+# ---------- harmony (D minor, resolving to F major at the reveal) ----------
+DM9 = [62, 65, 69, 72, 76]
+BB7 = [58, 62, 65, 69, 74]
+FMAJ7 = [53, 57, 60, 64, 69]
+CSUS = [60, 62, 67, 72, 74]
+PROG = [(DM9, 38), (BB7, 34), (FMAJ7, 41), (CSUS, 36)]
 BEAT = 0.5
 
 
-def chord_at(t):
-    bar = int(max(0, t - ref(1.0)) // 2) % 4
-    return CHORDS[bar], BASS[bar]
+def groove(t0, t1, kick_g=0.6, bass_g=0.28, pluck_g=0.09, hats=True, every_beat=False, bar0=0):
+    """Gentle 120 BPM groove: kick on 1 & 3 (or every beat), bass on the bar root, soft plucks."""
+    t, step = t0, 0
+    while t < t1 - 1e-6:
+        bar = (int((t - t0) // 2) + bar0) % 4
+        chord, root = PROG[bar]
+        beat = step % 4  # 8th-note steps within a 2 s bar = 8; we use quarter-beat steps of 0.25 s
+        if step % 2 == 0 and (every_beat or step % 4 == 0):
+            place(kick(kick_g if step % 8 == 0 else kick_g * 0.8), t)
+        if step % 8 == 0 or step % 8 == 4:
+            place(bass(midi(root), bass_g, 0.9), t)
+        if hats and step % 2 == 1:
+            place(hat(0.06), t, pan=0.25)
+        if step % 2 == 0:
+            place(pluck(midi(chord[(step // 2) % len(chord)]), pluck_g), t, pan=-0.3 + 0.6 * ((step // 2) % 3) / 2)
+        t += 0.25
+        step += 1
 
 
-# ---------- S1: typing (film 0.00–0.53) ----------
+# ---------- Ch1: Hello (0 – 2.6) ----------
+place(pad([midi(n) for n in DM9[:4]], 3.2, 0.045, 1.2, 0.8, 1400), 0.0)
 for i in range(17):
-    place(click(0.16 + 0.05 * rng.random(), 5200 + 1800 * rng.random()), 0.0 + i * 0.031, pan=rng.uniform(-0.2, 0.2))
+    place(click(0.13 + 0.04 * rng.random(), 5000 + 1600 * rng.random()), 0.15 + i * 0.047, pan=rng.uniform(-0.2, 0.2))
+place(swoosh(0.4, 2800, 900, 0.07, "down"), 1.62)
+place(swoosh(0.45, 3200, 700, 0.08, "down"), 1.98)
+place(pop(1180, 0.22, 0.12), 2.3)
 
-# ---------- S2: collapse → dot ----------
-place(swoosh(0.38, 3500, 900, 0.10, "down"), ref(0.42))
-place(pop(1250, 0.30), ref(0.83))
+# ---------- Ch2: Name (2.75 – 6.5) ----------
+place(swoosh(0.7, 500, 2200, 0.08), 2.78)
+place(pop(1480, 0.16, 0.1), 3.48)
+place(pad([midi(n) for n in DM9], 2.6, 0.05, 0.4, 0.8, 2000), 3.0)
+place(pluck(midi(74), 0.12, 1.0), 3.05)
+groove(4.0, 15.0, kick_g=0.5, bass_g=0.24, pluck_g=0.075)
+place(click(0.08, 6500), 4.02)
+place(swoosh(0.45, 1800, 500, 0.08, "down"), 5.6)
+place(swoosh(0.7, 600, 2600, 0.07), 5.78)
 
-# ---------- S3/S4: name, pill typing ----------
-for k in range(8):  # letters of the name pop up
-    place(click(0.10, 4200), ref(0.92) + k * 0.04, pan=-0.3 + k * 0.08)
-place(pop(1500, 0.25), ref(1.25))  # dot lands as the full stop
-for k in range(12):
-    place(click(0.07, 7000), ref(1.33) + k * 0.028, pan=0.15)
-for k in range(8):
-    place(click(0.05, 7500), ref(2.0) + k * 0.025, pan=0.15)
+# ---------- Ch3: What I make (6.2 – 15.1) ----------
+for k, s in enumerate([6.2, 6.34, 6.48]):
+    place(pop(640 + 90 * k, 0.1, 0.08), s + 0.05)
+place(pop(520, 0.16, 0.14), 6.6)
+for k, v in enumerate([7.2, 8.25, 9.3, 10.35, 11.4, 12.45, 13.5]):
+    place(pop(900 + 70 * k, 0.17, 0.09), v + 0.14)
+    place(click(0.07, 5200), v + 0.16, pan=0.35)
+place(swoosh(0.35, 2400, 5200, 0.07), 13.78)
+place(swoosh(0.4, 1600, 400, 0.08, "down"), 14.7)
 
-# ---------- groove A (ref 1.0 – 6.45) ----------
-t = ref(1.0)
-step = 0
-while t < ref(6.45) - 1e-6:
-    chord, broot = chord_at(t)
-    if step % 2 == 0:
-        place(kick(0.75 if step % 4 == 0 else 0.55), t)
-        place(bass(midi(broot), 0.30), t)
-    else:
-        place(hat(0.10), t, pan=0.25)
-    # quiet arpeggiated plucks on 8ths
-    note = chord[(step * 2) % len(chord)]
-    place(pluck(midi(note), 0.09 if step % 2 else 0.12), t, pan=-0.35 + 0.7 * ((step * 3) % 5) / 4)
-    t += BEAT / 2
-    step += 1
+# ---------- Ch4: complexity → clarity (15.0 – 22.2) ----------
+place(swoosh(0.9, 900, 5200, 0.1), 15.0)
+place(pad([midi(n) for n in BB7], 3.4, 0.065, 0.6, 1.0, 1300), 15.0)
+place(pop(560, 0.12, 0.12), 15.8)
+for k in range(12):  # quiet clockwork under the tangle — tension without noise
+    place(hat(0.035 + 0.003 * k, 0.03), 16.2 + k * 0.15, pan=0.3 if k % 2 else -0.3)
+place(swoosh(0.6, 900, 4800, 0.06), 18.05)  # guide line
+place(riser(1.3, 0.14), 18.55)
+snap = [72, 74, 77, 79, 81, 84, 86, 89]
+for k in range(19):  # one soft snap per fragment landing
+    place(pop(midi(snap[k % len(snap)]) * 0.5, 0.06, 0.06), 19.0 + k * 0.05, pan=-0.5 + k / 19)
+place(impact(0.5), 19.85)
+groove(19.85, 22.3, kick_g=0.65, bass_g=0.3, pluck_g=0.09, every_beat=True, bar0=2)
+place(pad([midi(n) for n in FMAJ7[:4]], 2.4, 0.045, 0.05, 0.6), 19.85)
+place(swoosh(0.5, 1400, 400, 0.07, "down"), 21.55)
+place(pop(1300, 0.14, 0.1), 22.18)
 
-# S5/S6: name drops out, headline rises
-place(swoosh(0.3, 1200, 300, 0.12, "down"), ref(2.25))
-for k, tt_ in enumerate([2.67, 2.75, 2.83]):
-    place(pop(700 + 120 * k, 0.16, 0.07), ref(tt_))
-# S7: six word swaps + card morphs
-for k, s in enumerate([3.0, 3.5, 4.0, 4.5, 5.0, 5.5]):
-    place(pop(1000 + 90 * k, 0.26), ref(s))
-    place(click(0.14, 5000), ref(s) + 0.012, pan=0.4)
-# S8: "thing." highlighter + square
-place(swoosh(0.18, 2500, 6000, 0.12), ref(6.0))
-place(pop(520, 0.30, 0.12), ref(6.25))
+# ---------- Ch5: proof (22.3 – 28.9) ----------
+place(pad([midi(n) for n in FMAJ7], 6.6, 0.05, 0.6, 1.2, 1500), 22.3)
+for k in range(3):
+    S = 22.3 + k * 1.75
+    place(kick(0.45), S)
+    # digits roll once: ticks that slow down as the number settles
+    tt_ = 0.0
+    for i in range(9):
+        place(click(0.06, 6200 + 200 * (i % 3)), S + 0.05 + tt_, pan=0.15)
+        tt_ += 0.035 + i * 0.014
+    place(bass(midi([41, 43, 45][k]), 0.26, 1.1), S + 0.95)
+    place(pluck(midi([77, 79, 81][k]), 0.1, 1.2, 3600), S + 0.95)
+    place(swoosh(0.45, 1500, 600, 0.04, "down"), S + 1.55)
+place(pluck(midi(84), 0.08, 1.4, 4000), 27.6)
+place(swoosh(0.45, 1600, 400, 0.08, "down"), 28.9)
+place(swoosh(0.65, 300, 2600, 0.16), 29.3)
+place(impact(0.32), 29.93)
 
-# ---------- S9: burst + breakdown ----------
-place(impact(0.55), ref(6.45))
-place(swoosh(0.45, 6000, 800, 0.22, "down"), ref(6.45), pan=0.2)
-place(pad([midi(n) for n in [62, 65, 69, 72]], 1.6, 0.07, 0.3, 0.3, 1600), ref(6.5))
-for k, s in enumerate([6.83, 6.92, 7.0, 7.08]):  # "Even when it's complex," words
-    place(pop(820 + 60 * k, 0.12, 0.06), ref(s))
-place(riser(0.9, 0.24), ref(7.05))
-for k in range(4):
-    place(hat(0.05 + 0.02 * k), ref(7.55) + k * 0.1, pan=0.3)
-
-# ---------- S10/S11: drop on "I make it clear." ----------
-place(impact(0.75), ref(8.0))
-place(swoosh(0.22, 5000, 1500, 0.15, "down"), ref(7.95))
-t = ref(8.0)
-step = 0
-while t < ref(10.25) - 1e-6:
-    chord, broot = CHORDS[2] if t < ref(9.0) else CHORDS[3], BASS[2] if t < ref(9.0) else BASS[3]
-    if step % 2 == 0:
-        place(kick(0.8 if step % 4 == 0 else 0.6), t)
-        place(bass(midi(broot), 0.34), t)
-    else:
-        place(hat(0.11), t, pan=0.25)
-    place(pluck(midi(chord[(step * 2) % len(chord)]), 0.11), t, pan=-0.3 + 0.6 * (step % 3) / 2)
-    t += BEAT / 2
-    step += 1
-place(pad([midi(n) for n in CHORDS[2][:4]], 1.0, 0.05, 0.05, 0.4), ref(8.0))
-for k, s in enumerate([8.2, 8.3, 8.4, 8.48]):
-    place(pop(900 + 80 * k, 0.12, 0.06), ref(s))
-# S12: stats roll in — fast digit ticks
-for k in range(16):
-    place(click(0.09, 6500 + 300 * (k % 3)), ref(9.0) + k * 0.025, pan=-0.4 + 0.4 * (k % 3))
-
-# ---------- S13/S14: grid clears → circle fills dark ----------
-for k in range(14):
-    place(pop(2600 - 90 * k, 0.08, 0.05), ref(10.1) + k * 0.035, pan=rng.uniform(-0.6, 0.6))
-place(swoosh(0.5, 300, 2400, 0.22), ref(10.55))
-place(impact(0.32), ref(11.03))
-
-# ---------- S16: the dark section ----------
-place(pad([midi(n) for n in [50, 57, 62, 65]], 1.9, 0.06, 0.25, 0.5, 1200), ref(11.05))
-t = ref(11.5)
+# ---------- Ch6: craft (29.95 – 34.1) ----------
+place(pad([midi(n) for n in [50, 57, 62, 65]], 4.3, 0.05, 0.4, 0.6, 1100), 29.95)
+t = 30.0
 k = 0
-while t < ref(12.95) - 1e-6:  # sub-bass pulse on 8ths, kick on beats
-    place(bass(midi(38 if t < ref(12.5) else 41), 0.36 if k % 2 == 0 else 0.22, 0.24), t)
+while t < 34.1 - 1e-6:
+    place(bass(midi(38 if t < 32.0 else 41), 0.3 if k % 2 == 0 else 0.18, 0.24), t)
     if k % 2 == 0:
-        place(kick(0.65), t)
-    t += BEAT / 2
+        place(kick(0.5), t)
+    t += 0.25
     k += 1
-for s in [11.42, 11.5, 11.58, 11.67, 11.75]:  # "I design it in Figma,"
-    place(click(0.14, 4800), ref(s), pan=-0.2)
-place(pop(1400, 0.18, 0.08), ref(11.78))  # selection box lands
-for s in [12.08, 12.25, 12.33, 12.42]:  # "then ship it in"
-    place(click(0.14, 4800), ref(s), pan=-0.1)
-for k in range(3):  # "Thinking" chip blips
-    place(pop(1900, 0.06, 0.05), ref(12.28) + k * 0.06, pan=0.3)
-for k in range(10):  # rapid run as "code." types + box hops
-    place(click(0.12, 5500 + 200 * (k % 4)), ref(12.5) + k * 0.045, pan=0.2)
-place(pop(1700, 0.2, 0.08), ref(12.67))
+for i in range(22):
+    place(click(0.11, 4600 + 300 * (i % 3)), 30.1 + i * 0.041, pan=-0.2)
+place(pop(1400, 0.14, 0.09), 31.08)
+for i in range(16):
+    place(click(0.11, 4600 + 300 * (i % 3)), 31.95 + i * 0.041, pan=-0.1)
+for i in range(5):
+    place(click(0.13, 6200), 32.6 + i * 0.07, pan=0.15)
+place(swoosh(0.45, 1200, 2600, 0.06), 33.0)
 
-# ---------- S17: the orange wipe → homepage ----------
-place(swoosh(0.55, 500, 6500, 0.30), ref(12.9))
-place(impact(0.5), ref(13.42))
-place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.2, 0.12, 0.02, 1.4, 3200), ref(13.42))
-for k, n in enumerate([72, 76, 79, 84]):  # warm resolving arpeggio as the page appears
-    place(pluck(midi(n), 0.10, 1.2, 4500), ref(13.5) + k * 0.09, pan=-0.3 + 0.2 * k)
+# ---------- Ch7: finale (34.1 – 36.0) ----------
+place(pop(700, 0.18, 0.14), 34.12)
+place(swoosh(0.6, 500, 6000, 0.2), 34.4)
+place(impact(0.35), 34.95)
+place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.6, 0.09, 0.05, 1.6, 2800), 34.95)
+# (the level-clear jingle plays separately at the dot's landing)
 
 # ---------- master ----------
 mix = np.stack([L, R])
-mix = band(mix[0], lo=28), band(mix[1], lo=28)
-mix = np.stack(mix)
-mix = np.tanh(mix * 1.15) / np.tanh(1.15)
-fade = int(0.9 * SR)
+mix = np.stack([band(mix[0], lo=28), band(mix[1], lo=28)])
+mix = np.tanh(mix * 1.1) / np.tanh(1.1)
+fade = int(1.2 * SR)
 mix[:, -fade:] *= np.linspace(1, 0, fade) ** 2
-mix *= 0.89 / np.abs(mix).max()  # ≈ -1 dBFS peak
+mix *= 0.89 / np.abs(mix).max()
 
 OUT.mkdir(parents=True, exist_ok=True)
 wav = OUT / "intro-film.wav"
