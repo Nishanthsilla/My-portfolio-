@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
-import IntroLoader from "@/components/loader/IntroLoader";
+import Intro from "@/components/Intro";
 
 export const metadata: Metadata = {
   title: "Nishanth in Motion",
@@ -18,7 +19,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // "js-motion" mirrors the original's inline <script> that tagged <html> before paint.
-    <html lang="en" className={`js-motion ${GeistSans.variable}`}>
+    <html lang="en" className={`js-motion ${GeistSans.variable} ${GeistMono.variable}`}>
       <head>
         {/* Same font request as the original portfolio. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -32,9 +33,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body data-tone="paper">
         {/* The real site is always rendered; the intro sits above it. */}
         <div id="site-root">{children}</div>
-        <IntroLoader />
+        <Intro />
         <noscript>
-          <style>{`[data-intro-loader]{display:none!important}`}</style>
+          <style>{`[data-intro-loader],[data-intro-film]{display:none!important}`}</style>
         </noscript>
       </body>
     </html>

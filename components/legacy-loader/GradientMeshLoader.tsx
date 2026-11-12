@@ -16,7 +16,7 @@ import {
   zoomCurves,
 } from "./timeline";
 import { announceDone, announceReveal, introState } from "@/lib/introState";
-import styles from "./IntroLoader.module.css";
+import styles from "./GradientMeshLoader.module.css";
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
@@ -31,7 +31,7 @@ const REVEAL_AT = 0.26;
  *   type:  the statement (never blurred, never masked)
  * The real site (#site-root) is rendered underneath the whole time.
  */
-export default function IntroLoader() {
+export default function GradientMeshLoader() {
   // Plays once per full document load (first entry or refresh). The portfolio is
   // a single page; client-side navigation never replays it (module state).
   const [active, setActive] = useState(() => !introState.played);

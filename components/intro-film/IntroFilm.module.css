@@ -1,0 +1,408 @@
+/* Motion-film intro. Initial states are set here so the server-rendered HTML
+   never flashes the homepage or any text before the film starts. */
+
+.root {
+  --film-sans: var(--font-geist-sans), "Helvetica Neue", Arial, sans-serif;
+  --film-mono: var(--font-geist-mono), ui-monospace, Menlo, monospace;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: hidden;
+  font-family: var(--film-sans);
+  color: #222222;
+  -webkit-font-smoothing: antialiased;
+  /* Failsafe if JavaScript never takes over. */
+  animation: film-failsafe 300ms linear 30s forwards;
+}
+.root[data-js] {
+  animation: none;
+}
+/* During the handoff the homepage underneath is already interactive. */
+.root[data-ending] {
+  pointer-events: none;
+}
+@keyframes film-failsafe {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+/* The portfolio hides the native cursor for its custom one; the film needs the real cursor. */
+.root,
+.root * {
+  cursor: auto !important;
+}
+.root button {
+  cursor: pointer !important;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  overflow: hidden;
+  contain: strict;
+}
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.abs {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  white-space: nowrap;
+  visibility: hidden;
+  font-size: 48px;
+}
+
+/* Vertical mask reveal: the unit rises inside a clipped window. */
+.mask {
+  display: inline-block;
+  overflow: clip;
+  vertical-align: top;
+  padding: 0.08em 0.02em 0.22em;
+  margin: -0.08em -0.02em -0.22em;
+}
+.unit {
+  display: inline-block;
+  transform: translate3d(0, 140%, 0);
+  will-change: transform;
+}
+
+/* S1–S2 */
+.hello {
+  transform: translate(-50%, -50%);
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  color: #c4c4c4;
+}
+.mark {
+  color: #c4c4c4 !important;
+}
+.caret {
+  position: absolute;
+  left: 0;
+  top: 0.12em;
+  width: 0.06em;
+  height: 1em;
+  margin-left: 0.06em;
+  background: #222222;
+  visibility: hidden;
+}
+
+/* S3–S5 */
+.name {
+  transform: translate(-50%, -50%);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+.periodGhost {
+  color: transparent;
+}
+.baseline {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  vertical-align: baseline;
+}
+.pill {
+  transform: translate(-50%, 0);
+  transform-origin: 50% 50%;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  background: #ededed;
+  color: #3a3a3a;
+  border-radius: 0.35em;
+  padding: 0.28em 0.6em;
+  line-height: 1.2;
+}
+
+/* S6–S8 */
+.head {
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+}
+.line {
+  display: block;
+  white-space: nowrap;
+}
+.slot {
+  position: relative;
+  height: 1.12em;
+  vertical-align: top;
+}
+.verb {
+  position: absolute;
+  left: 0.02em;
+  top: 0.08em;
+  white-space: nowrap;
+  visibility: hidden;
+}
+.hl {
+  position: absolute;
+  left: -0.06em;
+  right: -0.04em;
+  bottom: 0.04em;
+  height: 0.52em;
+  background: #e98243;
+  opacity: 0.85;
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+.cap {
+  position: relative;
+  height: 2.4em;
+  margin-top: 0.9em;
+  font-family: var(--film-mono);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #9b9b9b;
+  white-space: normal;
+}
+.capItem {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  visibility: hidden;
+}
+
+/* The dot / card / square / charcoal circle */
+.blob {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  overflow: hidden;
+  will-change: transform, width, height;
+}
+.vis {
+  --s: 1;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  opacity: 0;
+  transform-origin: 50% 50%;
+  pointer-events: none;
+}
+.visBox {
+  width: 460px;
+  display: flex;
+  justify-content: center;
+  font-family: var(--body);
+}
+
+/* S9, S11 */
+.center {
+  transform: translate(-50%, -50%);
+  font-weight: 560;
+  letter-spacing: -0.03em;
+}
+
+/* S12 */
+.stat {
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.lab {
+  margin-top: 0.7em;
+  color: #6b6b6b;
+  font-weight: 450;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* S16 */
+.dark {
+  left: 0;
+  top: 0;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1.24;
+  color: #ffffff;
+}
+.dline {
+  display: block;
+}
+.code {
+  display: inline-block;
+  color: #e98243;
+}
+.cm span {
+  visibility: hidden;
+}
+.block,
+.sel,
+.chip,
+.cur {
+  position: absolute;
+  left: 0;
+  top: 0;
+  visibility: hidden;
+}
+.block {
+  background: #e98243;
+  border-radius: 3px;
+}
+.sel {
+  border: 1.5px solid #e98243;
+  border-radius: 2px;
+  transform-origin: 0 0;
+}
+.sel i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #222222;
+  border: 1.5px solid #e98243;
+}
+.sel i:nth-child(1) { left: -4px; top: -4px; }
+.sel i:nth-child(2) { right: -4px; top: -4px; }
+.sel i:nth-child(3) { left: -4px; bottom: -4px; }
+.sel i:nth-child(4) { right: -4px; bottom: -4px; }
+.selLab {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 7px);
+  transform: translateX(-50%);
+  font: 600 10px/1 var(--film-mono);
+  color: #222222;
+  background: #e98243;
+  border-radius: 3px;
+  padding: 3px 5px;
+  white-space: nowrap;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 500 11px/1 var(--film-sans);
+  color: #bdbdbd;
+  background: #333333;
+  border-radius: 999px;
+  padding: 5px 9px;
+  white-space: nowrap;
+}
+.chip b {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e98243;
+}
+.cur {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  transform-origin: 0 0;
+}
+.cur svg {
+  width: 15px;
+  height: 15px;
+  fill: #e98243;
+  stroke: #222222;
+  stroke-width: 1;
+}
+.cur span {
+  margin-top: 12px;
+  font: 600 10px/1 var(--film-sans);
+  color: #222222;
+  background: #e98243;
+  border-radius: 3px;
+  padding: 3px 5px;
+}
+
+/* S17 + handoff: one orange layer, clipped to a circle */
+.wipe {
+  position: absolute;
+  inset: 0;
+  background: #d96b2f;
+  clip-path: circle(0 at 50% 50%);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Controls */
+.controls {
+  position: absolute;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+  transition: opacity 0.3s;
+}
+.root[data-ending] .controls,
+.root[data-skipping] .controls {
+  opacity: 0;
+  pointer-events: none;
+}
+.ctrl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 34, 34, 0.14);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #222222;
+  font: 500 12px/1 var(--film-mono);
+  letter-spacing: 0.02em;
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.ctrl:hover {
+  background: #222222;
+  color: #ffffff;
+}
+.ctrl svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+.root[data-tone="dark"] .ctrl {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ededed;
+}
+.root[data-tone="dark"] .ctrl:hover {
+  background: #ffffff;
+  color: #222222;
+}
+
+/* Skip: the whole film fades out over the homepage. */
+.root[data-skipping] {
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+@media (max-width: 480px) {
+  .ctrl {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+}
