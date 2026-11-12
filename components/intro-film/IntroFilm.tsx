@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { FILM_AUDIO_SRC, FILM_REPLAY, FILM_VICTORY_SRC } from "@/lib/introConfig";
 import { announceDone, announceReveal, introState } from "@/lib/introState";
 import {
@@ -11,6 +11,8 @@ import { FilmEngine } from "./engine";
 import { FilmAudio, type SoundState } from "./audio";
 import { DARK_RANGE, T, VICTORY_AT } from "./timeline";
 import styles from "./IntroFilm.module.css";
+import ControlRoom from "./ControlRoom";
+import { Artefacts, CodeEditor, FigmaChrome } from "./BoardParts";
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 const SESSION_KEY = "nishanth.introFilm.seen";
@@ -18,9 +20,6 @@ const VISUALS = [SalesVisual, OrchestrationVisual, DesignSystemVisual, LearningV
 
 const Mask = ({ children, className = "", ...rest }: React.HTMLAttributes<HTMLSpanElement> & Record<string, unknown>) => (
   <span className={`${styles.mask} ${className}`} {...rest}>{children}</span>
-);
-const Chars = ({ text, attr }: { text: string; attr: string }) => (
-  <>{Array.from(text).map((ch, i) => <span key={i} className={styles.ch} {...{ [attr]: "" }}>{ch === " " ? " " : ch}</span>)}</>
 );
 
 /**
@@ -251,52 +250,69 @@ export default function IntroFilm() {
           ))}
         </div>
 
-        {/* Ch4 */}
-        <div className={`${styles.abs} ${styles.center}`} data-complex>
-          <Mask><span className={styles.unit} data-u>{film.complex}</span></Mask>
-        </div>
-        <div className={`${styles.abs} ${styles.center}`} data-clear>
-          <Mask><span className={styles.unit} data-u>{film.clear}</span></Mask>
-        </div>
-
-        {/* Ch5 */}
-        <div className={styles.statsWrap} data-stats>
-          {film.stats.map((s) => (
-            <div key={s.label} className={styles.stat} data-stat>
-              <div className={styles.num} data-num>
-                {Array.from(s.value).map((ch, i) =>
-                  /\d/.test(ch) ? (
-                    <span key={i} className={styles.digit}>
-                      <span className={styles.strip} data-strip data-target={ch}>
-                        {Array.from({ length: 10 }, (_, d) => <span key={d}>{d}</span>)}
-                      </span>
-                    </span>
-                  ) : (
-                    <span key={i} className={styles.sym}>{ch}</span>
-                  ),
-                )}
-              </div>
-              <div className={styles.lab} data-lab>{s.label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Ch6 */}
-        <div className={`${styles.abs} ${styles.dark}`} data-dark>
-          <div className={styles.dline}><Chars text={film.dark.line1.join(" ")} attr="data-c1" /></div>
-          <div className={styles.dline}>
-            <Chars text={`${film.dark.line2.join(" ")} `} attr="data-c2" />
-            <span className={styles.code}><Chars text={film.dark.code} attr="data-cc" /></span>
+        {/* Chapters 2–7: the story board (design space, scaled to fit) */}
+        <div className={styles.darkbg} data-darkbg aria-hidden="true" />
+        <div className={styles.board} data-board>
+          {/* headlines */}
+          <div className={styles.bh} data-h="complex"><Mask><span className={styles.unit} data-u>{film.complex}</span></Mask></div>
+          <div className={styles.bh} data-h="clear"><Mask><span className={styles.unit} data-u>{film.clear}</span></Mask></div>
+          <div className={`${styles.bh} ${styles.bhTyped}`} data-h="figma">
+            {Array.from(film.dark.line1.join(" ")).map((ch, i) => <span key={i} className={styles.bch} data-ch>{ch === " " ? "\u00a0" : ch}</span>)}
+            <span className={styles.thinCaret} data-caret-f />
           </div>
-        </div>
-        <div className={styles.block} data-block />
-        <div className={styles.sel} data-sel>
-          <i /><i /><i /><i />
-          <span className={styles.selLab} data-sellab>0 × 0</span>
-        </div>
-        <div className={styles.cur} data-cur>
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1 L14 6.5 L8 8 L6.5 14 Z" /></svg>
-          <span>{film.cursorTag}</span>
+          <div className={`${styles.bh} ${styles.bhTyped} ${styles.onDark}`} data-h="code">
+            {Array.from(`${film.dark.line2.join(" ")} `).map((ch, i) => <span key={i} className={styles.bch} data-ch>{ch === " " ? "\u00a0" : ch}</span>)}
+            {Array.from(film.dark.code).map((ch, i) => <span key={`c${i}`} className={`${styles.bch} ${styles.codeWord}`} data-ch>{ch}</span>)}
+            <span className={`${styles.thinCaret} ${styles.caretOrange}`} data-caret-c />
+          </div>
+
+          {/* 2: artefacts + their relationships */}
+          <svg className={styles.links} data-links aria-hidden="true">
+            {Array.from({ length: 6 }, (_, i) => <line key={i} />)}
+          </svg>
+          <Artefacts />
+
+          {/* 4: proof */}
+          <div className={styles.statsWrap} data-stats>
+            {film.stats.map((st) => (
+              <div key={st.label} className={styles.stat} data-stat>
+                <div className={styles.num} data-num>
+                  {Array.from(st.value).map((ch, i) =>
+                    /\d/.test(ch) ? (
+                      <span key={i} className={styles.digit}>
+                        <span className={styles.strip} data-strip data-target={ch}>
+                          {Array.from({ length: 20 }, (_, d) => <span key={d}>{d % 10}</span>)}
+                        </span>
+                      </span>
+                    ) : (
+                      <span key={i} className={styles.sym}>{ch}</span>
+                    ),
+                  )}
+                </div>
+                <div className={styles.lab} data-lab>{st.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* 5: Figma-style editor chrome */}
+          <FigmaChrome />
+          {/* 6: code editor + live preview chrome */}
+          <CodeEditor />
+          <div className={styles.preview} data-preview>
+            <div className={styles.browserBar}><i /><i /><i /><span>{film.product.url}</span></div>
+          </div>
+
+          {/* 3–7: the product */}
+          <ControlRoom />
+
+          {/* overlays */}
+          <div className={styles.fsel} data-fsel>
+            <i /><i /><i /><i />
+            <span className={styles.fselLab} data-fsel-lab>0 × 0</span>
+          </div>
+          <div className={styles.pcur} data-pcur>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1 L14 6.5 L8 8 L6.5 14 Z" /></svg>
+          </div>
         </div>
       </div>
 

@@ -23,8 +23,38 @@ export const film = {
   stats: [
     { value: "+15%", label: "best engagement lift" },
     { value: "5+", label: "years designing products" },
-    { value: "3", label: "design systems built or shaped" },
+    { value: "4", label: "design systems built or shaped" },
   ],
   dark: { line1: ["I", "design", "it", "in", "Figma,"], line2: ["then", "ship", "it", "in"], code: "code." },
   cursorTag: "Nishanth",
+  /** Chapter-2 artefacts: the raw material of a product problem. */
+  artefacts: {
+    research: { tag: "Research", title: "Interview notes", line: "“Approvals feel risky.”" },
+    insight: { tag: "Insight", title: "Users want to see what agents are doing" },
+    requirement: { tag: "Requirement", title: "Human sign-off before sending" },
+    decision: { tag: "Decision", title: "Show confidence, not just results" },
+    idea: { tag: "Idea", title: "One approval queue" },
+    dependency: "CRM sync",
+    kpi: "Engagement",
+  },
+  /**
+   * The product that runs through chapters 3–7: Agent Control Room, with copy
+   * taken from Nishanth's own portfolio (work card "Agent Control Room").
+   */
+  product: {
+    name: "Agent Control Room",
+    running: "3 agents running",
+    complete: "Complete",
+    intentLabel: "Intent",
+    intent: "Renew Q4 deals",
+    nodes: [
+      { name: "Research", meta: "done · 12s", after: "done · 12s" },
+      { name: "Draft", meta: "running…", after: "done · 31s" },
+      { name: "Pricing", meta: "needs approval", after: "approved" },
+      { name: "Review", meta: "human", after: "done" },
+    ],
+    approval: { title: "Pricing needs approval", confidence: "Confidence", pct: "82%", edit: "Edit", approve: "Approve & send" },
+    file: "ControlRoom.tsx",
+    url: "localhost:3000",
+  },
 };

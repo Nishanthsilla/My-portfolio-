@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 
 SR = 48000
-DUR = 37.6
+DUR = 32.8
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "public" / "audio"
 rng = np.random.default_rng(7)
@@ -185,94 +185,105 @@ def groove(t0, t1, kick_g=0.6, bass_g=0.28, pluck_g=0.09, hats=True, every_beat=
         step += 1
 
 
-# ---------- Ch1: Hello (0 – 2.6) ----------
-place(pad([midi(n) for n in DM9[:4]], 3.2, 0.045, 1.2, 0.8, 1400), 0.0)
+# Cue times mirror components/intro-film/timeline.ts (T).
+# ---------- Prologue (0 – 3.5) ----------
+place(pad([midi(n) for n in DM9[:4]], 2.6, 0.045, 0.8, 0.6, 1400), 0.0)
 for i in range(17):
-    place(click(0.13 + 0.04 * rng.random(), 5000 + 1600 * rng.random()), 0.15 + i * 0.047, pan=rng.uniform(-0.2, 0.2))
-place(swoosh(0.4, 2800, 900, 0.07, "down"), 1.62)
-place(swoosh(0.45, 3200, 700, 0.08, "down"), 1.98)
-place(pop(1180, 0.22, 0.12), 2.3)
+    place(click(0.12 + 0.04 * rng.random(), 5000 + 1600 * rng.random()), 0.1 + i * 0.029, pan=rng.uniform(-0.2, 0.2))
+place(swoosh(0.35, 2800, 800, 0.07, "down"), 1.05)
+place(pop(1180, 0.2, 0.11), 1.35)
+place(swoosh(0.55, 500, 2200, 0.07), 1.45)
+place(pop(1480, 0.15, 0.09), 2.05)
+place(pluck(midi(74), 0.11, 0.9), 1.65)
+place(click(0.07, 6500), 2.32)
+groove(2.0, 8.7, kick_g=0.5, bass_g=0.24, pluck_g=0.075)
+place(swoosh(0.35, 1800, 500, 0.07, "down"), 3.15)
 
-# ---------- Ch2: Name (2.75 – 6.5) ----------
-place(swoosh(0.7, 500, 2200, 0.08), 2.78)
-place(pop(1480, 0.16, 0.1), 3.48)
-place(pad([midi(n) for n in DM9], 2.6, 0.05, 0.4, 0.8, 2000), 3.0)
-place(pluck(midi(74), 0.12, 1.0), 3.05)
-groove(4.0, 15.0, kick_g=0.5, bass_g=0.24, pluck_g=0.075)
-place(click(0.08, 6500), 4.02)
-place(swoosh(0.45, 1800, 500, 0.08, "down"), 5.6)
-place(swoosh(0.7, 600, 2600, 0.07), 5.78)
+# ---------- 1: I make things … (3.45 – 8.85) ----------
+for k, s in enumerate([3.45, 3.55, 3.65]):
+    place(pop(640 + 90 * k, 0.09, 0.07), s + 0.04)
+place(pop(520, 0.14, 0.12), 3.85)
+for k, v in enumerate([4.25, 4.82, 5.39, 5.96, 6.53, 7.1, 7.67]):
+    place(pop(900 + 70 * k, 0.15, 0.08), v + 0.08)
+place(swoosh(0.3, 2400, 5200, 0.06), 7.8)
+place(swoosh(0.35, 1600, 400, 0.07, "down"), 8.55)
 
-# ---------- Ch3: What I make (6.2 – 15.1) ----------
-for k, s in enumerate([6.2, 6.34, 6.48]):
-    place(pop(640 + 90 * k, 0.1, 0.08), s + 0.05)
-place(pop(520, 0.16, 0.14), 6.6)
-for k, v in enumerate([7.2, 8.25, 9.3, 10.35, 11.4, 12.45, 13.5]):
-    place(pop(900 + 70 * k, 0.17, 0.09), v + 0.14)
-    place(click(0.07, 5200), v + 0.16, pan=0.35)
-place(swoosh(0.35, 2400, 5200, 0.07), 13.78)
-place(swoosh(0.4, 1600, 400, 0.08, "down"), 14.7)
+# ---------- 2: Even when it's complex, (8.7 – 12.5) ----------
+place(swoosh(0.8, 900, 5200, 0.09), 8.7)
+place(pad([midi(n) for n in BB7], 3.6, 0.06, 0.5, 0.9, 1300), 8.75)
+place(pop(560, 0.11, 0.11), 9.05)
+for k in range(10):  # quiet clockwork: many things happening
+    place(hat(0.032 + 0.003 * k, 0.03), 9.6 + k * 0.17, pan=0.3 if k % 2 else -0.3)
+for k in range(6):  # each relationship line connects
+    place(pop(midi([72, 74, 77, 79, 81, 84][k]) * 0.5, 0.05, 0.06), 10.55 + k * 0.1, pan=-0.4 + k * 0.16)
+place(riser(1.1, 0.12), 11.15)
 
-# ---------- Ch4: complexity → clarity (15.0 – 22.2) ----------
-place(swoosh(0.9, 900, 5200, 0.1), 15.0)
-place(pad([midi(n) for n in BB7], 3.4, 0.065, 0.6, 1.0, 1300), 15.0)
-place(pop(560, 0.12, 0.12), 15.8)
-for k in range(12):  # quiet clockwork under the tangle — tension without noise
-    place(hat(0.035 + 0.003 * k, 0.03), 16.2 + k * 0.15, pan=0.3 if k % 2 else -0.3)
-place(swoosh(0.6, 900, 4800, 0.06), 18.05)  # guide line
-place(riser(1.3, 0.14), 18.55)
-snap = [72, 74, 77, 79, 81, 84, 86, 89]
-for k in range(19):  # one soft snap per fragment landing
-    place(pop(midi(snap[k % len(snap)]) * 0.5, 0.06, 0.06), 19.0 + k * 0.05, pan=-0.5 + k / 19)
-place(impact(0.5), 19.85)
-groove(19.85, 22.3, kick_g=0.65, bass_g=0.3, pluck_g=0.09, every_beat=True, bar0=2)
-place(pad([midi(n) for n in FMAJ7[:4]], 2.4, 0.045, 0.05, 0.6), 19.85)
-place(swoosh(0.5, 1400, 400, 0.07, "down"), 21.55)
-place(pop(1300, 0.14, 0.1), 22.18)
+# ---------- 3: I make it clear. (12.2 – 15.6) ----------
+for k in range(10):  # pieces landing in place
+    place(pop(midi([72, 74, 77, 79, 81][k % 5]) * 0.5, 0.055, 0.06), 12.6 + k * 0.07, pan=-0.5 + k / 10)
+place(impact(0.45), 13.15)
+groove(13.15, 15.6, kick_g=0.6, bass_g=0.28, pluck_g=0.085, every_beat=True, bar0=2)
+place(pad([midi(n) for n in FMAJ7[:4]], 2.4, 0.045, 0.05, 0.6), 13.15)
+place(swoosh(0.45, 1400, 400, 0.06, "down"), 15.2)
 
-# ---------- Ch5: proof (22.3 – 28.9) ----------
-place(pad([midi(n) for n in FMAJ7], 6.6, 0.05, 0.6, 1.2, 1500), 22.3)
-for k in range(3):
-    S = 22.3 + k * 1.75
-    place(kick(0.45), S)
-    # digits roll once: ticks that slow down as the number settles
-    tt_ = 0.0
-    for i in range(9):
-        place(click(0.06, 6200 + 200 * (i % 3)), S + 0.05 + tt_, pan=0.15)
-        tt_ += 0.035 + i * 0.014
-    place(bass(midi([41, 43, 45][k]), 0.26, 1.1), S + 0.95)
-    place(pluck(midi([77, 79, 81][k]), 0.1, 1.2, 3600), S + 0.95)
-    place(swoosh(0.45, 1500, 600, 0.04, "down"), S + 1.55)
-place(pluck(midi(84), 0.08, 1.4, 4000), 27.6)
-place(swoosh(0.45, 1600, 400, 0.08, "down"), 28.9)
-place(swoosh(0.65, 300, 2600, 0.16), 29.3)
-place(impact(0.32), 29.93)
+# ---------- 4: proof — all three roll together (15.6 – 18.95) ----------
+place(pop(1250, 0.13, 0.1), 15.3)
+place(pad([midi(n) for n in FMAJ7], 3.4, 0.05, 0.4, 0.9, 1500), 15.6)
+place(kick(0.45), 15.7)
+tt_ = 0.0
+for i in range(12):  # rolling ticks that slow as the numbers settle
+    place(click(0.07, 6200 + 200 * (i % 3)), 15.72 + tt_, pan=-0.3 + 0.3 * (i % 3))
+    tt_ += 0.03 + i * 0.012
+place(bass(midi(41), 0.28, 1.2), 17.1)
+for k, n in enumerate([77, 81, 84]):
+    place(pluck(midi(n), 0.09, 1.2, 3600), 17.1 + k * 0.05, pan=-0.4 + 0.4 * k)
+place(swoosh(0.4, 1500, 500, 0.06, "down"), 18.6)
 
-# ---------- Ch6: craft (29.95 – 34.1) ----------
-place(pad([midi(n) for n in [50, 57, 62, 65]], 4.3, 0.05, 0.4, 0.6, 1100), 29.95)
-t = 30.0
+# ---------- 5: Figma (18.8 – 22.85) ----------
+place(swoosh(0.5, 500, 2000, 0.07), 18.8)
+place(pad([midi(n) for n in DM9[:4]], 4.0, 0.04, 0.4, 0.8, 1300), 18.9)
+groove(19.0, 22.85, kick_g=0.42, bass_g=0.2, pluck_g=0.06, hats=True, bar0=1)
+for i in range(21):
+    place(click(0.1, 4600 + 300 * (i % 3)), 19.25 + i * 0.036, pan=-0.1)
+for k, ed in enumerate([20.0, 20.65, 21.3, 21.95]):
+    place(pop(1400 + 120 * k, 0.12, 0.08), ed)          # select
+    place(click(0.12, 3800), ed + 0.3, pan=0.25)          # apply / snap
+
+# ---------- 6: AI-assisted code (22.85 – 26.35) ----------
+place(swoosh(0.6, 300, 2600, 0.14), 22.85)
+place(impact(0.28), 23.45)
+place(pad([midi(n) for n in [50, 57, 62, 65]], 3.6, 0.05, 0.3, 0.6, 1100), 23.4)
+t = 23.5
 k = 0
-while t < 34.1 - 1e-6:
-    place(bass(midi(38 if t < 32.0 else 41), 0.3 if k % 2 == 0 else 0.18, 0.24), t)
+while t < 26.35 - 1e-6:
+    place(bass(midi(38 if t < 25.35 else 41), 0.28 if k % 2 == 0 else 0.16, 0.24), t)
     if k % 2 == 0:
-        place(kick(0.5), t)
+        place(kick(0.48), t)
     t += 0.25
     k += 1
-for i in range(22):
-    place(click(0.11, 4600 + 300 * (i % 3)), 30.1 + i * 0.041, pan=-0.2)
-place(pop(1400, 0.14, 0.09), 31.08)
 for i in range(16):
-    place(click(0.11, 4600 + 300 * (i % 3)), 31.95 + i * 0.041, pan=-0.1)
-for i in range(5):
-    place(click(0.13, 6200), 32.6 + i * 0.07, pan=0.15)
-place(swoosh(0.45, 1200, 2600, 0.06), 33.0)
+    place(click(0.1, 4600 + 300 * (i % 3)), 23.2 + i * 0.037, pan=-0.2)
+for i in range(30):  # code typing
+    place(click(0.06, 5400 + 250 * (i % 4)), 23.6 + i * 0.038, pan=0.2)
+place(pop(1900, 0.1, 0.07), 24.85)                       # AI suggestion appears
+place(pop(1500, 0.16, 0.1), 25.35)                        # accepted
+place(swoosh(0.25, 2000, 4800, 0.06), 25.35)
 
-# ---------- Ch7: finale (34.1 – 36.0) ----------
-place(pop(700, 0.18, 0.14), 34.12)
-place(swoosh(0.6, 500, 6000, 0.2), 34.4)
-place(impact(0.35), 34.95)
-place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.6, 0.09, 0.05, 1.6, 2800), 34.95)
-# (the level-clear jingle plays separately at the dot's landing)
+# ---------- 7: the finished product (26.35 – 29.75) ----------
+place(swoosh(0.6, 500, 3000, 0.1), 26.35)
+place(pad([midi(n) for n in FMAJ7], 3.4, 0.06, 0.3, 0.8, 2200), 26.6)
+groove(26.8, 29.75, kick_g=0.55, bass_g=0.26, pluck_g=0.08, every_beat=False, bar0=2)
+place(pop(1100, 0.12, 0.09), 27.9)                         # Draft done
+place(click(0.18, 3200), 28.7)                             # the click
+place(pop(1600, 0.2, 0.12), 28.75)
+for k in range(3):
+    place(pluck(midi([81, 84, 88][k]), 0.1, 1.0, 4200), 28.85 + k * 0.12, pan=-0.3 + 0.3 * k)
+
+# ---------- Finale (29.75 – 31.2) ----------
+place(swoosh(0.55, 500, 6000, 0.18), 29.75)
+place(impact(0.32), 30.25)
+place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.4, 0.08, 0.05, 1.4, 2800), 30.25)
+# (the level-clear jingle plays separately as the dot lands)
 
 # ---------- master ----------
 mix = np.stack([L, R])

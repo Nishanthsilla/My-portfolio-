@@ -1,8 +1,9 @@
 # Nishanth in Motion — React
 
 The "Nishanth in Motion" portfolio, migrated from a single HTML file into Next.js (App Router)
-+ TypeScript, introduced by a ~36 s motion film (original score + retro level-clear sound)
-that hands off into the homepage. The earlier gradient-mesh loader is kept, inactive.
++ TypeScript, introduced by a ~31 s motion film (original score + retro level-clear sound)
+that hands off into the homepage. Brand colours live in `styles/brand.css` (accent #FF4938),
+shared by the film and the portfolio tokens. The earlier gradient-mesh loader is kept, inactive.
 
 ## Choosing the intro
 
@@ -45,7 +46,9 @@ components/
   intro-film/               ACTIVE intro: the motion film
     IntroFilm.tsx           markup, clock, controls (sound, skip), handoff
     engine.ts               render(t): every scene as a pure function of time (S1–S17)
-    system.ts               chapter 4: UI fragments → assembled system (canvas)
+    story.ts                chapters 2–7 on a scaled design-space board (artefacts → product)
+    ControlRoom.tsx         the Agent Control Room: wireframe → designed → built → live
+    BoardParts.tsx          artefacts, Figma-style chrome, code editor
     layout.ts               responsive layout (landscape frame / portrait recomposition)
     timeline.ts, content.ts all timings (one table), easing, palette; all film copy
     audio.ts                audio synced to the film clock (autoplay-safe)
