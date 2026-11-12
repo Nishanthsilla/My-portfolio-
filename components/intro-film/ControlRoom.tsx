@@ -23,7 +23,7 @@ export default function ControlRoom() {
         <span className={styles.crLogo} />
         <span className={styles.crTitle}><Tx f={2} w="60%">{p.name}</Tx></span>
         <span className={styles.crPill} data-cr-pill data-complete="false">
-          <i />
+          <i data-t="pilldot" />
           <Tx f={4} w="80%">
             <span className={styles.pillRun}>{p.running}</span>
             <span className={styles.pillDone}>{p.complete}</span>

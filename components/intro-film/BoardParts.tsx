@@ -35,6 +35,14 @@ export function Artefacts() {
       <Card k="chart" cls={styles.artChart}>
         <span className={styles.bars}>{[42, 64, 52, 78, 70, 90].map((h, i) => <i key={i} style={{ height: `${h}%` }} />)}</span>
       </Card>
+      {/* chapter 3 extras: a rough wireframe sketch and a sticky note */}
+      <Card k="sketch" tag="Wireframe v0" cls={styles.artSketch}>
+        <span className={styles.sketch} aria-hidden="true">
+          <i /><i /><i /><i />
+          <svg viewBox="0 0 200 40" preserveAspectRatio="none"><path d="M10 20 C 40 6, 60 34, 95 18 S 160 30, 190 14" /></svg>
+        </span>
+      </Card>
+      <Card k="sticky" cls={styles.artSticky}><b>Need approve step??</b><span className={styles.artQuote}>who signs off?</span></Card>
       <div className={`${styles.art} ${styles.artBtn}`} data-art="button">
         <span className={styles.artBtnLabel}>{film.product.approval.approve}</span>
       </div>
