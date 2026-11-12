@@ -5,7 +5,7 @@ const mega = ["Say hello", "Nishanth Silla", "Say hello", "Nishanth Silla", "Say
 
 export default function Contact() {
   return (
-    <section id="contact" className="contact" data-tone="cobalt">
+    <section id="contact" className="contact" data-tone="ember">
       <div className="wrap">
         <div className="label" style={{ marginBottom: 18 }}>Contact</div>
         <h2><span className="c1">Let&apos;s build</span><span className="c2">what agents</span><span className="c3">&amp; people <em>trust.</em></span></h2>

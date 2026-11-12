@@ -92,6 +92,12 @@ inlined = "".join(PLACEHOLDER.format(path=src) for src in chunks) + "".join(
 )
 html = html.replace("</body>", inlined + "</body>")
 
+# Media referenced from scripts (the intro film's soundtrack).
+for ref in sorted(set(re.findall(r'"(/audio/[^"]+\.(?:mp3|ogg))"', html))):
+    if local(ref).exists():
+        mime = "audio/mpeg" if ref.endswith(".mp3") else "audio/ogg"
+        html = html.replace(f'"{ref}"', f'"data:{mime};base64,' + base64.b64encode(local(ref).read_bytes()).decode() + '"')
+
 # Any remaining absolute asset URLs in inline styles/attributes.
 html = inline_css_urls(html)
 
