@@ -1,0 +1,13 @@
+.section {
+  padding: clamp(4rem, 10vw, 8rem) var(--gutter);
+  border-top: 1px solid var(--page-line);
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--page-muted);
+  margin-bottom: 2rem;
+}

@@ -1,0 +1,42 @@
+.mesh {
+  position: absolute;
+  inset: 0;
+  background: var(--intro-base);
+  overflow: hidden;
+}
+
+.webgl {
+  position: absolute !important;
+  inset: 0;
+}
+
+/* Fallback mesh: large, soft, elongated fields that drift on different paths. */
+.fallback {
+  position: absolute;
+  inset: -20%;
+}
+
+.fallback span {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.f1 { background: radial-gradient(60% 45% at 30% 40%, rgba(36, 52, 95, 0.9), transparent 70%); }
+.f2 { background: radial-gradient(55% 40% at 70% 60%, rgba(53, 82, 176, 0.55), transparent 70%); }
+.f3 { background: radial-gradient(50% 60% at 60% 25%, rgba(58, 42, 110, 0.7), transparent 70%); }
+.f4 { background: radial-gradient(40% 30% at 35% 80%, rgba(90, 64, 52, 0.35), transparent 70%); }
+
+.fallback[data-animated] .f1 { animation: drift1 31s ease-in-out infinite alternate; }
+.fallback[data-animated] .f2 { animation: drift2 37s ease-in-out infinite alternate; }
+.fallback[data-animated] .f3 { animation: drift3 43s ease-in-out infinite alternate; }
+.fallback[data-animated] .f4 { animation: drift4 29s ease-in-out infinite alternate; }
+
+@keyframes drift1 { to { transform: translate3d(12%, 6%, 0) scale(1.15) rotate(8deg); } }
+@keyframes drift2 { to { transform: translate3d(-10%, -8%, 0) scale(1.2) rotate(-6deg); } }
+@keyframes drift3 { to { transform: translate3d(-6%, 12%, 0) scale(0.9) rotate(5deg); } }
+@keyframes drift4 { to { transform: translate3d(14%, -10%, 0) scale(1.25); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fallback[data-animated] span { animation: none; }
+}

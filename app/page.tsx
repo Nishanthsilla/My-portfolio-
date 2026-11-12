@@ -1,69 +1,35 @@
-import Image from "next/image";
+import Link from "next/link";
+import Section from "@/components/layout/Section";
+import { projects } from "@/lib/projects";
 import styles from "./page.module.css";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <>
+      <section className={styles.hero} aria-label="Introduction">
+        <p className={`${styles.eyebrow} placeholder`}>[Role — e.g. Product / UX Designer]</p>
+        <h1 className={`${styles.title} placeholder`}>[Hero statement placeholder]</h1>
+        <p className={`${styles.lede} placeholder`}>
+          [Placeholder] A short introduction will go here once the content is provided.
+        </p>
+      </section>
+
+      <Section id="work" label="Selected work">
+        <ul className={styles.projects}>
+          {projects.map((p) => (
+            <li key={p.slug}>
+              <Link href={`/work/${p.slug}`} className={`${styles.card} placeholder`}>
+                <span className={styles.thumb} aria-hidden />
+                <span>{p.title}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Section>
+
+      <Section id="about" label="About">
+        <p className="placeholder">[Placeholder] Biography to be provided.</p>
+      </Section>
+    </>
   );
 }
