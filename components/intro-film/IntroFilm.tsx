@@ -12,7 +12,7 @@ import { FilmAudio, type SoundState } from "./audio";
 import { DARK_RANGE, T, VICTORY_AT } from "./timeline";
 import styles from "./IntroFilm.module.css";
 import ControlRoom from "./ControlRoom";
-import { Artefacts, CodeEditor, FigmaChrome } from "./BoardParts";
+import { Artefacts } from "./BoardParts";
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 const SESSION_KEY = "nishanth.introFilm.seen";
@@ -290,7 +290,7 @@ export default function IntroFilm() {
           {/* headlines */}
           <div className={styles.bh} data-h="complex"><Mask><span className={styles.unit} data-u>{film.complex}</span></Mask></div>
           <div className={styles.bh} data-h="clear"><Mask><span className={styles.unit} data-u>{film.clear}</span></Mask></div>
-          {/* 5–6: the two sentences, always whole; the cursor hovers "Figma", then "code" */}
+          {/* 5–6: both sentences, whole; a design-tool selection moves from "Figma," to "code." */}
           <div className={styles.sent} data-sent>
             <div className={styles.sentLine} data-s1>
               <Mask className={styles.sentMask}>
@@ -302,7 +302,7 @@ export default function IntroFilm() {
             <div className={styles.sentLine} data-s2>
               <Mask className={styles.sentMask}>
                 <span className={`${styles.unit} ${styles.sentUnit}`} data-s2u>
-                  then ship it in <span className={`${styles.hw} ${styles.codeWord}`} data-w="code">code.</span>
+                  then ship it in <span className={styles.hw} data-w="code">code.</span>
                 </span>
               </Mask>
             </div>
@@ -310,7 +310,7 @@ export default function IntroFilm() {
 
           {/* 2: artefacts + their relationships */}
           <svg className={styles.links} data-links aria-hidden="true">
-            {Array.from({ length: 6 }, (_, i) => <line key={i} />)}
+            {Array.from({ length: 12 }, (_, i) => <line key={i} />)}
           </svg>
           <Artefacts />
 
@@ -336,24 +336,17 @@ export default function IntroFilm() {
             ))}
           </div>
 
-          {/* 5: Figma-style editor chrome */}
-          <FigmaChrome />
-          {/* 6: code editor + live preview chrome */}
-          <CodeEditor />
-          <div className={styles.preview} data-preview>
-            <div className={styles.browserBar}><i /><i /><i /><span>{film.product.url}</span></div>
-          </div>
-
           {/* 3–7: the product */}
           <ControlRoom />
 
-          {/* overlays */}
+          {/* overlays: selection (chapter 5–6) and the named cursor (5–7) */}
           <div className={styles.fsel} data-fsel>
             <i /><i /><i /><i />
             <span className={styles.fselLab} data-fsel-lab>0 × 0</span>
           </div>
           <div className={styles.pcur} data-pcur>
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1 L14 6.5 L8 8 L6.5 14 Z" /></svg>
+            <span className={styles.pcurTag}>{film.cursorTag}</span>
           </div>
         </div>
       </div>

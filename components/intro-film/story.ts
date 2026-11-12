@@ -2,94 +2,101 @@
  * Chapters 2–7, staged on a design-space "board" (1200×700 landscape,
  * 640×1060 portrait) that is scaled to fit the viewport.
  *
- * One product runs through the story — the Agent Control Room (CR):
- *   2  floating artefacts (research, insights, requirements, decisions…)
- *   3  "I make it clear." — the mess arrives from both sides and passes, piece
- *      by piece, through a transform frame that turns it into the clean CR
+ *   2  "Even when it's complex," — documents, data, feedback and decisions float
+ *      around the headline (some burst from the dot, some enter from the sides)
+ *   3  "I make it clear." — the clutter is cleared away; the core pieces wait on
+ *      both sides and pass, one by one, through the frame that turns them into
+ *      the clean Agent Control Room (CR)
  *   4  the proof row (all three stats roll together)
- *   5  "I design it in Figma," — read, then the cursor hovers "Figma"; canvas opens
- *   6  "then ship it in code." — read, then the cursor hovers "code"; editor + preview
- *   7  the product: wireframe → polished; hover, click, success; pull back to the whole
+ *   5–6  "I design it in Figma, / then ship it in code." — typography only, with a
+ *      design-tool selection that moves from "Figma," to "code." under a named cursor
+ *   7  the finished product: hover, click, success, then a zoom until it fills the screen
  * Everything is a pure function of time r.
  */
 import styles from "./IntroFilm.module.css";
-import { T, inOutQuint, inQuint, lerp, outCubic, outQuint, prog, span } from "./timeline";
+import { T, inCubic, inOutQuint, inQuint, lerp, outCubic, outQuint, prog, span } from "./timeline";
 
 type Rect = { x: number; y: number; w: number; h: number };
 type Place = { cx: number; cy: number; s: number };
 type Geo = {
   W: number; H: number;
-  head: { y: number; font: number };
+  complex: { font: number };
+  clear: { y: number; font: number };
   crW: number; crH: number;
-  cr3: Place; cr5: Place; cr6: Place; cr7: Place; crFinal: Place;
-  sent: { x: number; y: number; w: number; font: number };
-  ws: Rect; editor: Rect; preview: Rect;
+  cr3: Place; cr7: Place;
+  sent: { font: number; maxW: number };
+  /** Chapter 2: home positions (centres) and scale of every artefact. */
   arts: Record<string, [number, number]>;
+  artSc: number;
   /** Chapter 3 staging: x of the left/right columns, y slots, scale, off-screen entry x. */
   sides: { lx: number; rx: number; ys: number[]; sc: number; offL: number; offR: number };
   stats: { xs: number[]; y: number; font: number; labelFont: number; labelW: number; ruleY: number };
 };
 
+/** The pieces that become the product (chapter 3). */
 const ART_KEYS = ["research", "workflow", "decision", "requirement", "idea", "insight", "dependency", "kpi", "chart", "button", "sketch", "sticky"] as const;
 type ArtKey = (typeof ART_KEYS)[number];
-/** Each piece of the mess becomes one part of the product. */
+/** Documents and data that only add to the complexity; cleared away in chapter 3. */
+const CLUTTER = ["sheet", "report", "feedback1", "feedback2", "agent", "line", "points"] as const;
 const ART_TARGET: Record<ArtKey, string> = {
   research: "n0", workflow: "n1", decision: "n2", requirement: "n3", idea: "appr", sticky: "appr",
   insight: "head", dependency: "intent", kpi: "logB", chart: "logA", button: "btn", sketch: "flow",
 };
-/** Which side each piece waits on, and its slot (index into sides.ys). Extras enter from off-screen. */
 const SIDE: Record<ArtKey, ["L" | "R", number]> = {
   sketch: ["L", 0], insight: ["L", 1], research: ["L", 2], sticky: ["L", 3], chart: ["L", 4], dependency: ["L", 5],
   workflow: ["R", 0], decision: ["R", 1], requirement: ["R", 2], idea: ["R", 3], kpi: ["R", 4], button: ["R", 5],
 };
 const EXTRAS: ArtKey[] = ["sketch", "sticky"];
-/** The order in which pieces pass through the transform frame (alternating sides). */
 const FLOW: ArtKey[] = ["sketch", "insight", "workflow", "dependency", "research", "decision", "requirement", "sticky", "idea", "chart", "kpi", "button"];
-/** Clean regions revealed as their pieces land. */
 const REGIONS = ["head", "intent", "n0", "n1", "n2", "n3", "appr", "logA", "logB"];
-const GROUPS = [["research", "workflow", "decision", "requirement"], ["idea", "button"], ["insight", "dependency"], ["kpi", "chart"]];
+/** Related pieces, joined by dotted lines in chapter 2. */
+const GROUPS = [
+  ["research", "workflow", "decision", "requirement"], ["idea", "button"], ["insight", "dependency", "feedback1"],
+  ["kpi", "line", "chart"], ["sheet", "report"], ["agent", "feedback2"],
+];
 const TILT: Record<string, number> = { sketch: -7, insight: 5, research: -4, sticky: 8, chart: -6, dependency: 4, workflow: 6, decision: -5, requirement: 3, idea: -8, kpi: 5, button: -3 };
 
 const GEO_LAND: Geo = {
   W: 1200, H: 700,
-  head: { y: 30, font: 58 },
-  crW: 1000, crH: 500,
-  cr3: { cx: 600, cy: 440, s: 0.66 },
-  cr5: { cx: 805, cy: 472, s: 0.6 },
-  cr6: { cx: 805, cy: 504, s: 0.53 },
-  cr7: { cx: 600, cy: 360, s: 1.06 },
-  crFinal: { cx: 600, cy: 372, s: 0.9 },
-  sent: { x: 40, y: 0, w: 370, font: 52 },
-  ws: { x: 440, y: 50, w: 730, h: 615 },
-  editor: { x: 440, y: 50, w: 730, h: 262 },
-  preview: { x: 440, y: 330, w: 730, h: 335 },
+  complex: { font: 56 },
+  clear: { y: 62, font: 58 },
+  crW: 1040, crH: 560,
+  cr3: { cx: 600, cy: 382, s: 0.74 },
+  cr7: { cx: 600, cy: 350, s: 0.92 },
+  sent: { font: 84, maxW: 1060 },
   arts: {
-    research: [190, 235], insight: [600, 205], decision: [1010, 245], requirement: [215, 470], workflow: [985, 470],
-    idea: [610, 585], dependency: [420, 355], kpi: [790, 360], chart: [345, 615], button: [880, 625],
-    sketch: [-200, 300], sticky: [-200, 500],
+    research: [165, 100], sheet: [470, 105], insight: [790, 92], report: [1068, 118],
+    feedback1: [150, 238], dependency: [415, 222], kpi: [640, 228], agent: [878, 236],
+    line: [132, 384], decision: [1076, 372],
+    requirement: [395, 478], points: [645, 470], workflow: [912, 482],
+    chart: [140, 580], idea: [420, 612], feedback2: [690, 612], button: [1052, 604],
+    sketch: [-300, 300], sticky: [-300, 500],
   },
-  sides: { lx: 135, rx: 1065, ys: [200, 290, 380, 470, 560, 650], sc: 0.72, offL: -260, offR: 1460 },
+  artSc: 1,
+  sides: { lx: 108, rx: 1092, ys: [168, 258, 348, 438, 528, 618], sc: 0.6, offL: -260, offR: 1460 },
   stats: { xs: [230, 600, 970], y: 345, font: 150, labelFont: 24, labelW: 300, ruleY: 205 },
 };
 const GEO_PORT: Geo = {
   W: 640, H: 1060,
-  head: { y: 34, font: 50 },
-  crW: 580, crH: 800,
-  cr3: { cx: 320, cy: 620, s: 0.55 },
-  cr5: { cx: 320, cy: 762, s: 0.5 },
-  cr6: { cx: 320, cy: 856, s: 0.42 },
-  cr7: { cx: 320, cy: 540, s: 1.02 },
-  crFinal: { cx: 320, cy: 560, s: 0.9 },
-  sent: { x: 30, y: 30, w: 580, font: 44 },
-  ws: { x: 20, y: 300, w: 600, h: 740 },
-  editor: { x: 20, y: 300, w: 600, h: 330 },
-  preview: { x: 20, y: 645, w: 600, h: 395 },
+  complex: { font: 50 },
+  clear: { y: 120, font: 50 },
+  crW: 600, crH: 920,
+  cr3: { cx: 320, cy: 556, s: 0.72 },
+  cr7: { cx: 320, cy: 520, s: 0.98 },
+  sent: { font: 60, maxW: 600 },
   arts: {
-    research: [170, 235], insight: [465, 300], decision: [180, 440], requirement: [460, 535], workflow: [175, 650],
-    idea: [455, 760], dependency: [300, 870], kpi: [165, 950], chart: [470, 975], button: [330, 1030],
-    sketch: [-200, 300], sticky: [-200, 500],
+    research: [168, 80], sheet: [472, 88],
+    insight: [178, 192], report: [482, 218],
+    feedback1: [170, 300], dependency: [420, 330],
+    kpi: [168, 412], agent: [470, 418],
+    line: [160, 652], decision: [472, 650],
+    requirement: [175, 762], points: [470, 762],
+    workflow: [178, 872], feedback2: [480, 878],
+    chart: [128, 978], idea: [355, 1002], button: [545, 968],
+    sketch: [-300, 300], sticky: [-300, 500],
   },
-  sides: { lx: 84, rx: 556, ys: [260, 400, 540, 680, 820, 960], sc: 0.46, offL: -220, offR: 860 },
+  artSc: 0.8,
+  sides: { lx: 58, rx: 582, ys: [262, 374, 486, 598, 710, 822], sc: 0.38, offL: -220, offR: 860 },
   stats: { xs: [110, 320, 530], y: 470, font: 78, labelFont: 22, labelW: 190, ruleY: 360 },
 };
 
@@ -113,7 +120,7 @@ function offsetIn(el: HTMLElement, root: HTMLElement): Rect {
   return { x, y, w: el.offsetWidth, h: el.offsetHeight };
 }
 const lerpP = (a: Place, b: Place, t: number): Place => ({ cx: lerp(a.cx, b.cx, t), cy: lerp(a.cy, b.cy, t), s: lerp(a.s, b.s, t) });
-/** When a piece starts travelling into the frame, and when it lands. */
+const lerpR = (a: Rect, b: Rect, t: number): Rect => ({ x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), w: lerp(a.w, b.w, t), h: lerp(a.h, b.h, t) });
 const flowTimes = (k: ArtKey) => {
   const i = FLOW.indexOf(k);
   const a = T.flowStart + i * T.flowStagger;
@@ -123,6 +130,7 @@ const flowTimes = (k: ArtKey) => {
 export class Story {
   g: Geo = GEO_LAND;
   bx = 0; by = 0; bs = 1;
+  private vw = 0; private vh = 0;
   private el: Record<string, HTMLElement>;
   private arts: Record<string, HTMLElement> = {};
   private artSize: Record<string, { w: number; h: number }> = {};
@@ -130,13 +138,11 @@ export class Story {
   private regionEls: Record<string, HTMLElement> = {};
   private scans: Record<string, HTMLElement> = {};
   private links: SVGLineElement[];
-  private builds: HTMLElement[];
   private nodes: HTMLElement[];
+  private bars: HTMLElement[];
   private statStrips: HTMLElement[][];
   private stats: HTMLElement[];
-  private codeLines: HTMLElement[];
   private words: { figma: Rect; code: Rect } = { figma: { x: 0, y: 0, w: 0, h: 0 }, code: { x: 0, y: 0, w: 0, h: 0 } };
-  private editRects: Rect[] = [];
   private finaleView = { x: 0, y: 0, r: 0 };
 
   constructor(private root: HTMLElement) {
@@ -145,27 +151,23 @@ export class Story {
       board: q("[data-board]"),
       hComplex: q("[data-h=complex]"), hComplexU: q("[data-h=complex] [data-u]"),
       hClear: q("[data-h=clear]"), hClearU: q("[data-h=clear] [data-u]"),
-      sent: q("[data-sent]"), s1: q("[data-s1]"), s1u: q("[data-s1u]"), s2: q("[data-s2]"), s2u: q("[data-s2u]"),
+      sent: q("[data-sent]"), s1u: q("[data-s1u]"), s2: q("[data-s2]"), s2u: q("[data-s2u]"),
       wFigma: q("[data-w=figma]"), wCode: q("[data-w=code]"),
       linksSvg: q("[data-links]"),
-      figma: q("[data-figma]"),
       sel: q("[data-fsel]"), selLab: q("[data-fsel-lab]"),
-      editor: q("[data-editor]"), ghostChip: q("[data-ghost-chip]"), codeCaret: q("[data-code-caret]"),
-      preview: q("[data-preview]"),
-      cr: q("[data-cr]"), crPill: q("[data-cr-pill]"), progress: q("[data-progress]"),
+      cr: q("[data-cr]"), crPill: q("[data-cr-pill]"),
       pcur: q("[data-pcur]"),
       statsWrap: q("[data-stats]"),
     };
     $$(root, "[data-art]").forEach((a) => (this.arts[a.dataset.art!] = a));
     this.links = $$<SVGLineElement>(root, "[data-links] line");
-    this.builds = $$(root, "[data-cr] [data-b]");
     this.nodes = $$(root, "[data-cr] [data-node]");
+    this.bars = $$(root, "[data-cr] [data-bar]");
     this.stats = $$(root, "[data-stat]");
     this.statStrips = this.stats.map((s) => $$(s, "[data-strip]"));
-    this.codeLines = $$(root, "[data-line]");
     REGIONS.forEach((k) => {
       const t = $(this.el.cr, `[data-t="${k}"]`);
-      // the intent chip reveals together with its label
+      // the intent chip reveals together with its label and details
       this.regionEls[k] = k === "intent" ? (t.parentElement as HTMLElement) : t;
     });
     // orange scan highlights for the transformation (one per landing spot)
@@ -173,13 +175,14 @@ export class Story {
       const d = document.createElement("div");
       d.className = styles.scan;
       d.setAttribute("aria-hidden", "true");
-      d.dataset.scan = k;
       this.el.board.appendChild(d);
       this.scans[k] = d;
     });
   }
 
   layout(vw: number, vh: number) {
+    this.vw = vw;
+    this.vh = vh;
     const port = vw / vh < 1.05;
     const g = (this.g = port ? GEO_PORT : GEO_LAND);
     this.root.dataset.orient = port ? "port" : "land";
@@ -193,32 +196,31 @@ export class Story {
     b.style.height = `${g.H}px`;
     b.style.transform = `translate3d(${this.bx}px,${this.by}px,0) scale(${s})`;
     this.el.linksSvg.setAttribute("viewBox", `0 0 ${g.W} ${g.H}`);
-    [this.el.hComplex, this.el.hClear].forEach((h) => {
-      h.style.fontSize = `${g.head.font}px`;
-      h.style.top = `${g.head.y}px`;
-    });
+    // headlines: "complex" sits in the middle of its documents; "clear" just above the product
+    this.el.hComplex.style.fontSize = `${g.complex.font}px`;
+    this.el.hComplex.style.top = `${g.H / 2 - (g.complex.font * 1.15) / 2}px`;
+    this.el.hClear.style.fontSize = `${g.clear.font}px`;
+    this.el.hClear.style.top = `${g.clear.y}px`;
+    // the two sentences: one block, as large as fits, centred on the board
     const sent = this.el.sent;
-    Object.assign(sent.style, { left: `${g.sent.x}px`, width: `${g.sent.w}px`, fontSize: `${g.sent.font}px` });
-    sent.style.top = "0px";
-    const sh = sent.offsetHeight;
-    sent.style.top = `${port ? g.sent.y : (g.H - sh) / 2}px`;
+    Object.assign(sent.style, { left: "0px", top: "0px", fontSize: `${g.sent.font}px` });
+    const font = Math.min(g.sent.font, (g.sent.font * g.sent.maxW) / Math.max(1, sent.offsetWidth));
+    sent.style.fontSize = `${font.toFixed(2)}px`;
+    sent.style.left = `${(g.W - sent.offsetWidth) / 2}px`;
+    sent.style.top = `${(g.H - sent.offsetHeight) / 2}px`;
+    const board = this.el.board;
+    this.words = { figma: offsetIn(this.el.wFigma, board), code: offsetIn(this.el.wCode, board) };
+    // the product
     const cr = this.el.cr;
     cr.style.width = `${g.crW}px`;
     cr.style.height = `${g.crH}px`;
-    const setRect = (el: HTMLElement, r: Rect) => Object.assign(el.style, { left: `${r.x}px`, top: `${r.y}px`, width: `${r.w}px`, height: `${r.h}px` });
-    setRect(this.el.figma, g.ws);
-    setRect(this.el.editor, g.editor);
-    setRect(this.el.preview, g.preview);
     $$(cr, "[data-t]").forEach((t) => (this.targets[t.dataset.t!] = offsetIn(t, cr)));
     Object.entries(this.arts).forEach(([k, a]) => {
       a.style.width = "";
       a.style.height = "";
       this.artSize[k] = { w: a.offsetWidth, h: a.offsetHeight };
     });
-    this.editRects = ["appr", "head", "btn", "flow"].map((k) => this.targets[k]);
-    const board = this.el.board;
-    this.words = { figma: offsetIn(this.el.wFigma, board), code: offsetIn(this.el.wCode, board) };
-    // scan highlights sit on their regions in the chapter-3 placement
+    const setRect = (el: HTMLElement, r: Rect) => Object.assign(el.style, { left: `${r.x}px`, top: `${r.y}px`, width: `${r.w}px`, height: `${r.h}px` });
     Object.entries(this.scans).forEach(([k, d]) => setRect(d, this.crRect(g.cr3, k)));
     this.stats.forEach((st, i) => {
       st.style.left = `${g.stats.xs[i]}px`;
@@ -245,35 +247,23 @@ export class Story {
     return this.finaleView;
   }
 
-  /** Final product camera: a gentle push toward the approval panel, then a pull back to the whole. */
-  private livePlace(r: number): Place {
+  /** The product filling the viewport (contain), in board units. */
+  private fullPlace(): Place {
     const g = this.g;
-    const push = inOutQuint(span(r, T.pushIn)) * (1 - inOutQuint(span(r, T.pullBack)));
-    const pull = inOutQuint(span(r, T.pullBack));
-    let p = g.cr7;
-    if (push > 0) {
-      const a = this.targets.appr;
-      const s2 = g.cr7.s * 1.08;
-      // keep the approval panel's centre where it is while scaling slightly
-      const x0 = g.cr7.cx - (g.crW * g.cr7.s) / 2, y0 = g.cr7.cy - (g.crH * g.cr7.s) / 2;
-      const ax = x0 + (a.x + a.w / 2) * g.cr7.s, ay = y0 + (a.y + a.h / 2) * g.cr7.s;
-      const toX = ax, toY = ay;
-      const pushed = { cx: toX - (a.x + a.w / 2 - g.crW / 2) * s2, cy: toY - (a.y + a.h / 2 - g.crH / 2) * s2, s: s2 };
-      p = lerpP(g.cr7, pushed, push);
-    }
-    if (pull > 0) p = lerpP(p, g.crFinal, pull);
-    return p;
+    const s = Math.min(this.vw / (g.crW * this.bs), this.vh / (g.crH * this.bs));
+    return { cx: (this.vw / 2 - this.bx) / this.bs, cy: (this.vh / 2 - this.by) / this.bs, s };
   }
 
-  private placeCR(r: number): { p: Place; a: number } | null {
+  private placeCR(r: number): { p: Place; a: number; full: number } | null {
     const g = this.g;
-    if (r < T.gateIn[0] || r >= T.sweep[1]) return null;
-    if (r < T.sent1In[0]) return { p: g.cr3, a: outCubic(span(r, T.gateIn)) * (1 - span(r, T.wireOut)) };
-    if (r < T.codeReveal[0]) return { p: g.cr5, a: outCubic(span(r, T.figmaReveal)) };
-    if (r < T.toLive[0]) return { p: lerpP(g.cr5, g.cr6, inOutQuint(span(r, T.codeReveal))), a: 1 };
-    const q = span(r, T.toLive);
-    if (q < 0.45) return { p: g.cr6, a: 1 - q / 0.45 };
-    return { p: this.livePlace(r), a: outCubic((q - 0.5) / 0.5) };
+    if (r >= T.gateIn[0] && r < T.wireOut[1]) return { p: g.cr3, a: outCubic(span(r, T.gateIn)) * (1 - span(r, T.wireOut)), full: 0 };
+    if (r >= T.crIn[0] && r < T.sweep[1]) {
+      const z = inOutQuint(span(r, T.zoom));
+      const inP = outQuint(span(r, T.crIn));
+      const p = lerpP(g.cr7, this.fullPlace(), z);
+      return { p: { cx: p.cx, cy: p.cy + (1 - inP) * 24, s: p.s * (0.98 + 0.02 * inP) }, a: outCubic(span(r, T.crIn)), full: z };
+    }
+    return null;
   }
 
   render(r: number, origin: { x: number; y: number }) {
@@ -291,16 +281,50 @@ export class Story {
     line(e.hComplex, e.hComplexU, T.complexIn, T.complexOut);
     line(e.hClear, e.hClearU, T.clearIn, T.clearOut);
 
-    /* ---------- 2: artefacts float, link, gather — 3: both sides → the frame → clean ---------- */
+    /* ---------- 2: documents float, link, gather — 3: clutter clears, pieces → the frame ---------- */
     const gather = inOutQuint(span(r, T.gather));
     const spread = inOutQuint(span(r, T.spread));
-    const centroids = GROUPS.map((grp) => {
+    const centroid = (grp: string[]) => {
       const pts = grp.map((k) => g.arts[k]);
       return [pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length];
-    });
+    };
+    const centroids = GROUPS.map(centroid);
     const groupOf = (k: string) => GROUPS.findIndex((grp) => grp.includes(k));
     const artPos: Record<string, { x: number; y: number }> = {};
     const lastLand = flowTimes(FLOW[FLOW.length - 1]).b;
+    const homeOf = (k: string, i: number, fromSide: boolean) => {
+      const [hx, hy] = g.arts[k];
+      const t = Math.max(0, r - T.scatter[0]);
+      const fx = hx + Math.sin(t * (0.55 + i * 0.05) + i) * 10;
+      const fy = hy + Math.cos(t * (0.45 + i * 0.04) + i * 1.7) * 8;
+      const st = T.scatter[0] + (fromSide ? 0.25 + (i % 4) * 0.08 : i * 0.035);
+      const enter = outQuint(prog(r, st, st + (fromSide ? 0.85 : 0.65)));
+      const fromX = fromSide ? (hx < g.W / 2 ? g.sides.offL : g.sides.offR) : origin.x;
+      const fromY = fromSide ? hy : origin.y;
+      const gi = groupOf(k);
+      const c = gi >= 0 ? centroids[gi] : [hx, hy];
+      return {
+        x: lerp(lerp(fromX, fx, enter), lerp(fx, c[0], 0.16), gather),
+        y: lerp(lerp(fromY, fy, enter), lerp(fy, c[1], 0.16), gather),
+        enter,
+      };
+    };
+
+    // clutter: enters from the sides, then is cleared away outwards when the frame opens
+    CLUTTER.forEach((k, i) => {
+      const a = this.arts[k];
+      const h = homeOf(k, i + 3, true);
+      const out = inCubic(spread);
+      const toX = g.arts[k][0] < g.W / 2 ? g.sides.offL : g.sides.offR;
+      const x = lerp(h.x, toX, out), y = h.y;
+      const alpha = h.enter * (1 - prog(r, T.spread[0], T.spread[0] + 0.32));
+      artPos[k] = { x, y };
+      show(a, alpha > 0.001);
+      if (alpha <= 0.001) return;
+      a.style.opacity = alpha.toFixed(3);
+      a.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) translate(-50%,-50%) scale(${g.artSc})`;
+    });
+
     ART_KEYS.forEach((k, i) => {
       const a = this.arts[k];
       const extra = EXTRAS.includes(k);
@@ -308,9 +332,8 @@ export class Story {
       const size = this.artSize[k];
       const [side, slot] = SIDE[k];
       const sx = side === "L" ? g.sides.lx : g.sides.rx, sy = g.sides.ys[slot];
-      let x: number, y: number, sc = 1, rot = 0, alpha: number;
+      let x: number, y: number, sc = g.artSc, rot = 0, alpha: number;
       if (extra) {
-        // extras slide in from off-screen to their side
         const p = outQuint(prog(r, T.extrasIn[0] + (slot % 2) * 0.12, T.extrasIn[1] + (slot % 2) * 0.12));
         x = lerp(side === "L" ? g.sides.offL : g.sides.offR, sx, p);
         y = sy;
@@ -318,31 +341,22 @@ export class Story {
         rot = TILT[k] * p;
         alpha = p;
       } else {
-        const [hx, hy] = g.arts[k];
-        const t = Math.max(0, r - T.scatter[0]);
-        const fx = hx + Math.sin(t * (0.55 + i * 0.06) + i) * 12;
-        const fy = hy + Math.cos(t * (0.45 + i * 0.05) + i * 1.7) * 10;
-        const enter = outQuint(prog(r, T.scatter[0] + i * 0.035, T.scatter[0] + i * 0.035 + 0.65));
-        const c = centroids[groupOf(k)];
-        x = lerp(lerp(origin.x, fx, enter), lerp(fx, c[0], 0.38), gather);
-        y = lerp(lerp(origin.y, fy, enter), lerp(fy, c[1], 0.38), gather);
-        // the frame opens: the mess is pushed to both sides, tilted and uneven
-        x = lerp(x, sx, spread);
-        y = lerp(y, sy, spread);
-        sc = lerp(1, g.sides.sc, spread);
+        const h = homeOf(k, i, false);
+        x = lerp(h.x, sx, spread);
+        y = lerp(h.y, sy, spread);
+        sc = lerp(g.artSc, g.sides.sc, spread);
         rot = TILT[k] * spread;
-        alpha = enter;
+        alpha = h.enter;
       }
-      // the transformation: travel into the frame, straighten, become the clean part
+      // the transformation: travel into the frame, straighten, dissolve into the clean part
       const tp = inOutQuint(prog(r, ft.a, ft.b));
       if (tp > 0) {
         const tgt = this.crRect(g.cr3, ART_TARGET[k]);
         x = lerp(x, tgt.x + tgt.w / 2, tp);
         y = lerp(y, tgt.y + tgt.h / 2, tp);
         rot = lerp(rot, 0, tp);
-        const w = lerp(size.w * sc, tgt.w, tp), h = lerp(size.h * sc, tgt.h, tp);
-        a.style.width = `${w.toFixed(1)}px`;
-        a.style.height = `${h.toFixed(1)}px`;
+        a.style.width = `${lerp(size.w * sc, tgt.w, tp).toFixed(1)}px`;
+        a.style.height = `${lerp(size.h * sc, tgt.h, tp).toFixed(1)}px`;
         a.style.setProperty("--detail", String(1 - tp));
         alpha *= 1 - prog(r, lerp(ft.a, ft.b, 0.5), ft.b + 0.04);
       } else {
@@ -352,30 +366,32 @@ export class Story {
       }
       if (k === "button") {
         // the button stays on the clean product, then becomes the stats' accent rule
-        alpha = r < ft.b ? alpha : 1;
-        const toRule = inOutQuint(span(r, T.accentToRule));
+        const tgt = this.crRect(g.cr3, "btn");
         if (r >= ft.b) {
-          const tgt = this.crRect(g.cr3, "btn");
-          x = tgt.x + tgt.w / 2; y = tgt.y + tgt.h / 2;
+          alpha = 1;
+          x = tgt.x + tgt.w / 2;
+          y = tgt.y + tgt.h / 2;
           a.style.width = `${tgt.w}px`;
           a.style.height = `${tgt.h}px`;
-          sc = 1; rot = 0;
+          rot = 0;
         }
+        const toRule = inOutQuint(span(r, T.accentToRule));
         x = lerp(x, g.W / 2, toRule);
         y = lerp(y, g.stats.ruleY, toRule);
         if (toRule > 0) {
-          const tgt = this.crRect(g.cr3, "btn");
           a.style.width = `${lerp(tgt.w, 120, toRule)}px`;
           a.style.height = `${lerp(tgt.h, 6, toRule)}px`;
-        }
+          a.style.padding = "0";
+        } else a.style.padding = "";
         a.style.setProperty("--label", String(1 - prog(r, T.accentToRule[0], T.accentToRule[0] + 0.2)));
         alpha *= 1 - span(r, T.statsOut);
         if (r >= T.sent1In[0]) alpha = 0;
       } else if (r > lastLand + 0.3) alpha = 0;
       artPos[k] = { x, y };
       show(a, alpha > 0.001);
+      if (alpha <= 0.001) return;
       a.style.opacity = alpha.toFixed(3);
-      a.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) translate(-50%,-50%) rotate(${rot.toFixed(2)}deg) scale(${tp > 0 ? 1 : sc})`;
+      a.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) translate(-50%,-50%) rotate(${rot.toFixed(2)}deg) scale(${tp > 0 || (k === "button" && r >= ft.b) ? 1 : sc})`;
       const messy = String((spread > 0.5 || extra) && tp < 0.5);
       if (a.dataset.messy !== messy) a.dataset.messy = messy;
     });
@@ -387,25 +403,25 @@ export class Story {
     GROUPS.forEach((grp) => {
       for (let j = 0; j < grp.length - 1; j++) {
         const L = this.links[li++];
-        if (!L || !artPos[grp[j]] || !artPos[grp[j + 1]]) continue;
         const p = artPos[grp[j]], q = artPos[grp[j + 1]];
+        if (!L || !p || !q) continue;
         L.setAttribute("x1", p.x.toFixed(1));
         L.setAttribute("y1", p.y.toFixed(1));
         L.setAttribute("x2", lerp(p.x, q.x, linkDraw).toFixed(1));
         L.setAttribute("y2", lerp(p.y, q.y, linkDraw).toFixed(1));
-        L.style.opacity = (0.75 * linkFade).toFixed(3);
+        L.style.opacity = (0.7 * linkFade).toFixed(3);
       }
     });
+    for (; li < this.links.length; li++) this.links[li].style.opacity = "0";
     // orange scan as each piece is transformed into its clean part
     Object.entries(this.scans).forEach(([k, d]) => {
-      const pieces = FLOW.filter((f) => ART_TARGET[f] === k);
-      let s = 0;
-      pieces.forEach((f) => {
+      let sv = 0;
+      FLOW.filter((f) => ART_TARGET[f] === k).forEach((f) => {
         const { b } = flowTimes(f);
-        s = Math.max(s, Math.sin(Math.PI * prog(r, b - 0.12, b + 0.38)));
+        sv = Math.max(sv, Math.sin(Math.PI * prog(r, b - 0.12, b + 0.38)));
       });
-      show(d, s > 0.01);
-      d.style.opacity = s.toFixed(3);
+      show(d, sv > 0.01);
+      d.style.opacity = sv.toFixed(3);
     });
 
     /* ---------- 4: proof — all three together ---------- */
@@ -430,23 +446,37 @@ export class Story {
       });
     }
 
-    /* ---------- 5 + 6: the two sentences — whole first, then the cursor ---------- */
-    const sentOn = r >= T.sent1In[0] && r < T.toLive[1];
+    /* ---------- 5–6: the sentences + a design-tool selection ---------- */
+    const sentOn = r >= T.sent1In[0] && r < T.sentOut[1];
     show(e.sent, sentOn);
+    const pad = { x: 0.1, y: 0.02 };
+    const box = (w: Rect): Rect => ({ x: w.x - w.h * pad.x, y: w.y + w.h * pad.y, w: w.w + w.h * pad.x * 2, h: w.h * (1 - pad.y * 2) });
+    const fBox = box(this.words.figma), cBox = box(this.words.code);
+    const selRect = lerpR(fBox, cBox, inOutQuint(span(r, T.selToCode)));
+    const out = inOutQuint(span(r, T.sentOut));
     if (sentOn) {
-      const out = inOutQuint(span(r, [T.toLive[0], T.toLive[0] + 0.4]));
       e.sent.style.opacity = (1 - out).toFixed(3);
+      e.sent.style.transform = `translate3d(0,${(-out * 16).toFixed(2)}px,0)`;
       rise(e.s1u, outQuint(span(r, T.sent1In)));
       show(e.s2, r >= T.sent2In[0]);
       rise(e.s2u, outQuint(span(r, T.sent2In)));
-      e.s1.style.opacity = (1 - 0.55 * outCubic(span(r, T.sent2In))).toFixed(3);
-      const hvF = outCubic(prog(r, T.cursorToFigma[1] - 0.12, T.cursorToFigma[1] + 0.12)) * (1 - outCubic(span(r, [T.cursorToCode[0], T.cursorToCode[0] + 0.25])));
-      const hvC = outCubic(prog(r, T.cursorToCode[1] - 0.12, T.cursorToCode[1] + 0.12));
-      e.wFigma.style.setProperty("--hv", hvF.toFixed(3));
-      e.wCode.style.setProperty("--hv", hvC.toFixed(3));
+      e.wCode.style.setProperty("--hv", outCubic(span(r, T.codeOn)).toFixed(3));
+    }
+    const selOn = r >= T.selIn[0] && r < T.sentOut[1];
+    show(e.sel, selOn);
+    if (selOn) {
+      const a = outCubic(span(r, T.selIn)) * (1 - out);
+      const sIn = 0.94 + 0.06 * outQuint(span(r, T.selIn));
+      e.sel.style.opacity = a.toFixed(3);
+      e.sel.style.width = `${selRect.w.toFixed(1)}px`;
+      e.sel.style.height = `${selRect.h.toFixed(1)}px`;
+      e.sel.style.transformOrigin = "50% 50%";
+      e.sel.style.transform = `translate3d(${selRect.x.toFixed(1)}px,${(selRect.y - out * 16).toFixed(1)}px,0) scale(${sIn.toFixed(4)})`;
+      const lab = `${Math.round(selRect.w)} × ${Math.round(selRect.h)}`;
+      if (e.selLab.textContent !== lab) e.selLab.textContent = lab;
     }
 
-    /* ---------- the product (one instance, chapters 3–7) ---------- */
+    /* ---------- 7: the product ---------- */
     const pl = this.placeCR(r);
     show(e.cr, !!pl);
     if (pl) {
@@ -454,164 +484,67 @@ export class Story {
       e.cr.style.opacity = pl.a.toFixed(3);
       const x0 = place.cx - (g.crW * place.s) / 2, y0 = place.cy - (g.crH * place.s) / 2;
       e.cr.style.transform = `translate3d(${x0.toFixed(2)}px,${y0.toFixed(2)}px,0) scale(${place.s.toFixed(4)})`;
-      const live = r >= T.toLive[1] - 0.3;
-      // fidelity: clean (3) · wireframe designed by the Figma edits (5) · built (6) ·
-      // in 7 it restarts as a wireframe and is polished region by region
-      let f: number[];
-      if (r < T.sent1In[0]) f = [1, 1, 1, 1];
-      else if (r < T.toLive[0] + 0.25) f = T.edits.map((ed) => outCubic(prog(r, ed[0] + 0.1, ed[1])));
-      else if (r < T.polish[0][0]) f = [0, 0, 0, 0];
-      else f = T.polish.map((pp) => inOutQuint(prog(r, pp[0], pp[1])));
-      const order = r >= T.polish[0][0] ? [f[2], f[0], f[3], f[1]] : f;
-      order.forEach((v, i) => e.cr.style.setProperty(`--f${i + 1}`, v.toFixed(3)));
+      e.cr.style.borderRadius = `${(22 * (1 - pl.full)).toFixed(2)}px`;
+      const ch3 = r < T.crIn[0];
       // chapter 3: the frame glows orange while the pieces are transformed, then calms
-      const gate = r < T.sent1In[0] ? outCubic(span(r, T.gateIn)) * (1 - outCubic(prog(r, flowTimes(FLOW[FLOW.length - 1]).b, flowTimes(FLOW[FLOW.length - 1]).b + 0.6))) : 0;
+      const gate = ch3 ? outCubic(span(r, T.gateIn)) * (1 - outCubic(prog(r, lastLand, lastLand + 0.6))) : 0;
       e.cr.style.setProperty("--gate", gate.toFixed(3));
-      // build-up in the live preview: each part appears as its code line completes
-      const cd = T.code[1] - T.code[0];
-      const buildAt = [0.42, 0.57, 0.72, 0.86, 1.0].map((fr) => T.code[0] + fr * cd).concat(T.accept);
-      const inCode = r >= T.codeReveal[0] && r < T.toLive[0] + 0.25;
-      this.builds.forEach((b) => {
-        const k = Number(b.dataset.b);
-        let p = 1;
-        if (inCode) p = r < T.code[0] ? 1 - prog(r, T.codeReveal[0], T.codeReveal[0] + 0.3) : outQuint(prog(r, buildAt[k], buildAt[k] + 0.32));
-        b.style.opacity = p.toFixed(3);
-        b.style.transform = p >= 1 ? "" : `translate3d(0,${((1 - p) * 10).toFixed(2)}px,0)`;
-      });
-      // chapter 3: each clean region appears as its piece lands in the frame
-      if (r < T.sent1In[0]) {
+      if (ch3) {
         REGIONS.forEach((k) => {
-          const pieces = FLOW.filter((f) => ART_TARGET[f] === k);
-          const land = Math.min(...pieces.map((f) => flowTimes(f).b));
+          const land = Math.min(...FLOW.filter((f) => ART_TARGET[f] === k).map((f) => flowTimes(f).b));
           this.regionEls[k].style.opacity = outCubic(prog(r, land - 0.32, land + 0.12)).toFixed(3);
         });
-      } else if (r < T.codeReveal[0]) REGIONS.forEach((k) => (this.regionEls[k].style.opacity = ""));
-      // live states (chapter 7)
-      const dp = live ? inOutQuint(span(r, T.draftDone)) : 0;
-      e.progress.style.transform = `scaleX(${(live ? lerp(0.35, 1, dp) : 0.35).toFixed(4)})`;
-      const flowDone = live ? span(r, T.flowDone) : 0;
+      } else REGIONS.forEach((k) => (this.regionEls[k].style.opacity = ""));
+      // live states (chapter 7): Draft finishes, Pricing is approved, Review runs and completes
+      const draft = ch3 ? 0 : outCubic(span(r, T.draftDone));
+      const approvedP = ch3 ? 0 : outCubic(span(r, T.approved));
+      const review = ch3 ? 0 : span(r, T.flowDone);
+      const doneAt = [0, draft, approvedP, prog(review, 0.75, 1)];
+      const states = [
+        "done",
+        draft >= 0.5 ? "done" : "running",
+        approvedP >= 0.5 ? "done" : "approval",
+        review >= 1 ? "done" : review > 0 ? "running" : "waiting",
+      ];
+      const barP = [1, lerp(0.72, 1, draft), approvedP >= 0.5 ? 1 : 0, review];
       this.nodes.forEach((n, i) => {
-        const doneAt = i === 0 ? 0 : i === 1 ? (dp >= 1 ? 1 : 0) : i === 2 ? prog(r, T.flowDone[0], T.flowDone[0] + 0.2) : prog(r, T.flowDone[0] + 0.25, T.flowDone[1]);
-        const state = live && doneAt >= 1 ? "done" : i === 0 ? "done" : i === 1 ? "running" : i === 2 ? "approval" : "waiting";
-        if (n.dataset.state !== state) n.dataset.state = state;
-        const m0 = n.querySelector<HTMLElement>("[data-m0]"), m1 = n.querySelector<HTMLElement>("[data-m1]");
-        if (m0 && m1) {
-          m0.style.opacity = String(1 - doneAt);
-          m1.style.opacity = String(doneAt);
-        }
+        if (n.dataset.state !== states[i]) n.dataset.state = states[i];
+        n.querySelectorAll<HTMLElement>("[data-m0]").forEach((m) => (m.style.opacity = String(1 - doneAt[i])));
+        n.querySelectorAll<HTMLElement>("[data-m1]").forEach((m) => (m.style.opacity = String(doneAt[i])));
+        this.bars[i].style.transform = `scaleX(${barP[i].toFixed(4)})`;
       });
-      const complete = flowDone >= 1;
-      if (e.crPill.dataset.complete !== String(complete)) e.crPill.dataset.complete = String(complete);
-      const hover = live ? outCubic(span(r, T.hover)) * (1 - prog(r, T.click + 0.2, T.click + 0.5)) : 0;
-      const press = r >= T.click && r < T.click + 0.16 ? 1 - Math.sin((Math.PI * (r - T.click)) / 0.16) * 0.06 : 1;
+      const complete = String(review >= 1);
+      if (e.crPill.dataset.complete !== complete) e.crPill.dataset.complete = complete;
+      const hover = ch3 ? 0 : outCubic(span(r, T.hover)) * (1 - prog(r, T.click + 0.25, T.click + 0.5));
+      const press = r >= T.click && r < T.click + 0.18 ? 1 - Math.sin((Math.PI * (r - T.click)) / 0.18) * 0.05 : 1;
       e.cr.style.setProperty("--hover", hover.toFixed(3));
       e.cr.style.setProperty("--press", press.toFixed(4));
-      e.cr.style.setProperty("--approved", String(live ? outCubic(prog(r, T.click + 0.08, T.click + 0.4)) : 0));
-      if (r >= T.toLive[0]) {
+      e.cr.style.setProperty("--approved", approvedP.toFixed(3));
+      if (!ch3) {
         const d = this.crRect(place, "pilldot");
         this.finaleView = { ...this.toView(d.x + d.w / 2, d.y + d.h / 2), r: Math.max(4, (d.w / 2) * this.bs) };
       }
     }
 
-    /* ---------- 5: Figma workspace + selection (opened by hovering "Figma") ---------- */
-    const figOn = r >= T.figmaReveal[0] && r < T.codeReveal[1];
-    show(e.figma, figOn);
-    if (!figOn) show(e.sel, false);
-    if (figOn) {
-      const inP = outQuint(span(r, T.figmaReveal)), outP = inOutQuint(span(r, T.codeReveal));
-      e.figma.style.opacity = (inP * (1 - outP)).toFixed(3);
-      e.figma.style.transform = `translate3d(0,${((1 - inP) * 16).toFixed(2)}px,0) scale(${(0.98 + 0.02 * inP).toFixed(4)})`;
-      let active = -1;
-      T.edits.forEach((ed, i) => { if (r >= ed[0]) active = i; });
-      e.figma.dataset.active = String(active);
-      const selOn = active >= 0 && r < T.codeReveal[0];
-      show(e.sel, selOn);
-      if (selOn) {
-        const from = active > 0 ? this.editRects[active - 1] : this.editRects[0];
-        const to = this.editRects[active];
-        const m = inOutQuint(prog(r, T.edits[active][0], T.edits[active][0] + 0.28));
-        const rr = { x: lerp(from.x, to.x, m), y: lerp(from.y, to.y, m), w: lerp(from.w, to.w, m), h: lerp(from.h, to.h, m) };
-        const p = g.cr5;
-        const x0 = p.cx - (g.crW * p.s) / 2, y0 = p.cy - (g.crH * p.s) / 2;
-        e.sel.style.transform = `translate3d(${(x0 + rr.x * p.s - 3).toFixed(1)}px,${(y0 + rr.y * p.s - 3).toFixed(1)}px,0)`;
-        e.sel.style.width = `${(rr.w * p.s + 6).toFixed(1)}px`;
-        e.sel.style.height = `${(rr.h * p.s + 6).toFixed(1)}px`;
-        e.sel.style.opacity = outCubic(prog(r, T.edits[0][0], T.edits[0][0] + 0.2)).toFixed(3);
-        const lab = `${Math.round(rr.w)} × ${Math.round(rr.h)}`;
-        if (e.selLab.textContent !== lab) e.selLab.textContent = lab;
-      }
-    }
-
-    /* ---------- 6: editor (top) + developed product (bottom), opened by hovering "code" ---------- */
-    const codeOn = r >= T.codeReveal[0] && r < T.toLive[1];
-    show(e.editor, codeOn);
-    show(e.preview, codeOn);
-    if (codeOn) {
-      const inP = inOutQuint(span(r, T.codeReveal)), outP = inOutQuint(span(r, [T.toLive[0], T.toLive[0] + 0.4]));
-      const a = (inP * (1 - outP)).toFixed(3);
-      e.editor.style.opacity = a;
-      e.preview.style.opacity = a;
-      e.editor.style.transform = `translate3d(0,${((1 - inP) * -14).toFixed(1)}px,0)`;
-      e.preview.style.transform = `translate3d(0,${((1 - inP) * 14).toFixed(1)}px,0)`;
-      const typedLines = this.codeLines.filter((l) => !l.dataset.ghost && !l.dataset.after);
-      const total = typedLines.reduce((acc, l) => acc + Number(l.dataset.len), 0);
-      const n = Math.round(prog(r, T.code[0], T.code[1]) * total);
-      let left = n, caretLine: HTMLElement | null = null, caretN = 0;
-      this.codeLines.forEach((l) => {
-        const len = Number(l.dataset.len);
-        if (l.dataset.ghost) {
-          show(l, r >= T.ghost[0]);
-          l.dataset.accepted = String(r >= T.accept);
-          l.style.setProperty("--n", String(len));
-          if (r >= T.ghost[0] && r < T.accept) { caretLine = l; caretN = 0; }
-          return;
-        }
-        if (l.dataset.after) {
-          const k = Math.round(prog(r, T.accept + 0.1, T.accept + 0.35) * len);
-          l.style.setProperty("--n", String(k));
-          show(l, k > 0);
-          if (k > 0 && k < len) { caretLine = l; caretN = k; }
-          return;
-        }
-        const k = Math.max(0, Math.min(len, left));
-        left -= len;
-        l.style.setProperty("--n", String(k));
-        show(l, k > 0 || (len === 0 && left >= 0));
-        if (k > 0 && left <= 0 && r < T.ghost[0]) { caretLine = l; caretN = k; }
-      });
-      const cl = caretLine as HTMLElement | null;
-      show(e.codeCaret, !!cl && r < T.codeHold);
-      if (cl) e.codeCaret.style.transform = `translate3d(calc(${cl.offsetLeft}px + ${caretN}ch), ${cl.offsetTop}px, 0)`;
-      e.ghostChip.style.opacity = (prog(r, T.ghost[0], T.ghost[0] + 0.2) * (1 - prog(r, T.accept, T.accept + 0.25))).toFixed(3);
-    }
-
-    /* ---------- the cursor: Figma → code → the Approve button ---------- */
-    const curA = r >= T.cursorToFigma[0] && r < T.toLive[0] + 0.35;
-    const curB = r >= T.cursorIn[0] && r < T.pullBack[0] + 0.45;
+    /* ---------- the named cursor: "Figma," → "code." → Approve & send ---------- */
+    const curA = r >= T.cursorIn5[0] && r < T.sentOut[1];
+    const curB = r >= T.cursorIn[0] && r < T.zoom[0] + 0.5;
     show(e.pcur, curA || curB);
     if (curA || curB) {
-      const wf = this.words.figma, wc = this.words.code;
-      const atF = { x: wf.x + wf.w * 0.62, y: wf.y + wf.h * 0.78 };
-      const atC = { x: wc.x + wc.w * 0.55, y: wc.y + wc.h * 0.78 };
-      let x: number, y: number, a = 1;
+      let x: number, y: number, a: number;
       if (curA) {
-        if (r < T.cursorToCode[0]) {
-          const p = inOutQuint(span(r, T.cursorToFigma));
-          x = lerp(g.W * 0.58, atF.x, p);
-          y = lerp(g.H * 0.98, atF.y, p) - Math.sin(Math.PI * p) * 30;
-          a = outCubic(prog(r, T.cursorToFigma[0], T.cursorToFigma[0] + 0.2));
-        } else {
-          const p = inOutQuint(span(r, T.cursorToCode));
-          x = lerp(atF.x, atC.x, p);
-          y = lerp(atF.y, atC.y, p) - Math.sin(Math.PI * p) * 14;
-        }
-        a *= 1 - outCubic(span(r, [T.toLive[0], T.toLive[0] + 0.3]));
+        const corner = { x: selRect.x + selRect.w - 2, y: selRect.y + selRect.h - 2 };
+        const p = inOutQuint(span(r, T.cursorIn5));
+        x = lerp(g.W * 0.82, corner.x, p);
+        y = lerp(g.H * 1.02, corner.y, p) - Math.sin(Math.PI * p) * 30;
+        y -= out * 16;
+        a = outCubic(prog(r, T.cursorIn5[0], T.cursorIn5[0] + 0.2)) * (1 - out);
       } else {
-        const btn = this.crRect(this.livePlace(r), "btn");
+        const btn = this.crRect(this.placeCR(Math.min(r, T.zoom[0]))!.p, "btn");
         const p = inOutQuint(span(r, T.cursorIn));
-        x = lerp(g.W * 0.86, btn.x + btn.w * 0.62, p);
-        y = lerp(g.H * 0.98, btn.y + btn.h * 0.66, p) - Math.sin(Math.PI * p) * 24;
-        a = outCubic(prog(r, T.cursorIn[0], T.cursorIn[0] + 0.2)) * (1 - prog(r, T.pullBack[0] + 0.1, T.pullBack[0] + 0.45));
+        x = lerp(g.W * 0.9, btn.x + btn.w * 0.6, p);
+        y = lerp(g.H * 1.02, btn.y + btn.h * 0.62, p) - Math.sin(Math.PI * p) * 24;
+        a = outCubic(prog(r, T.cursorIn[0], T.cursorIn[0] + 0.2)) * (1 - prog(r, T.zoom[0], T.zoom[0] + 0.3));
       }
       const press = r >= T.click && r < T.click + 0.14 ? 0.86 : 1;
       e.pcur.style.opacity = a.toFixed(3);

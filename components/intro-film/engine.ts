@@ -8,7 +8,7 @@
  */
 import { computeLayout, type Layout } from "./layout";
 import { Story } from "./story";
-import { COLORS, T, clamp01, inOutQuint, inQuint, lerp, outCubic, outQuint, prog, readBrandColors, span } from "./timeline";
+import { COLORS, T, clamp01, inOutCubic, inOutQuint, inQuint, lerp, outCubic, outQuint, prog, readBrandColors, span } from "./timeline";
 
 const $ = <E extends Element = HTMLElement>(root: ParentNode, s: string) => root.querySelector<E>(s)!;
 const $$ = <E extends Element = HTMLElement>(root: ParentNode, s: string) => Array.from(root.querySelectorAll<E>(s));
@@ -98,6 +98,9 @@ export class FilmEngine {
 
     const saved = e.nameUnit.style.transform;
     e.nameUnit.style.transform = "none";
+    // the caret follows the typing, which happens at Regular weight
+    e.hello.style.fontWeight = "400";
+    this.hc.forEach((c) => (c.style.transform = ""));
     const hb = rectOf(e.hello);
     const p = rectOf(e.period);
     const base = e.nbase.getBoundingClientRect().top;
@@ -141,14 +144,22 @@ export class FilmEngine {
     show(e.hello, r < T.collapse[1]);
     if (r < T.collapse[1]) {
       const typed = Math.floor(prog(r, T.typeStart, T.typeEnd) * this.hc.length + (r >= T.typeStart ? 1 : 0));
-      const ink = prog(r, T.marksOut[0] - 0.15, T.marksOut[0] + 0.1);
-      const marks = 1 - outCubic(span(r, T.marksOut));
+      // settle: Regular → Semibold, grey → ink, while the marks part to either side
+      const st = inOutCubic(span(r, T.settle));
+      const ink = outCubic(span(r, T.settle));
+      const wgt = lerp(400, 600, st).toFixed(1);
+      if (e.hello.style.fontWeight !== wgt) e.hello.style.fontWeight = wgt;
+      const away = (0.15 + 0.85 * st) * st * 0.9; // em, outward
+      const markA = 1 - prog(st, 0.55, 1);
+      const half = this.hc.length / 2;
       this.hc.forEach((c, i) => {
         show(c, i < typed);
-        if (c.dataset.kind === "mark") c.style.opacity = String(marks);
-        else c.style.color = mix(COLORS.helloGrey, COLORS.ink, ink);
+        if (c.dataset.kind === "mark") {
+          c.style.opacity = markA.toFixed(3);
+          c.style.transform = `translate3d(${((i < half ? -1 : 1) * away).toFixed(4)}em,0,0)`;
+        } else c.style.color = mix(COLORS.helloGrey, COLORS.ink, ink);
       });
-      show(e.caret, r < T.marksOut[0]);
+      show(e.caret, r < T.settle[0]);
       e.caret.style.transform = `translateX(${m.charRight[Math.max(0, Math.min(typed, this.hc.length) - 1)] ?? 0}px)`;
       const c = inOutQuint(span(r, T.collapse));
       e.hello.style.opacity = String(1 - c);

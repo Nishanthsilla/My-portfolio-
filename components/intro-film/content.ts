@@ -25,7 +25,6 @@ export const film = {
     { value: "5+", label: "years designing products" },
     { value: "4", label: "design systems built or shaped" },
   ],
-  dark: { line1: ["I", "design", "it", "in", "Figma,"], line2: ["then", "ship", "it", "in"], code: "code." },
   cursorTag: "Nishanth",
   /** Chapter-2 artefacts: the raw material of a product problem. */
   artefacts: {
@@ -36,25 +35,47 @@ export const film = {
     idea: { tag: "Idea", title: "One approval queue" },
     dependency: "CRM sync",
     kpi: "Engagement",
+    sheet: { tag: "accounts.csv", rows: [["Arkline", "$42.8k", "Q4"], ["Veridian", "$18.5k", "Q4"], ["Nimbus", "$66.2k", "Q1"], ["Ocra", "$9.8k", "Q4"]] },
+    report: { tag: "Report", title: "Q3 renewal review", meta: "12 pages" },
+    feedback1: { who: "Sales lead", quote: "“I don’t know what the agents sent.”" },
+    feedback2: { who: "Account exec", quote: "“Too many tools to check.”" },
+    agent: { name: "Pricing agent", status: "Running", meta: "3 tasks · 41s" },
+    line: "Reply rate",
   },
   /**
-   * The product that runs through chapters 3–7: Agent Control Room, with copy
-   * taken from Nishanth's own portfolio (work card "Agent Control Room").
+   * The product that runs through chapters 3 and 7: Agent Control Room, with
+   * copy from Nishanth's own portfolio work card and coherent demo data.
    */
   product: {
     name: "Agent Control Room",
+    workspace: "Q4 Renewals",
     running: "3 agents running",
     complete: "Complete",
+    user: "NS",
     intentLabel: "Intent",
     intent: "Renew Q4 deals",
+    intentMeta: ["24 accounts", "$1.2M pipeline", "Started 09:41"],
     nodes: [
-      { name: "Research", meta: "done · 12s", after: "done · 12s" },
-      { name: "Draft", meta: "running…", after: "done · 31s" },
-      { name: "Pricing", meta: "needs approval", after: "approved" },
-      { name: "Review", meta: "human", after: "done" },
+      { step: "01", name: "Research", agent: "Research agent", meta: "24 accounts scanned", after: "24 accounts scanned", status: "Done", statusAfter: "Done" },
+      { step: "02", name: "Draft", agent: "Writer agent", meta: "18 of 24 emails", after: "24 of 24 emails", status: "Running", statusAfter: "Done" },
+      { step: "03", name: "Pricing", agent: "Pricing agent", meta: "8% renewal offer", after: "Offer approved", status: "Needs approval", statusAfter: "Approved" },
+      { step: "04", name: "Review", agent: "Send queue", meta: "Waiting on pricing", after: "Sent to 24 accounts", status: "Queued", statusAfter: "Done" },
     ],
-    approval: { title: "Pricing needs approval", confidence: "Confidence", pct: "82%", edit: "Edit", approve: "Approve & send" },
-    file: "ControlRoom.tsx",
-    url: "localhost:3000",
+    approval: {
+      tag: "Needs approval",
+      agent: "Pricing agent",
+      title: "Send 8% renewal offer to Arkline Logistics",
+      rows: [
+        ["Contract", "$42.8k → $39.4k"],
+        ["Term", "3-year renewal"],
+      ],
+      confidence: "Confidence",
+      pct: "82%",
+      edit: "Edit",
+      approve: "Approve & send",
+      done: "Approved & sent",
+    },
+    replies: { title: "Replies this week", value: "38", delta: "+18%", days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], bars: [42, 64, 52, 78, 70, 90] },
+    engagement: { title: "Engagement", value: "64%", delta: "+15% vs Q3" },
   },
 };

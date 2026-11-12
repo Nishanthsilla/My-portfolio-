@@ -12,7 +12,11 @@ function Card({ k, tag, children, cls = "" }: { k: string; tag?: string; childre
   );
 }
 
-/** Chapter 2: product-design artefacts (each assembles into a part of the product). */
+/**
+ * Chapter 2: the raw material of a product problem — research, data, feedback,
+ * requirements, decisions. The core pieces later assemble into the product
+ * (chapter 3); the rest is clutter that is cleared away.
+ */
 export function Artefacts() {
   const a = film.artefacts;
   return (
@@ -20,12 +24,13 @@ export function Artefacts() {
       <Card k="research" tag={a.research.tag}>
         <b>{a.research.title}</b>
         <span className={styles.artQuote}>{a.research.line}</span>
+        <span className={styles.artLines} aria-hidden="true"><i /><i /><i /></span>
       </Card>
       <Card k="insight" tag={a.insight.tag} cls={styles.artNote}><b>{a.insight.title}</b></Card>
       <Card k="requirement" tag={a.requirement.tag}><b>{a.requirement.title}</b></Card>
       <Card k="decision" tag={a.decision.tag}><b>{a.decision.title}</b></Card>
       <Card k="idea" tag={a.idea.tag} cls={styles.artNote}><b>{a.idea.title}</b></Card>
-      <Card k="workflow" tag="Flow">
+      <Card k="workflow" tag="Workflow">
         <span className={styles.artFlow}><i>Research</i>→<i>Draft</i>→<i>Review</i></span>
       </Card>
       <Card k="dependency" cls={styles.artChip}><span className={styles.chipDot} />{a.dependency}</Card>
@@ -35,6 +40,42 @@ export function Artefacts() {
       <Card k="chart" cls={styles.artChart}>
         <span className={styles.bars}>{[42, 64, 52, 78, 70, 90].map((h, i) => <i key={i} style={{ height: `${h}%` }} />)}</span>
       </Card>
+
+      {/* documents and data that add to the complexity, then get cleared away */}
+      <Card k="sheet" tag={a.sheet.tag}>
+        <span className={styles.sheet}>
+          {a.sheet.rows.map((r) => r.map((c, j) => <span key={r[0] + j}>{c}</span>))}
+        </span>
+      </Card>
+      <Card k="report" tag={a.report.tag} cls={styles.artDoc}>
+        <b>{a.report.title}</b>
+        <span className={styles.artLines} aria-hidden="true"><i /><i /><i /><i /></span>
+        <span className={styles.docChart} aria-hidden="true"><i /><i /><i /></span>
+        <span className={styles.artMeta}>{a.report.meta}</span>
+      </Card>
+      <Card k="feedback1" tag={a.feedback1.who} cls={styles.artQuoteCard}><b>{a.feedback1.quote}</b></Card>
+      <Card k="feedback2" tag={a.feedback2.who} cls={styles.artQuoteCard}><b>{a.feedback2.quote}</b></Card>
+      <Card k="agent" cls={styles.artAgent}>
+        <span className={styles.agentRow}>
+          <span className={styles.agentIcon} aria-hidden="true" />
+          <b>{a.agent.name}</b>
+          <span className={styles.agentStatus}>{a.agent.status}</span>
+        </span>
+        <span className={styles.artMeta}>{a.agent.meta}</span>
+      </Card>
+      <Card k="line" tag={a.line}>
+        <svg viewBox="0 0 160 60" className={styles.lineChart} aria-hidden="true">
+          <path className={styles.grid} d="M0 15 H160 M0 30 H160 M0 45 H160" />
+          <path d="M2 50 L28 44 L52 46 L78 30 L104 34 L130 18 L158 12" />
+        </svg>
+      </Card>
+      <div className={`${styles.art} ${styles.artPoints}`} data-art="points" aria-hidden="true">
+        <svg viewBox="0 0 200 90">
+          <path d="M14 70 L58 34 L104 56 L150 22 L188 44" />
+          {[[14, 70], [58, 34], [104, 56], [150, 22], [188, 44]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={i === 3 ? 6 : 4.5} />)}
+        </svg>
+      </div>
+
       {/* chapter 3 extras: a rough wireframe sketch and a sticky note */}
       <Card k="sketch" tag="Wireframe v0" cls={styles.artSketch}>
         <span className={styles.sketch} aria-hidden="true">
@@ -45,103 +86,6 @@ export function Artefacts() {
       <Card k="sticky" cls={styles.artSticky}><b>Need approve step??</b><span className={styles.artQuote}>who signs off?</span></Card>
       <div className={`${styles.art} ${styles.artBtn}`} data-art="button">
         <span className={styles.artBtnLabel}>{film.product.approval.approve}</span>
-      </div>
-    </div>
-  );
-}
-
-/** Chapter 5: a believable design-tool frame around the product. */
-export function FigmaChrome() {
-  const layers = [
-    { k: "frame", label: "Control Room", depth: 0 },
-    { k: "head", label: "Header", depth: 1 },
-    { k: "flow", label: "Flow lane", depth: 1 },
-    { k: "appr", label: "Approval card", depth: 1 },
-    { k: "btn", label: "Button / Primary", depth: 2 },
-  ];
-  const props = [
-    { k: "appr", title: "Layout", value: "Auto layout · 16" },
-    { k: "head", title: "Text", value: "Geist · Semibold 22" },
-    { k: "btn", title: "Fill", value: "FF4938", swatch: true },
-    { k: "flow", title: "Component", value: "Agent node" },
-  ];
-  return (
-    <div className={styles.figma} data-figma data-active="-1">
-      <div className={styles.figBar}>
-        <span className={styles.figTools}><i /><i /><i /><i /></span>
-        <span className={styles.figFile}>{film.product.name}</span>
-        <span className={styles.figZoom}>100%</span>
-      </div>
-      <div className={styles.figLayers} data-layers>
-        <span className={styles.figPanelTitle}>Layers</span>
-        {layers.map((l) => (
-          <span key={l.k} className={styles.figRow} data-row={l.k} style={{ paddingLeft: 12 + l.depth * 14 }}>
-            <i />{l.label}
-          </span>
-        ))}
-      </div>
-      <div className={styles.figCanvas} />
-      <div className={styles.figProps} data-props>
-        <span className={styles.figPanelTitle}>Design</span>
-        {props.map((p) => (
-          <span key={p.k} className={styles.figProp} data-row={p.k}>
-            <em>{p.title}</em>
-            <b>{p.swatch && <i className={styles.swatch} />}{p.value}</b>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-type Tok = [string, string?];
-const L = (...t: Tok[]) => t;
-const CODE: { toks: Tok[]; ghost?: boolean; after?: boolean }[] = [
-  { toks: L(["import", "kw"], [" { Flow, Agent, ApprovalCard } "], ["from", "kw"], [' "@/ui"', "str"], [";"]) },
-  { toks: [] },
-  { toks: L(["export function", "kw"], [" ControlRoom", "fn"], ["() {"]) },
-  { toks: L(["  return", "kw"], [" ("]) },
-  { toks: L(["    <"], ["Flow", "tag"], [" intent", "at"], ["="], ['"Renew Q4 deals"', "str"], [">"]) },
-  { toks: L(["      <"], ["Agent", "tag"], [" name", "at"], ["="], ['"Research"', "str"], [" status", "at"], ["="], ['"done"', "str"], [" />"]) },
-  { toks: L(["      <"], ["Agent", "tag"], [" name", "at"], ["="], ['"Draft"', "str"], [" status", "at"], ["="], ['"running"', "str"], [" />"]) },
-  { toks: L(["      <"], ["Agent", "tag"], [" name", "at"], ["="], ['"Pricing"', "str"], [" needsApproval", "at"], [" />"]) },
-  { toks: L(["      <"], ["Agent", "tag"], [" name", "at"], ["="], ['"Review"', "str"], [" by", "at"], ["="], ['"human"', "str"], [" />"]) },
-  { toks: L(["      <"], ["ApprovalCard", "tag"], [" confidence", "at"], ["={"], ["0.82", "num"], ["} />"]), ghost: true },
-  { toks: L(["    </"], ["Flow", "tag"], [">"]), after: true },
-  { toks: L(["  );"]), after: true },
-  { toks: L(["}"]), after: true },
-];
-
-/** Chapter 6: the editor (React component typed, with one AI suggestion accepted in place). */
-export function CodeEditor() {
-  return (
-    <div className={styles.editor} data-editor>
-      <div className={styles.edTabs}>
-        <span className={styles.edTab}>{film.product.file}</span>
-      </div>
-      <div className={styles.edBody}>
-        <div className={styles.edNums}>{CODE.map((_, i) => <span key={i}>{i + 1}</span>)}</div>
-        <div className={styles.edCode}>
-          {CODE.map((l, i) => {
-            const len = l.toks.reduce((a, t) => a + t[0].length, 0);
-            return (
-              <div
-                key={i}
-                className={`${styles.edLine} ${l.ghost ? styles.edGhost : ""}`}
-                data-line
-                data-len={len}
-                {...(l.ghost ? { "data-ghost": "1", "data-ghost-line": "" } : {})}
-                {...(l.after ? { "data-after": "1" } : {})}
-              >
-                <span className={styles.edText}>
-                  {l.toks.map((t, j) => <span key={j} className={t[1] ? styles[`tk_${t[1]}`] : undefined}>{t[0]}</span>)}
-                </span>
-                {l.ghost && <span className={styles.ghostChip} data-ghost-chip>AI suggestion · Tab</span>}
-              </div>
-            );
-          })}
-          <span className={styles.codeCaret} data-code-caret />
-        </div>
       </div>
     </div>
   );

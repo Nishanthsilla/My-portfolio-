@@ -37,7 +37,7 @@ export function computeLayout(vw: number, vh: number, sans: string, mono: string
   const inner = frameW - pad * 2;
   const controls = Math.max(76, vh * 0.1);
 
-  const helloFont = fit(`/* ${film.hello} */`, 540, sans, inner * 0.9, land ? 6.2 * u : 9 * u);
+  const helloFont = fit(`/* ${film.hello} */`, 600, sans, inner * 0.9, land ? 6.2 * u : 9 * u);
   const nameFont = fit(`${film.name}.`, 600, sans, land ? frameW * 0.72 : inner, land ? 12 * u : 17 * u, -0.045);
   const longestVerb = [...film.verbs.map((v) => v.verb), film.finalVerb].sort((a, b) => b.length - a.length)[0];
   const headFont = fit(`${film.lines[2]} ${longestVerb}`, 540, sans, land ? frameW * 0.47 : inner * 0.96, land ? 5 * u : 9.5 * u, -0.03);
