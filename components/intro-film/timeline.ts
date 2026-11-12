@@ -25,13 +25,14 @@ export const T = {
   // 5 + 6 — both sentences; the cursor hovers "Figma" (design state), then "code" (code state)
   sent1In: [20.25, 20.8], sent2In: [20.4, 20.95], cursorIn5: [21.0, 21.6],
   figmaAt: 21.55, toCode: [23.15, 23.7], codeAt: 23.65, sentOut: [26.15, 26.55],
-  // 7 — one continuous ending: Gradient ASCII → the product → hover, click → the button becomes the screen
-  asciiMount: 25.4, asciiIn: [26.25, 26.9], asciiOut: [27.75, 28.45],
-  crIn: [27.55, 28.25], draftDone: [28.5, 29.0],
-  cursorIn: [29.2, 29.9], hover: [29.75, 29.95], click: 30.1,
-  approved: [30.2, 30.5], flowDone: [30.25, 30.8], expand: [30.75, 31.75],
-  handoff: [31.95, 32.75],
-  end: 32.8,
+  // 7 — the product; one click on Approve & send; the camera travels into the button;
+  //     a brief full-screen Gradient ASCII bridge; the website is revealed
+  crIn: [26.4, 27.1], draftDone: [27.45, 27.95],
+  cursorIn: [28.15, 28.85], hover: [28.7, 28.9], click: 29.05,
+  approved: [29.15, 29.45], flowDone: [29.2, 29.75], push: [29.2, 30.6],
+  asciiMount: 29.0, asciiIn: [30.35, 30.75],
+  handoff: [31.95, 32.4],
+  end: 32.45,
 } as const;
 
 /** The level-clear sound's held note lands as the orange dot reaches the logo. */

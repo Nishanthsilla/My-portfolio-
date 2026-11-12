@@ -138,7 +138,8 @@ export class FilmEngine {
   render(r: number) {
     const L = this.L, m = this.m, e = this.e;
     if (!L || !m) return;
-    e.stage.style.visibility = r < T.expand[1] ? "" : "hidden";
+    // once the ASCII bridge is fully opaque, the stage underneath is no longer needed
+    e.stage.style.visibility = r < T.asciiIn[1] ? "" : "hidden";
 
     /* ---- Prologue: /* Hello World *\/ ---- */
     show(e.hello, r < T.collapse[1]);
@@ -272,26 +273,8 @@ export class FilmEngine {
     const s = this.story;
     this.story.render(r, { x: (L.card.cx - s.bx) / s.bs, y: (L.card.cy - s.by) / s.bs });
 
-    /* ---- Finale: the approved button's own orange surface grows to fill the screen,
-            then lands in the logo dot of the portfolio ---- */
-    if (r >= T.expand[0]) {
-      show(e.wipe, true);
-      const b = s.buttonView();
-      const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
-      if (r < T.handoff[0]) {
-        const p = inOutQuint(span(r, T.expand));
-        const top = lerp(b.y, 0, p), left = lerp(b.x, 0, p);
-        const right = lerp(L.vw - (b.x + b.w), 0, p), bottom = lerp(L.vh - (b.y + b.h), 0, p);
-        const rad = lerp(b.r, 0, p);
-        e.wipe.style.clipPath = `inset(${top.toFixed(2)}px ${right.toFixed(2)}px ${bottom.toFixed(2)}px ${left.toFixed(2)}px round ${rad.toFixed(2)}px)`;
-      } else {
-        const cover = Math.hypot(Math.max(cx, L.vw - cx), Math.max(cy, L.vh - cy)) + 2;
-        const t = this.logoTarget();
-        const p = inOutQuint(span(r, T.handoff));
-        const x = lerp(cx, t.x, p), y = lerp(cy, t.y, p);
-        const rad = lerp(cover, t.r, Math.pow(p, 0.8));
-        e.wipe.style.clipPath = `circle(${rad.toFixed(2)}px at ${x.toFixed(2)}px ${y.toFixed(2)}px)`;
-      }
-    } else show(e.wipe, false);
+    /* ---- Finale: the camera push-through (story.ts) and the Gradient ASCII bridge
+            (AsciiBridge) carry the ending; the old orange wipe is not used. ---- */
+    show(e.wipe, false);
   }
 }

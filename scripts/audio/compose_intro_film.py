@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 
 SR = 48000
-DUR = 34.4
+DUR = 34.0
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "public" / "audio"
 rng = np.random.default_rng(7)
@@ -269,27 +269,27 @@ for i in range(30):                                         # the snippet being 
     place(click(0.045, 5400 + 250 * (i % 4)), 24.65 + i * 0.033, pan=0.2)
 place(swoosh(0.4, 1500, 500, 0.06, "down"), 26.15)
 
-# ---------- 7: Gradient ASCII → the product → click (26.25 – 30.75) ----------
-place(swoosh(1.2, 300, 3800, 0.06), 26.2)                   # characters form
-place(pad([midi(n) for n in FMAJ7[:4]], 2.2, 0.05, 0.6, 0.8, 1800), 26.25)
-for k in range(10):                                         # a soft shimmer of glyphs
-    place(hat(0.025 + 0.002 * k, 0.03), 26.4 + k * 0.13, pan=-0.5 + k / 10)
-place(swoosh(0.6, 800, 2600, 0.07), 27.5)                   # the product rises out of it
-place(pad([midi(n) for n in FMAJ7], 3.4, 0.055, 0.4, 0.9, 2200), 27.6)
-groove(27.75, 30.75, kick_g=0.48, bass_g=0.23, pluck_g=0.065, bar0=2)
-place(pop(1100, 0.1, 0.09), 28.95)                          # Draft done
-place(swoosh(0.6, 700, 1700, 0.03), 29.2)                   # the cursor moves to the button
-place(click(0.06, 2800), 29.8, pan=0.2)                     # hover
-place(click(0.2, 3300), 30.1)                               # the click
-place(pop(900, 0.12, 0.06), 30.12)
+# ---------- 7: the product → one click (26.4 – 29.2) ----------
+place(swoosh(0.6, 800, 2600, 0.07), 26.35)                  # the product arrives
+place(pad([midi(n) for n in FMAJ7], 3.0, 0.055, 0.4, 0.9, 2200), 26.45)
+groove(26.6, 29.2, kick_g=0.48, bass_g=0.23, pluck_g=0.065, bar0=2)
+place(pop(1100, 0.1, 0.09), 27.9)                           # Draft done
+place(swoosh(0.6, 700, 1700, 0.03), 28.15)                  # the cursor moves to the button
+place(click(0.06, 2800), 28.72, pan=0.2)                    # hover
+place(click(0.24, 3300), 29.05)                             # the click — once
+place(pop(900, 0.12, 0.07), 29.07)
 for k, n in enumerate([76, 81, 84, 88]):                    # approved & sent
-    place(pluck(midi(n), 0.11, 1.1, 4600), 30.22 + k * 0.08, pan=-0.3 + 0.2 * k)
+    place(pluck(midi(n), 0.1, 1.0, 4600), 29.17 + k * 0.07, pan=-0.3 + 0.2 * k)
 
-# ---------- Finale: the button becomes the screen (30.75 – 32.8) ----------
-place(swoosh(1.0, 400, 5200, 0.14), 30.75)
-place(impact(0.3), 31.7)
-place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.6, 0.075, 0.05, 1.5, 2800), 31.7)
-# (the level-clear jingle plays separately as the dot lands)
+# ---------- camera push-through → Gradient ASCII → the website (29.2 – 32.45) ----------
+place(riser(1.35, 0.14), 29.25)                             # travelling forward into the button
+place(swoosh(1.3, 300, 4800, 0.12), 29.3)
+place(impact(0.26), 30.55)                                  # through the surface
+for k in range(14):                                         # characters forming
+    place(hat(0.022 + 0.002 * (k % 5), 0.03), 30.5 + k * 0.1, pan=-0.6 + (k % 7) * 0.2)
+place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.4, 0.07, 0.15, 1.3, 2800), 30.6)
+place(swoosh(0.5, 2400, 600, 0.05, "down"), 31.9)           # the bridge clears to the website
+# (the level-clear jingle plays separately as the website is revealed)
 
 # ---------- master ----------
 mix = np.stack([L, R])

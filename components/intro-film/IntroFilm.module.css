@@ -442,7 +442,7 @@
 .pcur[data-mode="text"] .ibeam { opacity: 1; }
 .pcur[data-mode="text"] .pcurTag { left: 12px; top: 16px; }
 /* Gradient ASCII bridge (ending) */
-.ascii { position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
+.ascii { position: absolute; inset: 0; overflow: hidden; visibility: hidden; pointer-events: none; background: var(--warm); }
 .pcurTag {
   position: absolute; left: 20px; top: 22px; padding: 4px 8px; border-radius: 4px 10px 10px 10px;
   background: var(--o); color: #ffffff; font: 600 12px/1 var(--film-sans); white-space: nowrap;
