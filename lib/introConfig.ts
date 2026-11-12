@@ -14,7 +14,9 @@ export const ACTIVE_INTRO: IntroKind = "motion-film";
  *  - "once-per-session": first load of a browser session only (sessionStorage)
  */
 export type FilmReplay = "every-load" | "once-per-session";
-export const FILM_REPLAY: FilmReplay = "every-load";
+// The multi-page offline preview (scripts/make-site-preview.py) reloads on every
+// page change, so there the film plays once per browsing session instead.
+export const FILM_REPLAY: FilmReplay = process.env.NEXT_PUBLIC_SITE_PREVIEW === "1" ? "once-per-session" : "every-load";
 
 /** Audio track for the film (original score). Swap for a licensed file here. */
 export const FILM_AUDIO_SRC = { mp3: "/audio/intro-film.mp3", ogg: "/audio/intro-film.ogg" };
