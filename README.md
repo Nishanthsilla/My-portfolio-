@@ -67,3 +67,13 @@ settings are synced in an effect (lint), and cleanup no longer calls `loseContex
 
 In dev, or in a build made with `NEXT_PUBLIC_INTRO_QA=1`, `window.__intro.seek(ms)` renders
 the exact intro state at any time (frame-by-frame review).
+
+## Single-file preview
+
+```bash
+npm run preview:file
+```
+
+Writes `preview/nishanth-in-motion-preview.html`: one self-contained file (scripts, CSS,
+fonts and the sprite inlined) that opens directly in a browser from disk. Google Fonts are
+still loaded online, as in the original.

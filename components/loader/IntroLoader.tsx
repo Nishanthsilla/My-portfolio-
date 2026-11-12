@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
 import GradientMesh from "./GradientMesh";
 import { measureCounter, type Focal } from "./measureCounter";
 import {
@@ -33,9 +32,9 @@ const REVEAL_AT = 0.26;
  * The real site (#site-root) is rendered underneath the whole time.
  */
 export default function IntroLoader() {
-  const pathname = usePathname();
-  // Plays on a full document load of the homepage only (first entry/refresh).
-  const [active, setActive] = useState(() => !introState.played && pathname === "/");
+  // Plays once per full document load (first entry or refresh). The portfolio is
+  // a single page; client-side navigation never replays it (module state).
+  const [active, setActive] = useState(() => !introState.played);
   const [energized, setEnergized] = useState(false);
 
   const rootRef = useRef<HTMLDivElement>(null);

@@ -42,3 +42,7 @@ next-env.d.ts
 
 # QA preview renders
 /qa-preview
+
+# static export + single-file preview
+/out
+/preview
