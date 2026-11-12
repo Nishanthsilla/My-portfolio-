@@ -70,7 +70,7 @@ export default function ControlRoom() {
           <span className={styles.apprRow}><em>{a.confidence}</em><b>{a.pct}</b></span>
           <span className={styles.meter}><i /></span>
         </span>
-        <span className={styles.apprBtns}>
+        <span className={styles.apprBtns} data-t="btns">
           <span className={styles.btnGhost}>{a.edit}</span>
           <span className={styles.btnPrimary} data-t="btn">
             <span className={styles.btnLabel}>{a.approve}</span>

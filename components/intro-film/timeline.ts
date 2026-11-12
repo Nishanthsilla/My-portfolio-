@@ -1,6 +1,6 @@
 /**
  * The film's single clock (seconds). Every visual and audio cue is in this
- * table so pacing can be tuned in one place. ~32 s, seven chapters:
+ * table so pacing can be tuned in one place. ~33 s, seven chapters:
  *   Prologue + 1 (intro) · 2 complexity · 3 clarity · 4 proof ·
  *   5–6 Figma, then code (typography + selection) · 7 finished product + reveal
  */
@@ -22,15 +22,16 @@ export const T = {
   clearOut: [16.6, 16.9], wireOut: [16.6, 17.0],
   // 4 — proof: all three together
   accentToRule: [16.65, 17.3], statsIn: [17.0, 17.4], roll: [17.1, 18.5], labelsIn: [18.0, 18.4], statsOut: [20.0, 20.35],
-  // 5 + 6 — typography only: both sentences, a design-tool selection on "Figma," then "code."
-  sent1In: [20.25, 20.8], cursorIn5: [20.95, 21.6], selIn: [21.5, 21.78],
-  sent2In: [22.25, 22.8], selToCode: [23.2, 23.78], codeOn: [23.66, 24.0], sentOut: [24.95, 25.35],
-  // 7 — the product: complete UI; hover, click, success; zoom until it fills the screen
-  crIn: [25.25, 25.95], draftDone: [26.2, 26.7],
-  cursorIn: [27.0, 27.7], hover: [27.55, 27.75], click: 27.9,
-  approved: [28.0, 28.35], flowDone: [28.1, 28.7], zoom: [28.45, 29.65],
-  sweep: [30.55, 31.05], handoff: [31.15, 31.95],
-  end: 32.0,
+  // 5 + 6 — both sentences; the cursor hovers "Figma" (design state), then "code" (code state)
+  sent1In: [20.25, 20.8], sent2In: [20.4, 20.95], cursorIn5: [21.0, 21.6],
+  figmaAt: 21.55, toCode: [23.15, 23.7], codeAt: 23.65, sentOut: [26.15, 26.55],
+  // 7 — one continuous ending: Gradient ASCII → the product → hover, click → the button becomes the screen
+  asciiMount: 25.4, asciiIn: [26.25, 26.9], asciiOut: [27.75, 28.45],
+  crIn: [27.55, 28.25], draftDone: [28.5, 29.0],
+  cursorIn: [29.2, 29.9], hover: [29.75, 29.95], click: 30.1,
+  approved: [30.2, 30.5], flowDone: [30.25, 30.8], expand: [30.75, 31.75],
+  handoff: [31.95, 32.75],
+  end: 32.8,
 } as const;
 
 /** The level-clear sound's held note lands as the orange dot reaches the logo. */
