@@ -290,14 +290,22 @@ export default function IntroFilm() {
           {/* headlines */}
           <div className={styles.bh} data-h="complex"><Mask><span className={styles.unit} data-u>{film.complex}</span></Mask></div>
           <div className={styles.bh} data-h="clear"><Mask><span className={styles.unit} data-u>{film.clear}</span></Mask></div>
-          <div className={`${styles.bh} ${styles.bhTyped}`} data-h="figma">
-            {Array.from(film.dark.line1.join(" ")).map((ch, i) => <span key={i} className={styles.bch} data-ch>{ch === " " ? "\u00a0" : ch}</span>)}
-            <span className={styles.thinCaret} data-caret-f />
-          </div>
-          <div className={`${styles.bh} ${styles.bhTyped} ${styles.onDark}`} data-h="code">
-            {Array.from(`${film.dark.line2.join(" ")} `).map((ch, i) => <span key={i} className={styles.bch} data-ch>{ch === " " ? "\u00a0" : ch}</span>)}
-            {Array.from(film.dark.code).map((ch, i) => <span key={`c${i}`} className={`${styles.bch} ${styles.codeWord}`} data-ch>{ch}</span>)}
-            <span className={`${styles.thinCaret} ${styles.caretOrange}`} data-caret-c />
+          {/* 5–6: the two sentences, always whole; the cursor hovers "Figma", then "code" */}
+          <div className={styles.sent} data-sent>
+            <div className={styles.sentLine} data-s1>
+              <Mask className={styles.sentMask}>
+                <span className={`${styles.unit} ${styles.sentUnit}`} data-s1u>
+                  I design it in <span className={styles.hw} data-w="figma">Figma,</span>
+                </span>
+              </Mask>
+            </div>
+            <div className={styles.sentLine} data-s2>
+              <Mask className={styles.sentMask}>
+                <span className={`${styles.unit} ${styles.sentUnit}`} data-s2u>
+                  then ship it in <span className={`${styles.hw} ${styles.codeWord}`} data-w="code">code.</span>
+                </span>
+              </Mask>
+            </div>
           </div>
 
           {/* 2: artefacts + their relationships */}

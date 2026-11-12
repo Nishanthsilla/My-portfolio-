@@ -59,12 +59,16 @@ export default function ControlRoom() {
           <Tx f={1} w="50%">{p.approval.confidence}</Tx>
           <span className={styles.meter}><i /></span>
           <Tx f={1} w="40%">{p.approval.pct}</Tx>
+          {/* success replaces the confidence row once approved */}
+          <span className={styles.apprDone} aria-hidden="true">
+            <i>✓</i>Approved &amp; sent
+          </span>
         </span>
         <span className={styles.apprBtns}>
           <span className={styles.btnGhost}><Tx f={2} w="60%">{p.approval.edit}</Tx></span>
           <span className={styles.btnPrimary} data-t="btn">
             <span className={styles.btnFill} />
-            <Tx f={2} w="70%">{p.approval.approve}</Tx>
+            <span className={styles.btnLabel}><Tx f={2} w="70%">{p.approval.approve}</Tx></span>
           </span>
         </span>
       </aside>

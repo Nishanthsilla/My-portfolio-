@@ -101,6 +101,18 @@
 }
 .caretOrange { background: var(--o); }
 
+.sent { visibility: hidden; z-index: 6; font-weight: 560; letter-spacing: -0.035em; line-height: 1.12; }
+.sentLine { display: block; margin-bottom: 0.5em; }
+.sentLine:last-child { margin-bottom: 0; }
+.sentMask { display: block; }
+.sentUnit { display: block; white-space: normal; }
+.hw { position: relative; display: inline-block; --hv: 0; color: color-mix(in srgb, var(--o) calc(var(--hv) * 100%), var(--ink)); }
+.hw.codeWord { color: var(--o); }
+.hw::after {
+  content: ""; position: absolute; left: 0; right: 0.08em; bottom: -0.02em; height: 0.07em; border-radius: 0.04em;
+  background: var(--o); transform: scaleX(var(--hv)); transform-origin: 0 50%;
+}
+
 /* Chapter 2: artefacts */
 .arts { inset: 0; z-index: 4; }
 .art {
@@ -150,13 +162,15 @@
 .statsWrap { inset: 0; visibility: hidden; }
 .stat { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; }
 .num {
-  display: flex; align-items: baseline; font-weight: 620; letter-spacing: -0.055em; line-height: 1;
+  display: flex; align-items: baseline; font-weight: 620; letter-spacing: -0.03em; line-height: 1; padding: 0 0.04em;
   font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink);
 }
 .digit { display: inline-block; height: 1em; overflow: clip; }
 .strip { display: flex; flex-direction: column; will-change: transform; }
 .strip span { display: block; height: 1em; line-height: 1; }
-.sym { color: var(--o); }
+.sym { color: var(--o); letter-spacing: 0; margin: 0 0.07em; }
+.sym:first-child { margin-left: 0; }
+.sym:last-child { margin-right: 0; }
 .lab {
   position: absolute; left: 50%; top: calc(100% + 0.6em); transform: translate3d(-50%, 0, 0);
   text-align: center; color: var(--muted); font-weight: 470; letter-spacing: -0.005em; line-height: 1.3; opacity: 0;
@@ -185,7 +199,7 @@
   border-radius: 99px; background: var(--grey); opacity: calc(1 - var(--f));
 }
 .t { opacity: var(--f); white-space: nowrap; }
-.crHead { grid-area: head; display: flex; align-items: center; gap: 12px; }
+.crHead { grid-area: head; display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid color-mix(in srgb, var(--grey) calc(var(--f2) * 100%), transparent); }
 .crLogo { width: 12px; height: 12px; border-radius: 50%; background: var(--ink); }
 .crTitle { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; flex: 1; }
 .crPill {
@@ -208,7 +222,11 @@
 .crNode {
   position: relative; display: flex; flex-direction: column; gap: 10px; padding: 16px; min-height: 120px;
   background: var(--white); border: 1px solid var(--grey); border-radius: 14px;
+  box-shadow: 0 calc(var(--f4) * 10px) calc(var(--f4) * 24px) calc(var(--f4) * -18px) rgba(36, 36, 36, 0.3);
 }
+.nodeMeta .t { padding: 0; }
+.crNode[data-state="done"] .nodeMeta { color: var(--ink); }
+.crNode[data-state="running"] .nodeMeta { color: var(--o-deep); }
 .nodeDot { width: 10px; height: 10px; border-radius: 50%; background: var(--grey); }
 .nodeName { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
 .nodeMeta { position: relative; font: 500 13px/1.2 var(--film-mono); color: var(--muted); min-height: 1.2em; }
@@ -222,8 +240,13 @@
 .crNode[data-state="approval"] .nodeDot { background: var(--o); }
 .crNode[data-state="approval"] .nodeMeta { color: var(--o-deep); }
 .crAppr {
-  grid-area: appr; display: flex; flex-direction: column; gap: 14px; padding: 20px;
-  border: 1px solid var(--grey); border-radius: 16px; background: var(--warm); justify-content: center;
+  position: relative; grid-area: appr; display: flex; flex-direction: column; gap: 14px; padding: 20px;
+  border: 1px solid var(--grey); border-radius: 16px; background: var(--white); justify-content: center;
+  box-shadow: 0 calc(var(--f1) * 16px) calc(var(--f1) * 36px) calc(var(--f1) * -24px) rgba(36, 36, 36, 0.35);
+}
+.crAppr::before {
+  content: ""; position: absolute; left: 0; top: 18px; bottom: 18px; width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--o); opacity: var(--f1);
 }
 .apprTag { font: 500 12px/1 var(--film-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--o-deep); }
 .apprTitle { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.25; }
@@ -236,44 +259,65 @@
   height: 44px; padding: 0 16px; border-radius: 11px; font-weight: 560; font-size: 15px; overflow: hidden;
 }
 .btnGhost { border: 1px solid var(--grey); background: var(--white); }
-.btnPrimary { flex: 1; border: 1.5px solid var(--grey); transform: scale(var(--press)); transition: none; }
-.btnFill { position: absolute; inset: 0; background: var(--o); opacity: var(--f3); }
-.btnPrimary .tx { position: relative; }
+.btnPrimary {
+  flex: 1; border: 1.5px solid var(--grey); transform: translateY(calc(var(--hover) * -1px)) scale(var(--press));
+  box-shadow: 0 calc(var(--hover) * 10px) calc(var(--hover) * 22px) calc(var(--hover) * -10px) rgba(255, 73, 56, 0.75);
+}
+.btnFill { position: absolute; inset: -1.5px; background: var(--o); opacity: var(--f3); filter: brightness(calc(1 - var(--hover) * 0.07)); }
+.btnLabel { position: relative; color: color-mix(in srgb, #ffffff calc(var(--f3) * 100%), var(--ink)); }
+.btnLabel .w { background: color-mix(in srgb, rgba(255, 255, 255, 0.6) calc(var(--f3) * 100%), var(--grey)); }
+.btnGhost { color: var(--ink); }
+.apprConf { position: relative; }
+.apprDone {
+  position: absolute; inset: -4px 0; background: var(--white); display: flex; align-items: center; gap: 8px;
+  font: 600 14px/1 var(--film-sans); color: var(--ink); opacity: var(--approved);
+  transform: translateY(calc((1 - var(--approved)) * 6px));
+}
+.apprDone i {
+  display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--o); color: #fff; font-style: normal; font-size: 12px;
+}
 .crLogA, .crLogB {
   border: 1px solid var(--grey); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px;
 }
 .crLogA { grid-area: logA; }
 .crLogB { grid-area: logB; font-weight: 540; }
 
-/* Chapter 5: design-tool chrome */
+/* Chapter 5: design-tool workspace — a large canvas with floating panels */
 .figma {
-  visibility: hidden; border-radius: 16px; overflow: hidden; background: var(--white);
-  border: 1px solid var(--grey); box-shadow: 0 40px 80px -50px rgba(36, 36, 36, 0.4);
-  display: grid; grid-template-columns: 200px 1fr 220px; grid-template-rows: 44px 1fr;
-  grid-template-areas: "bar bar bar" "layers canvas props"; z-index: 2;
+  visibility: hidden; border-radius: 16px; overflow: hidden; background: var(--grey);
+  border: 1px solid #ddd8d2; box-shadow: 0 40px 80px -50px rgba(36, 36, 36, 0.4); z-index: 2;
 }
-.root[data-orient="port"] .figma { grid-template-columns: 1fr; grid-template-rows: 44px 1fr 112px; grid-template-areas: "bar" "canvas" "props"; }
-.root[data-orient="port"] .figLayers { display: none; }
-.figBar { grid-area: bar; display: flex; align-items: center; gap: 16px; padding: 0 16px; border-bottom: 1px solid var(--grey); font: 500 13px/1 var(--film-sans); }
+.figBar {
+  position: absolute; left: 0; right: 0; top: 0; height: 44px; display: flex; align-items: center; gap: 16px; padding: 0 16px;
+  background: var(--white); border-bottom: 1px solid #ddd8d2; font: 500 13px/1 var(--film-sans);
+}
 .figTools { display: flex; gap: 8px; }
 .figTools i { width: 18px; height: 18px; border-radius: 5px; background: var(--grey); }
 .figTools i:first-child { background: var(--ink); }
 .figFile { flex: 1; text-align: center; color: var(--ink); font-weight: 560; }
 .figZoom { color: var(--muted); font-family: var(--film-mono); }
-.figLayers, .figProps { padding: 14px 0; display: flex; flex-direction: column; gap: 2px; font: 450 13px/1 var(--film-sans); }
-.figLayers { grid-area: layers; border-right: 1px solid var(--grey); }
-.figProps { grid-area: props; border-left: 1px solid var(--grey); padding: 14px 16px; gap: 8px; }
-.root[data-orient="port"] .figProps { border-left: 0; border-top: 1px solid var(--grey); display: grid; grid-template-columns: 1fr 1fr; align-content: center; }
-.root[data-orient="port"] .figProps .figPanelTitle { display: none; }
+.figCanvas {
+  position: absolute; left: 0; right: 0; top: 44px; bottom: 0;
+  background: radial-gradient(circle at 1px 1px, rgba(36, 36, 36, 0.12) 1px, transparent 0) 0 0 / 18px 18px, var(--grey);
+}
+.figLayers, .figProps {
+  position: absolute; top: 58px; display: flex; flex-direction: column; gap: 2px; padding: 12px 0;
+  background: var(--white); border: 1px solid #ddd8d2; border-radius: 12px; box-shadow: 0 12px 30px -18px rgba(36, 36, 36, 0.35);
+  font: 450 13px/1 var(--film-sans);
+}
+.figLayers { left: 14px; width: 190px; z-index: 2; }
+.figProps { right: 14px; width: 200px; padding: 12px 14px; gap: 6px; z-index: 2; }
+.root[data-orient="port"] .figLayers { width: 46%; top: 56px; }
+.root[data-orient="port"] .figProps { width: 46%; top: 56px; }
 .figPanelTitle { padding: 0 12px 8px; font-weight: 600; color: var(--ink); }
-.figProps .figPanelTitle { padding: 0 0 6px; }
-.figRow { display: flex; align-items: center; gap: 8px; padding: 8px 12px; color: var(--muted); border-radius: 6px; margin: 0 6px; }
+.figProps .figPanelTitle { padding: 0 0 4px; }
+.figRow { display: flex; align-items: center; gap: 8px; padding: 7px 12px; color: var(--muted); border-radius: 6px; margin: 0 6px; }
 .figRow i { width: 10px; height: 10px; border: 1.5px solid currentColor; border-radius: 2px; }
-.figProp { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 8px; }
+.figProp { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 8px; }
 .figProp em { font-style: normal; color: var(--muted); font-size: 12px; }
-.figProp b { display: flex; align-items: center; gap: 8px; font-weight: 520; color: var(--ink); font-family: var(--film-mono); font-size: 12.5px; }
-.swatch { width: 16px; height: 16px; border-radius: 4px; background: var(--o); }
-.figCanvas { grid-area: canvas; background: var(--grey); }
+.figProp b { display: flex; align-items: center; gap: 6px; font-weight: 520; color: var(--ink); font-family: var(--film-mono); font-size: 11.5px; }
+.swatch { width: 14px; height: 14px; border-radius: 4px; background: var(--o); }
 .figma[data-active="0"] [data-row="appr"],
 .figma[data-active="1"] [data-row="head"],
 .figma[data-active="2"] [data-row="btn"],
