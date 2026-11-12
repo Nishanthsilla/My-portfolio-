@@ -6,10 +6,10 @@ import ProjectMedia from "@/components/site/ProjectMedia";
 import SiteShell from "@/components/site/SiteShell";
 import AnimatedContent from "@/components/site/reactbits/AnimatedContent";
 import s from "@/components/site/site.module.css";
-import { caseStudies, categories, projectBySlug } from "@/lib/site/content";
+import { categories, projectBySlug, templateStudies } from "@/lib/site/content";
 
 export function generateStaticParams() {
-  return caseStudies.map((p) => ({ slug: p.slug }));
+  return templateStudies.map((p) => ({ slug: p.slug }));
 }
 
 type Props = { params: Promise<{ slug: string }> };
@@ -24,10 +24,10 @@ const PENDING = ["Problem", "Approach", "Key decisions", "Outcome"];
 
 export default async function CaseStudyPage({ params }: Props) {
   const p = projectBySlug((await params).slug);
-  if (!p || p.external) notFound();
+  if (!p || p.external || p.featured) notFound();
   const cat = categories.find((c) => c.id === p.category)!;
-  const i = caseStudies.indexOf(p);
-  const next = caseStudies[(i + 1) % caseStudies.length];
+  const i = templateStudies.indexOf(p);
+  const next = templateStudies[(i + 1) % templateStudies.length];
 
   return (
     <SiteShell>
