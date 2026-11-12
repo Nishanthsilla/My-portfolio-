@@ -1,4 +1,5 @@
 /* The portfolio's original stylesheet (migrated verbatim, minus its old loader). */
+@import "../styles/brand.css";
 @import "../styles/portfolio.css";
 
 /* Scroll lock while the cinematic intro plays. */

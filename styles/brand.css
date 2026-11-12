@@ -1,0 +1,16 @@
+/*
+ * Brand colour system — the single source shared by the intro film and the
+ * portfolio. Primary accent #FF4938; everything else is neutral.
+ * Contrast notes: charcoal on orange 4.6:1 (labels on orange use charcoal);
+ * orange on warm white 3.2:1 (large type, numbers, graphics only).
+ */
+:root {
+  --brand-orange: #ff4938;
+  --brand-orange-deep: #c2301f; /* derived shade: small orange-family text on light */
+  --brand-orange-tint: #ffe7e4; /* derived tint: soft fills */
+  --brand-charcoal: #242424;
+  --brand-warm: #faf9f6;
+  --brand-grey: #e8e5e1;
+  --brand-white: #ffffff;
+  --brand-muted: #66615b;
+}

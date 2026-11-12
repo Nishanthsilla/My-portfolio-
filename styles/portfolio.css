@@ -3,27 +3,27 @@
  * Changes vs. the original:
  *  - the old loader rules (.loader, .lrow, .num, .agents, .loader-bar) are removed;
  *  - the base64 sprite is served from /images/hero-sprite.webp;
- *  - colour tokens re-mapped to the white / charcoal / burnt-orange identity
- *    (cobalt contact tone → "ember"); layout and type are unchanged.
+ *  - colour tokens re-mapped to the shared brand system in styles/brand.css
+ *    (accent #FF4938; cobalt contact tone → "ember"); layout and type are unchanged.
  * Base document styles from the original <head> come first.
  */
 /* original document base */
 :root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
 
 /* Layout: one long scroll told in "tones" — ink (hero, loop), paper (work, experience), ember (contact). The page colour itself animates between them. Work runs sideways on desktop; the human–agent loop pins and draws itself. */
-@property --bg{syntax:'<color>';inherits:true;initial-value:#EDEDED}
-@property --fg{syntax:'<color>';inherits:true;initial-value:#222222}
-@property --muted{syntax:'<color>';inherits:true;initial-value:#5E5E5E}
-@property --line{syntax:'<color>';inherits:true;initial-value:#D6D6D6}
+@property --bg{syntax:'<color>';inherits:true;initial-value:#FAF9F6}
+@property --fg{syntax:'<color>';inherits:true;initial-value:#242424}
+@property --muted{syntax:'<color>';inherits:true;initial-value:#66615B}
+@property --line{syntax:'<color>';inherits:true;initial-value:#E8E5E1}
 @property --surface{syntax:'<color>';inherits:true;initial-value:#FFFFFF}
-@property --accent{syntax:'<color>';inherits:true;initial-value:#D96B2F}
-@property --accent-soft{syntax:'<color>';inherits:true;initial-value:#F8E3D6}
-@property --on-accent{syntax:'<color>';inherits:true;initial-value:#FFFFFF}
-@property --signal{syntax:'<color>';inherits:true;initial-value:#A84920}
+@property --accent{syntax:'<color>';inherits:true;initial-value:#FF4938}
+@property --accent-soft{syntax:'<color>';inherits:true;initial-value:#FFE7E4}
+@property --on-accent{syntax:'<color>';inherits:true;initial-value:#242424}
+@property --signal{syntax:'<color>';inherits:true;initial-value:#C2301F}
 
 :root{
-  --bg:#EDEDED; --fg:#222222; --muted:#5E5E5E; --line:#D6D6D6; --surface:#FFFFFF;
-  --accent:#D96B2F; --accent-soft:#F8E3D6; --on-accent:#FFFFFF; --signal:#A84920; --ok:#14915A;
+  --bg:#FAF9F6; --fg:#242424; --muted:#66615B; --line:#E8E5E1; --surface:#FFFFFF;
+  --accent:#FF4938; --accent-soft:#FFE7E4; --on-accent:#242424; --signal:#C2301F; --ok:#14915A;
   --display:"Bricolage Grotesque","Arial Narrow",system-ui,sans-serif;
   --body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
@@ -32,8 +32,8 @@
   --ease-out:cubic-bezier(.16,1,.3,1);
   color-scheme:light;
 }
-body[data-tone="paper"]{--bg:#EDEDED;--fg:#222222;--muted:#5E5E5E;--line:#D6D6D6;--surface:#FFFFFF;--accent:#D96B2F;--accent-soft:#F8E3D6;--on-accent:#FFFFFF;--signal:#A84920}
-body[data-tone="ember"]{--bg:#D96B2F;--fg:#FFFFFF;--muted:#FBE2D2;--line:#E8956A;--surface:#E07A41;--accent:#222222;--accent-soft:#E07A41;--on-accent:#FFFFFF;--signal:#222222}
+body[data-tone="paper"]{--bg:#FAF9F6;--fg:#242424;--muted:#66615B;--line:#E8E5E1;--surface:#FFFFFF;--accent:#FF4938;--accent-soft:#FFE7E4;--on-accent:#242424;--signal:#C2301F}
+body[data-tone="ember"]{--bg:#FF4938;--fg:#242424;--muted:#3A1510;--line:#FF8075;--surface:#FF5A4A;--accent:#FFFFFF;--accent-soft:#FF6B5D;--on-accent:#242424;--signal:#FFFFFF}
 
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;
