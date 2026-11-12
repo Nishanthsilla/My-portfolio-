@@ -21,9 +21,9 @@ export const film = {
   complex: "Even when it’s complex,",
   clear: "I make it clear.",
   stats: [
-    { value: "+15%", label: "best engagement lift" },
-    { value: "5+", label: "years designing products" },
-    { value: "4", label: "design systems built or shaped" },
+    { value: "+15%", label: "Best engagement lift" },
+    { value: "5+", label: "Years designing products" },
+    { value: "04", label: "Design systems built or shaped" },
   ],
   cursorTag: "Nishanth",
   /** Chapter-2 artefacts: the raw material of a product problem. */

@@ -12,7 +12,8 @@ import { FilmAudio, type SoundState } from "./audio";
 import { DARK_RANGE, T, VICTORY_AT } from "./timeline";
 import styles from "./IntroFilm.module.css";
 import ControlRoom from "./ControlRoom";
-import { Artefacts } from "./BoardParts";
+import { Artefacts, CodeDetails, DesignDetails } from "./BoardParts";
+import AsciiBridge from "./AsciiBridge";
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 const SESSION_KEY = "nishanth.introFilm.seen";
@@ -82,7 +83,8 @@ export default function IntroFilm() {
 
     const frame = (now: number) => {
       if (done) return;
-      const dt = last ? Math.min((now - last) / 1000, 0.1) : 1 / 60;
+      // a slow device skips frames rather than slowing the film down
+      const dt = last ? Math.min((now - last) / 1000, 0.5) : 1 / 60;
       last = now;
       if (started && !paused) {
         // While the score plays it is the master clock; otherwise the frame clock.
@@ -286,6 +288,10 @@ export default function IntroFilm() {
 
         {/* Chapters 2–7: the story board (design space, scaled to fit) */}
         <div className={styles.darkbg} data-darkbg aria-hidden="true" />
+        {/* 7: Gradient ASCII bridge into the product */}
+        <div className={styles.ascii} data-ascii>
+          <AsciiBridge />
+        </div>
         <div className={styles.board} data-board>
           {/* headlines */}
           <div className={styles.bh} data-h="complex"><Mask><span className={styles.unit} data-u>{film.complex}</span></Mask></div>
@@ -295,14 +301,14 @@ export default function IntroFilm() {
             <div className={styles.sentLine} data-s1>
               <Mask className={styles.sentMask}>
                 <span className={`${styles.unit} ${styles.sentUnit}`} data-s1u>
-                  I design it in <span className={styles.hw} data-w="figma">Figma,</span>
+                  I design it <span data-w="in1">in</span> <span className={styles.hw} data-w="figma">Figma,</span>
                 </span>
               </Mask>
             </div>
             <div className={styles.sentLine} data-s2>
               <Mask className={styles.sentMask}>
                 <span className={`${styles.unit} ${styles.sentUnit}`} data-s2u>
-                  then ship it in <span className={styles.hw} data-w="code">code.</span>
+                  then ship it <span data-w="in2">in</span> <span className={styles.hw} data-w="code">code.</span>
                 </span>
               </Mask>
             </div>
@@ -316,25 +322,33 @@ export default function IntroFilm() {
 
           {/* 4: proof */}
           <div className={styles.statsWrap} data-stats>
-            {film.stats.map((st) => (
-              <div key={st.label} className={styles.stat} data-stat>
-                <div className={styles.num} data-num>
-                  {Array.from(st.value).map((ch, i) =>
-                    /\d/.test(ch) ? (
-                      <span key={i} className={styles.digit}>
-                        <span className={styles.strip} data-strip data-target={ch}>
-                          {Array.from({ length: 20 }, (_, d) => <span key={d}>{d % 10}</span>)}
+            <div className={styles.statsGrid} data-sgrid>
+              {film.stats.map((st) => (
+                <div key={st.label} className={styles.stat} data-stat>
+                  <i className={styles.statRule} aria-hidden="true" />
+                  <div className={styles.num} data-num>
+                    {Array.from(st.value).map((ch, i) =>
+                      /\d/.test(ch) ? (
+                        <span key={i} className={styles.digit}>
+                          <span className={styles.strip} data-strip data-target={ch}>
+                            {Array.from({ length: 20 }, (_, d) => <span key={d}>{d % 10}</span>)}
+                          </span>
                         </span>
-                      </span>
-                    ) : (
-                      <span key={i} className={styles.sym}>{ch}</span>
-                    ),
-                  )}
+                      ) : (
+                        <span key={i} className={styles.sym}>{ch}</span>
+                      ),
+                    )}
+                  </div>
+                  <div className={styles.lab} data-lab>{st.label}</div>
                 </div>
-                <div className={styles.lab} data-lab>{st.label}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+
+          {/* 5: design state — tools and details around "Figma" */}
+          <DesignDetails />
+          {/* 6: code state — symbols and a snippet around "code" */}
+          <CodeDetails />
 
           {/* 3–7: the product */}
           <ControlRoom />
@@ -342,10 +356,10 @@ export default function IntroFilm() {
           {/* overlays: selection (chapter 5–6) and the named cursor (5–7) */}
           <div className={styles.fsel} data-fsel>
             <i /><i /><i /><i />
-            <span className={styles.fselLab} data-fsel-lab>0 × 0</span>
           </div>
           <div className={styles.pcur} data-pcur>
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1 L14 6.5 L8 8 L6.5 14 Z" /></svg>
+            <svg className={styles.arrow} viewBox="0 0 16 16" aria-hidden="true"><path d="M1 1 L14 6.5 L8 8 L6.5 14 Z" /></svg>
+            <svg className={styles.ibeam} viewBox="0 0 12 24" aria-hidden="true"><path d="M3 2 H9 M6 2 V22 M3 22 H9" /></svg>
             <span className={styles.pcurTag}>{film.cursorTag}</span>
           </div>
         </div>

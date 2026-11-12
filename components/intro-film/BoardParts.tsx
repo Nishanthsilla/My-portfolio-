@@ -84,9 +84,66 @@ export function Artefacts() {
         </span>
       </Card>
       <Card k="sticky" cls={styles.artSticky}><b>Need approve step??</b><span className={styles.artQuote}>who signs off?</span></Card>
-      <div className={`${styles.art} ${styles.artBtn}`} data-art="button">
-        <span className={styles.artBtnLabel}>{film.product.approval.approve}</span>
+      <div className={`${styles.art} ${styles.artBtns}`} data-art="button">
+        <span className={`${styles.uiBtn} ${styles.uiGhost}`}>{film.product.approval.edit}</span>
+        <span className={`${styles.uiBtn} ${styles.uiPrimary}`}>{film.product.approval.approve}</span>
       </div>
     </div>
+  );
+}
+
+/** Chapter 5: what appears around "Figma" while it is selected — one piece at a time. */
+export function DesignDetails() {
+  return (
+    <>
+      <div className={styles.figTool} data-fx="tool" aria-hidden="true">
+        <i className={styles.toolOn}>
+          <svg viewBox="0 0 16 16"><path d="M3 2 L13 7 L8.5 8.5 L7 13 Z" /></svg>
+        </i>
+        <i><svg viewBox="0 0 16 16"><path d="M5 1 V15 M11 1 V15 M1 5 H15 M1 11 H15" /></svg></i>
+        <i><svg viewBox="0 0 16 16"><path d="M8 2 L13 12 L8 14 L3 12 Z M8 2 V9" /><circle cx="8" cy="10" r="1.3" /></svg></i>
+        <i><svg viewBox="0 0 16 16"><path d="M3 3 H13 M8 3 V14" /></svg></i>
+        <i><svg viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="11" height="11" rx="2" /></svg></i>
+      </div>
+      <div className={styles.figGuide} data-fx="guideL" aria-hidden="true" />
+      <div className={styles.figGuide} data-fx="guideR" aria-hidden="true" />
+      <div className={`${styles.figGuide} ${styles.figGuideH}`} data-fx="guideH" aria-hidden="true" />
+      <div className={styles.figRuler} data-fx="ruler" aria-hidden="true"><span data-fx-w>0</span></div>
+      <div className={styles.figSpace} data-fx="space" aria-hidden="true"><span data-fx-s>0</span></div>
+      <div className={styles.figLayer} data-fx="layer" aria-hidden="true">
+        <i>T</i>Figma, <em>Text · Semibold</em>
+      </div>
+    </>
+  );
+}
+
+type Tok = [string, string?];
+/** A small, readable snippet: the approval button from the film's product. */
+const SNIPPET: Tok[][] = [
+  [["<", "p"], ["Button", "tag"], [" variant", "at"], ["=", "p"], ['"primary"', "str"], [">", "p"]],
+  [["  Approve & send"]],
+  [["</", "p"], ["Button", "tag"], [">", "p"]],
+];
+
+/** Chapter 6: what appears around "code" — symbols, then a snippet being written. */
+export function CodeDetails() {
+  return (
+    <>
+      {["</>", "#", "{ }", "/"].map((sym, i) => (
+        <span key={sym} className={styles.codeSym} data-cx="sym" data-i={i} aria-hidden="true">{sym}</span>
+      ))}
+      <span className={styles.textCaret} data-cx="caret" aria-hidden="true" />
+      <div className={styles.snip} data-cx="snip" aria-hidden="true">
+        <span className={styles.snipBar}><i /><i /><i /><em>ApproveButton.tsx</em></span>
+        {SNIPPET.map((line, i) => (
+          <span key={i} className={styles.snipLine} data-snip data-len={line.reduce((a, t) => a + t[0].length, 0)}>
+            <span className={styles.snipText}>
+              {line.map((t, j) => <span key={j} className={t[1] ? styles[`tk_${t[1]}`] : undefined}>{t[0]}</span>)}
+            </span>
+          </span>
+        ))}
+        <span className={styles.snipCaret} data-snip-caret />
+      </div>
+    </>
   );
 }

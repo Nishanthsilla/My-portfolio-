@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 
 SR = 48000
-DUR = 33.6
+DUR = 34.4
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "public" / "audio"
 rng = np.random.default_rng(7)
@@ -250,40 +250,45 @@ for k, n in enumerate([77, 81, 84]):
     place(pluck(midi(n), 0.09, 1.2, 3600), 18.5 + k * 0.05, pan=-0.4 + 0.4 * k)
 place(swoosh(0.4, 1500, 500, 0.06, "down"), 20.0)
 
-# ---------- 5–6: typography + selection (20.25 – 25.35) ----------
+# ---------- 5–6: hover "Figma" (design), then "code" (code) (20.25 – 26.55) ----------
 place(swoosh(0.5, 500, 2000, 0.06), 20.2)
-place(pop(760, 0.09, 0.08), 20.3)                           # "I design it in Figma," rises
-place(pad([midi(n) for n in DM9[:4]], 5.0, 0.04, 0.4, 0.9, 1300), 20.3)
-groove(20.5, 25.0, kick_g=0.4, bass_g=0.19, pluck_g=0.055, hats=True, bar0=1)
+place(pop(760, 0.09, 0.08), 20.3)                           # both sentences rise
+place(pop(840, 0.09, 0.07), 20.45)
+place(pad([midi(n) for n in DM9[:4]], 6.3, 0.04, 0.4, 0.9, 1300), 20.3)
+groove(20.5, 26.0, kick_g=0.4, bass_g=0.19, pluck_g=0.05, hats=True, bar0=1)
 place(swoosh(0.5, 600, 1800, 0.03), 21.0)                   # the cursor glides in
-place(click(0.08, 3200), 21.52, pan=0.15)                   # click: "Figma," selected
-place(pop(1400, 0.09, 0.08), 21.56)
-place(pop(840, 0.09, 0.08), 22.3)                           # "then ship it in code." rises
-place(swoosh(0.5, 900, 2400, 0.035), 23.2)                  # the selection moves to "code."
-place(click(0.08, 3600), 23.72, pan=0.2)
-for k, n in enumerate([81, 84, 88]):                        # "code." turns orange
-    place(pluck(midi(n), 0.08, 0.9, 4200), 23.74 + k * 0.06, pan=-0.2 + 0.2 * k)
-place(swoosh(0.4, 1500, 500, 0.06, "down"), 24.95)
+place(click(0.08, 3200), 21.55, pan=0.15)                   # hover "Figma": selected
+place(pop(1400, 0.09, 0.08), 21.58)
+for k, d in enumerate([0.3, 0.5, 0.7, 0.85, 1.05]):         # tools, ruler, spacing, guides, layer
+    place(pop(1500 + 120 * k, 0.05, 0.05), 21.55 + d, pan=-0.3 + 0.15 * k)
+place(swoosh(0.55, 1400, 700, 0.04, "down"), 23.15)         # design state clears, cursor moves
+place(click(0.07, 4200), 23.7, pan=0.2)                     # text cursor on "code"
+for k in range(4):                                          # </>  #  { }  /
+    place(pluck(midi([81, 84, 86, 88][k]), 0.06, 0.6, 4200), 23.95 + k * 0.12, pan=-0.3 + 0.2 * k)
+for i in range(30):                                         # the snippet being written
+    place(click(0.045, 5400 + 250 * (i % 4)), 24.65 + i * 0.033, pan=0.2)
+place(swoosh(0.4, 1500, 500, 0.06, "down"), 26.15)
 
-# ---------- 7: the product (25.25 – 30.55) ----------
-place(swoosh(0.5, 500, 2200, 0.07), 25.2)                   # the product arrives, complete
-place(pad([midi(n) for n in FMAJ7], 5.3, 0.055, 0.4, 0.9, 2200), 25.3)
-groove(25.5, 30.5, kick_g=0.48, bass_g=0.23, pluck_g=0.065, bar0=2)
-place(pop(1100, 0.1, 0.09), 26.45)                          # Draft done
-place(swoosh(0.6, 700, 1700, 0.03), 27.0)                   # the cursor moves to the button
-place(click(0.06, 2800), 27.6, pan=0.2)                     # hover
-place(click(0.2, 3300), 27.9)                               # the click
-place(pop(900, 0.12, 0.06), 27.92)
+# ---------- 7: Gradient ASCII → the product → click (26.25 – 30.75) ----------
+place(swoosh(1.2, 300, 3800, 0.06), 26.2)                   # characters form
+place(pad([midi(n) for n in FMAJ7[:4]], 2.2, 0.05, 0.6, 0.8, 1800), 26.25)
+for k in range(10):                                         # a soft shimmer of glyphs
+    place(hat(0.025 + 0.002 * k, 0.03), 26.4 + k * 0.13, pan=-0.5 + k / 10)
+place(swoosh(0.6, 800, 2600, 0.07), 27.5)                   # the product rises out of it
+place(pad([midi(n) for n in FMAJ7], 3.4, 0.055, 0.4, 0.9, 2200), 27.6)
+groove(27.75, 30.75, kick_g=0.48, bass_g=0.23, pluck_g=0.065, bar0=2)
+place(pop(1100, 0.1, 0.09), 28.95)                          # Draft done
+place(swoosh(0.6, 700, 1700, 0.03), 29.2)                   # the cursor moves to the button
+place(click(0.06, 2800), 29.8, pan=0.2)                     # hover
+place(click(0.2, 3300), 30.1)                               # the click
+place(pop(900, 0.12, 0.06), 30.12)
 for k, n in enumerate([76, 81, 84, 88]):                    # approved & sent
-    place(pluck(midi(n), 0.11, 1.1, 4600), 28.05 + k * 0.085, pan=-0.3 + 0.2 * k)
-place(pop(1250, 0.1, 0.08), 28.7)                           # Review done · Complete
-place(riser(1.2, 0.06), 28.45)                              # the zoom to full screen
-place(impact(0.14), 29.65)
+    place(pluck(midi(n), 0.11, 1.1, 4600), 30.22 + k * 0.08, pan=-0.3 + 0.2 * k)
 
-# ---------- Finale (30.55 – 32.0) ----------
-place(swoosh(0.5, 500, 6000, 0.16), 30.55)
-place(impact(0.3), 31.05)
-place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.5, 0.075, 0.05, 1.5, 2800), 31.05)
+# ---------- Finale: the button becomes the screen (30.75 – 32.8) ----------
+place(swoosh(1.0, 400, 5200, 0.14), 30.75)
+place(impact(0.3), 31.7)
+place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.6, 0.075, 0.05, 1.5, 2800), 31.7)
 # (the level-clear jingle plays separately as the dot lands)
 
 # ---------- master ----------

@@ -138,7 +138,7 @@ export class FilmEngine {
   render(r: number) {
     const L = this.L, m = this.m, e = this.e;
     if (!L || !m) return;
-    e.stage.style.visibility = r < T.sweep[1] ? "" : "hidden";
+    e.stage.style.visibility = r < T.expand[1] ? "" : "hidden";
 
     /* ---- Prologue: /* Hello World *\/ ---- */
     show(e.hello, r < T.collapse[1]);
@@ -272,21 +272,26 @@ export class FilmEngine {
     const s = this.story;
     this.story.render(r, { x: (L.card.cx - s.bx) / s.bs, y: (L.card.cy - s.by) / s.bs });
 
-    /* ---- Finale: the approved button sweeps orange, then lands in the logo dot ---- */
-    if (r >= T.sweep[0]) {
+    /* ---- Finale: the approved button's own orange surface grows to fill the screen,
+            then lands in the logo dot of the portfolio ---- */
+    if (r >= T.expand[0]) {
       show(e.wipe, true);
-      const start = s.approveCenter();
-      const cover = Math.hypot(L.vw, L.vh) * 1.15;
-      let x = start.x, y = start.y, rad: number;
-      if (r < T.handoff[0]) rad = lerp(start.r, cover, inOutQuint(span(r, T.sweep)));
-      else {
+      const b = s.buttonView();
+      const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+      if (r < T.handoff[0]) {
+        const p = inOutQuint(span(r, T.expand));
+        const top = lerp(b.y, 0, p), left = lerp(b.x, 0, p);
+        const right = lerp(L.vw - (b.x + b.w), 0, p), bottom = lerp(L.vh - (b.y + b.h), 0, p);
+        const rad = lerp(b.r, 0, p);
+        e.wipe.style.clipPath = `inset(${top.toFixed(2)}px ${right.toFixed(2)}px ${bottom.toFixed(2)}px ${left.toFixed(2)}px round ${rad.toFixed(2)}px)`;
+      } else {
+        const cover = Math.hypot(Math.max(cx, L.vw - cx), Math.max(cy, L.vh - cy)) + 2;
         const t = this.logoTarget();
         const p = inOutQuint(span(r, T.handoff));
-        x = lerp(start.x, t.x, p);
-        y = lerp(start.y, t.y, p);
-        rad = lerp(cover, t.r, Math.pow(p, 0.8));
+        const x = lerp(cx, t.x, p), y = lerp(cy, t.y, p);
+        const rad = lerp(cover, t.r, Math.pow(p, 0.8));
+        e.wipe.style.clipPath = `circle(${rad.toFixed(2)}px at ${x.toFixed(2)}px ${y.toFixed(2)}px)`;
       }
-      e.wipe.style.clipPath = `circle(${rad.toFixed(2)}px at ${x.toFixed(2)}px ${y.toFixed(2)}px)`;
     } else show(e.wipe, false);
   }
 }
