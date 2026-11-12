@@ -1,6 +1,6 @@
 /**
  * The film's single clock (seconds). Every visual and audio cue is in this
- * table so pacing can be tuned in one place. ~31 s, seven chapters:
+ * table so pacing can be tuned in one place. ~32 s, seven chapters:
  *   Prologue + 1 (intro) · 2 complexity · 3 clarity · 4 proof ·
  *   5 Figma · 6 AI-assisted code · 7 finished product + reveal
  */
@@ -20,20 +20,24 @@ export const T = {
   assemble: [12.2, 13.4], wireIn: [13.2, 13.6], clearIn: [13.1, 13.6], clearOut: [15.2, 15.5], wireOut: [15.2, 15.6],
   // 4 — proof: all three together
   accentToRule: [15.25, 15.9], statsIn: [15.6, 16.0], roll: [15.7, 17.1], labelsIn: [16.6, 17.0], statsOut: [18.6, 18.95],
-  // 5 — Figma
-  figmaIn: [18.8, 19.35], type1: [19.25, 20.0],
-  edits: [[20.0, 20.55], [20.65, 21.2], [21.3, 21.85], [21.95, 22.5]], figmaHold: 22.85,
-  // 6 — AI-assisted code
-  toCode: [22.85, 23.5], type2: [23.2, 23.8], code: [23.6, 24.75], ghost: [24.85, 25.3], accept: 25.35, codeHold: 26.35,
-  // 7 — finished product + reveal
-  toLive: [26.35, 27.0], draftDone: [27.1, 27.9], cursorIn: [27.9, 28.6], click: 28.7, flowDone: [28.8, 29.45],
-  sweep: [29.75, 30.25], handoff: [30.35, 31.15],
-  end: 31.2,
+  // 5 — Figma: the sentence is set, the cursor finds "Figma", the canvas opens
+  sent1In: [18.85, 19.4], cursorToFigma: [19.3, 19.95], figmaReveal: [20.0, 20.5],
+  edits: [[20.55, 20.95], [21.0, 21.4], [21.45, 21.85], [21.9, 22.3]],
+  // 6 — code: the second sentence, the cursor moves to "code", editor + preview
+  sent2In: [22.6, 23.1], cursorToCode: [22.8, 23.45], codeReveal: [23.5, 24.0],
+  code: [24.0, 24.9], ghost: [25.0, 25.4], accept: 25.45, codeHold: 25.9,
+  // 7 — the product: wireframe → polished, hover, click, success, camera zoom
+  toLive: [25.9, 26.5], polish: [[26.6, 27.0], [26.9, 27.3], [27.2, 27.6], [27.5, 27.9]],
+  draftDone: [27.85, 28.3], cursorIn: [28.2, 28.85], hover: [28.75, 28.95], click: 29.05,
+  flowDone: [29.15, 29.6], zoom: [29.35, 30.3],
+  sweep: [30.4, 30.9], handoff: [31.0, 31.8],
+  end: 31.85,
 } as const;
 
 /** The level-clear sound's held note lands as the orange dot reaches the logo. */
 export const VICTORY_AT = T.handoff[1] - 0.62;
-export const DARK_RANGE = [T.toCode[0] + 0.3, T.toLive[0] + 0.3] as const;
+/** No full-dark chapter any more (the editor is a dark panel on warm white). */
+export const DARK_RANGE = [-1, -1] as const;
 
 export const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 export const prog = (r: number, a: number, b: number) => clamp01((r - a) / (b - a));
