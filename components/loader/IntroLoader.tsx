@@ -16,13 +16,15 @@ import {
   range,
   zoomCurves,
 } from "./timeline";
-import { introState } from "@/lib/introState";
+import { announceDone, announceReveal, introState } from "@/lib/introState";
 import styles from "./IntroLoader.module.css";
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 /** Feather width of the homepage aperture edge, as a fraction of its radius. */
 const FEATHER = 0.08;
+/** Zoom progress at which the homepage starts its own entrance animation. */
+const REVEAL_AT = 0.26;
 
 /**
  * Cinematic intro. Layers (bottom → top), all inside one fixed overlay:
@@ -51,6 +53,9 @@ export default function IntroLoader() {
 
   useEffect(() => {
     introState.played = true;
+    // No intro on this load: the page is revealed and at rest immediately.
+    if (!active) announceDone();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useIsoLayoutEffect(() => {
@@ -93,6 +98,7 @@ export default function IntroLoader() {
         site.style.willChange = "";
       }
       setActive(false);
+      announceDone();
     };
     finishRef.current = finish;
 
@@ -151,6 +157,8 @@ export default function IntroLoader() {
       if (z <= 0) return;
       if (!originSet) prepareZoom();
       const { scaleE, travel, aperture, apertureFit, settle } = zoomCurves(z);
+      // The portfolio's own entrance starts as the aperture begins to open.
+      if (z >= REVEAL_AT) announceReveal();
 
       const vw = window.innerWidth;
       const vh = window.innerHeight;
@@ -202,6 +210,7 @@ export default function IntroLoader() {
       l1.style.transform = l2.style.transform = "none";
       type.style.opacity = String(p);
       const out = range(t, T_REDUCED.out);
+      if (out > 0) announceReveal();
       root.style.opacity = String(1 - out);
       if (out >= 1) finish();
     };
