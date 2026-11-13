@@ -51,3 +51,6 @@ next-env.d.ts
 /reference/motion-film-reference.mp4
 /reference/motion-film-storyboard.png
 /file-*.png
+
+# The Wall: local note storage (when Supabase is not configured)
+/data/

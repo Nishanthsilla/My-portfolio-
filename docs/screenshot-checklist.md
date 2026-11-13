@@ -63,3 +63,23 @@ Each has two slots on its overview page and four on its full case-study page. Se
 | A Design System Built Out of Pure Frustration and Logic | `design-system-frustration-logic-visual-1`, `design-system-frustration-logic-visual-2` | `design-system-frustration-logic-context-visual`, `design-system-frustration-logic-research-artefact`, `design-system-frustration-logic-key-workflow-screens`, `design-system-frustration-logic-before-after-comparison` |
 
 Ambient AI also needs a cover image (`ambient-ai` cover slot) plus its description, company, role, timeline and key contributions.
+
+## Beyond the Interface (journal)
+
+| Identifier | Entry | Image needed | Ratio |
+|---|---|---|---|
+| `beyond-modular-01-1` | MODULAR 01 | Hero visual or sketch | 3:2 |
+| `beyond-modular-01-2` | MODULAR 01 | Modules and attachment detail | 4:3 |
+| `beyond-modular-01-3` | MODULAR 01 | Core + expansion configuration | 4:3 |
+| `beyond-3d-printing-1` | 3D printing & physical experiments | 3D print, CAD render or prototype photo | 3:2 |
+| `beyond-more-1` | Other ideas & explorations | Image for the next exploration | 3:2 |
+
+Send each image with any project details you want shown (materials, process, status).
+For an image-based exploration, set `visual: { kind: "photo", src: "/images/beyond/<file>.webp" }` in `lib/site/about.ts`.
+
+## The Wall
+
+| File | What |
+|---|---|
+| `public/images/wall/side-eye-monkey.gif` (optional) | A licensed side-eye monkey GIF — see docs/the-wall-setup.md |
+| `public/images/wall/stickers/*.png` (optional) | Extra sticker artwork |
