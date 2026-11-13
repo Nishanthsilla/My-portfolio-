@@ -26,49 +26,85 @@
   .gapTop { margin-top: 10px; }
 }
 
-/* ---------------- the cat in the corner ---------------- */
+/* ---------------- the cat in the corner (taking a bath) ---------------- */
 /* catWrap holds the speech bubble; catBox clips the cat at the "edge" it peeks over */
 .catWrap { position: absolute; right: clamp(16px, 4vw, 56px); bottom: 0; z-index: 3; width: clamp(118px, 11vw, 150px); }
-.catBox { overflow: hidden; padding: 30px 30px 0; margin: 0 -30px; }
+.catBox { overflow: hidden; padding: 120px 34px 0; margin: -120px -34px 0; pointer-events: none; }
 .cat {
-  display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; transform: translateY(34%);
+  display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; transform: translateY(34%); pointer-events: auto;
   transition: transform 520ms cubic-bezier(0.34, 1.56, 0.64, 1); -webkit-tap-highlight-color: transparent;
 }
 .cat svg { display: block; width: 100%; height: auto; overflow: visible; }
 .catWrap[data-state="idle"] .cat:hover, .catWrap[data-state="idle"] .cat:focus-visible { transform: translateY(12%) rotate(-3deg); }
 .cat:focus-visible { outline: none; }
 .cat:focus-visible svg { filter: drop-shadow(0 0 4px rgba(255, 73, 56, 0.7)); }
-.catWrap[data-state="shock"] .cat, .catWrap[data-state="bye"] .cat { transform: translateY(2%); transition-duration: 380ms; }
-.catWrap[data-state="away"] .cat { transform: translateY(110%); transition: transform 700ms cubic-bezier(0.55, 0, 0.85, 0.35); }
-.catWrap[data-state="hidden"] .cat { transform: translateY(110%); transition: none; }
+/* caught: up it comes, tub and all */
+.catWrap[data-state="bath"] .cat, .catWrap[data-state="curtain"] .cat { transform: translateY(-40%); transition: transform 460ms cubic-bezier(0.34, 1.7, 0.64, 1); }
+.catWrap[data-state="hidden"] .cat { transform: translateY(120%); transition: none; }
+.tub { opacity: 0; transform: translateY(40px); transition: opacity 160ms, transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.catWrap[data-state="bath"] .tub, .catWrap[data-state="curtain"] .tub { opacity: 1; transform: none; }
 .lids { transform-box: fill-box; transform-origin: center; animation: blink 4.6s infinite; }
 @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
-.catWrap[data-state="shock"] .lids, .catWrap[data-state="bye"] .lids { animation: none; }
-.ears { transform-box: view-box; transform-origin: 50% 40%; transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-.catWrap[data-state="shock"] .ears { transform: scale(1.06) translateY(-4px); }
-.paws { transition: transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-.catWrap[data-state="away"] .paws { transform: translateY(-10px); }
-.wave { transform-box: fill-box; transform-origin: 90% 100%; }
-.catWrap[data-state="bye"] .wave { animation: wave 380ms ease-in-out 4 alternate; }
-@keyframes wave { from { transform: translateY(-10px) rotate(-10deg); } to { transform: translateY(-22px) rotate(14deg); } }
-.shake { animation: shake 360ms ease-in-out; }
-@keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.catWrap:not([data-state="idle"]) .lids { animation: none; }
+.ears { transform-box: view-box; transform-origin: 50% 40%; }
+.shake { animation: shake 300ms ease-in-out 2; }
+@keyframes shake { 25% { transform: translateX(-4px) rotate(-1deg); } 75% { transform: translateX(4px) rotate(1deg); } }
 
 .bubble {
-  position: absolute; right: calc(100% - 22px); top: 4px; z-index: 2; padding: 8px 12px; border-radius: 14px 14px 4px 14px; background: #fff;
+  position: absolute; right: calc(100% - 22px); bottom: 110%; z-index: 4; padding: 8px 12px; border-radius: 14px 14px 4px 14px; background: #fff;
   border: 2px solid #1d1b19; color: #1d1b19; white-space: nowrap; font: 600 14px/1.2 var(--mono, ui-monospace, monospace);
-  box-shadow: 3px 3px 0 #1d1b19; animation: bubble 300ms cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none;
+  box-shadow: 3px 3px 0 #1d1b19; animation: bubble 300ms cubic-bezier(0.34, 1.56, 0.64, 1) 160ms both; pointer-events: none;
 }
 @keyframes bubble { from { opacity: 0; transform: scale(0.6) translateY(8px); } }
 .hint { position: absolute; right: calc(100% + 6px); bottom: 26px; white-space: nowrap; font: 500 12px/1 var(--mono, ui-monospace, monospace); color: var(--muted, #777); opacity: 0; transition: opacity 200ms; pointer-events: none; }
 .catWrap[data-state="idle"]:hover .hint, .catWrap[data-state="idle"]:focus-within .hint { opacity: 1; }
-/* phones: the bottom of the screen belongs to the scene bar, so the cat peeks over a little ledge just above it */
+
+/* soap bubbles drifting up behind the peeking cat */
+.soap { position: absolute; left: 20%; right: 20%; bottom: 58%; height: 0; pointer-events: none; }
+.soap i { position: absolute; bottom: 0; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #9cc9ec; background: radial-gradient(circle at 35% 35%, #fff 0 25%, rgba(220, 238, 252, 0.5) 60%); opacity: 0; animation: soap 4.2s ease-out infinite; }
+.soap i:nth-child(1) { left: 6%; }
+.soap i:nth-child(2) { left: 52%; width: 7px; height: 7px; animation-delay: 1.4s; }
+.soap i:nth-child(3) { left: 86%; width: 12px; height: 12px; animation-delay: 2.8s; }
+@keyframes soap { 0% { opacity: 0; transform: translate(0, 0) scale(0.6); } 15% { opacity: 1; } 80% { opacity: 0.8; } 100% { opacity: 0; transform: translate(8px, -64px) scale(1); } }
+.catWrap:not([data-state="idle"]) .soap { display: none; }
+
+/* water splashing out of the tub */
+.splash { position: absolute; left: 50%; bottom: 46%; width: 0; height: 0; z-index: 4; pointer-events: none; }
+.splash i { position: absolute; left: -4px; top: -6px; width: 8px; height: 12px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #7cc0f2; border: 1.5px solid #1d1b19;
+  --a: calc(-80deg + var(--i) * 32deg); transform: rotate(var(--a)); opacity: 0; animation: splash 720ms cubic-bezier(0.2, 0.7, 0.4, 1) calc(120ms + var(--i) * 40ms) 2; }
+@keyframes splash { 0% { opacity: 1; transform: rotate(var(--a)) translateY(0); } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-90px); } }
+
+/* the shower curtain: slides across the whole contact screen, then opens again */
+.curtain { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
+.rod { position: absolute; left: 0; right: 0; top: 10px; height: 8px; border-radius: 8px; background: #1d1b19; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); z-index: 1; }
+.fabric {
+  position: absolute; top: 12px; right: 0; bottom: 0; width: 100%; transform-origin: 100% 0; display: grid; place-items: start center;
+  background:
+    repeating-linear-gradient(90deg, rgba(29, 27, 25, 0.1) 0, rgba(255, 255, 255, 0) 22px, rgba(29, 27, 25, 0.12) 44px),
+    repeating-linear-gradient(90deg, #fffaf6 0 52px, #ff4938 52px 64px, #fffaf6 64px 116px, #ffb3a8 116px 122px);
+  border-left: 3px solid #1d1b19; box-shadow: -12px 0 30px rgba(0, 0, 0, 0.18);
+  -webkit-mask-image: radial-gradient(14px 10px at 50% 100%, transparent 98%, #000 100%); mask-image: radial-gradient(14px 10px at 50% 100%, transparent 98%, #000 100%);
+  -webkit-mask-size: 44px 100%; mask-size: 44px 100%; -webkit-mask-position: 0 8px; mask-position: 0 8px;
+}
+.curtain[data-curtain="closing"] .fabric { animation: curtainClose 720ms cubic-bezier(0.2, 0.9, 0.3, 1.04) both; }
+.curtain[data-curtain="opening"] .fabric { animation: curtainOpen 640ms cubic-bezier(0.6, 0, 0.8, 0.4) both; }
+@keyframes curtainClose { from { transform: scaleX(0.04); } 82% { transform: scaleX(1.01) skewX(-1deg); } to { transform: scaleX(1); } }
+@keyframes curtainOpen { from { transform: scaleX(1); } to { transform: scaleX(0.04); } }
+.sign {
+  margin-top: 64px; padding: 10px 18px; border-radius: 12px; background: #fff; border: 2.5px solid #1d1b19; box-shadow: 4px 4px 0 #1d1b19;
+  font: 700 clamp(18px, 2vw, 24px)/1 var(--mono, ui-monospace, monospace); color: #1d1b19; transform-origin: 50% -40px; animation: swing 1.6s ease-in-out 360ms both;
+}
+.sign::before { content: ""; position: absolute; left: 50%; top: -42px; width: 2px; height: 40px; margin-left: -1px; background: #1d1b19; }
+.sign { position: relative; }
+@keyframes swing { 0% { transform: rotate(14deg); } 30% { transform: rotate(-9deg); } 55% { transform: rotate(5deg); } 78% { transform: rotate(-2deg); } 100% { transform: rotate(0deg); } }
+
+/* phones: the bottom of the screen belongs to the scene bar, so the cat peeks over the © line instead */
 @media (max-width: 760px) {
   .catWrap { right: 4px; bottom: 100%; width: 88px; }
   .bubble { font-size: 13px; }
   .hint { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cat, .ears, .paws { transition: none; }
-  .lids, .wave, .shake, .bubble { animation: none; }
+  .cat, .tub { transition: none; }
+  .lids, .shake, .bubble, .soap i, .splash i, .sign { animation: none; }
 }
