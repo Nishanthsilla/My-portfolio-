@@ -2,15 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { respond } from "@/lib/ask/match";
+import { SUGGESTED, topicById, type Topic } from "@/lib/ask/faq";
 import a from "./ask.module.css";
 
-type Msg = { role: "user" | "assistant"; content: string; off?: { gif: string | null; line: string } };
+type Msg = { role: "user" | "assistant"; content: string; off?: { gif: string | null; line: string }; links?: Topic["links"]; next?: string[]; topic?: string };
 
-const SUGGESTIONS = [
-  "What does Nishanth design?",
-  "Which of his projects should I explore first?",
-  "How does he design for AI agents?",
-];
+const SUGGESTIONS = SUGGESTED.map((id) => topicById(id)!.q);
 /** off-topic answers: a "nope" GIF (shuffled) and a line (shuffled) */
 const NOPE_QUERIES = ["nope", "i don't know", "no idea", "shrug", "not my department", "nope nope nope", "confused"];
 const NOPE_LINES = [
@@ -42,12 +40,13 @@ async function nopeGif(): Promise<string | null> {
 }
 
 /**
- * "Ask Nishanth": a sparkle button in the navbar opens a panel where visitors
- * ask about Nishanth. Answers come from the site's own content; anything else
- * gets a "nope" GIF. Hidden entirely until the assistant is switched on.
+ * "Ask Nishanth": a sparkle button in the navbar slides in a panel where
+ * visitors ask about Nishanth. No AI and no server: questions are matched to
+ * the topics in lib/ask/faq.ts (written from the site's own content), so the
+ * answers are instant, free and always the same. Every answer offers follow-up
+ * questions; anything unrelated gets a "nope" GIF.
  */
 export default function AskPanel() {
-  const [enabled, setEnabled] = useState(false);
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const close = () => {
@@ -59,11 +58,9 @@ export default function AskPanel() {
       setClosing(false);
     }, 280);
   };
-  const [remaining, setRemaining] = useState(6);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
   const list = useRef<HTMLDivElement>(null);
   const closeRef = useRef(close);
   useEffect(() => {
@@ -71,16 +68,6 @@ export default function AskPanel() {
   });
   const field = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    fetch("/api/ask", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: { enabled: boolean; remaining: number } | null) => {
-        if (!d) return;
-        setEnabled(d.enabled);
-        setRemaining(d.remaining);
-      })
-      .catch(() => {});
-  }, []);
 
   // open: lock the page, focus the field; Escape closes
   useEffect(() => {
@@ -102,60 +89,41 @@ export default function AskPanel() {
     list.current?.scrollTo({ top: list.current.scrollHeight, behavior: "smooth" });
   }, [msgs, busy]);
 
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
   const ask = async (q: string) => {
     const question = q.trim().slice(0, 400);
-    if (!question || busy || remaining <= 0) return;
-    setError("");
+    if (!question || busy) return;
     setInput("");
-    const history = msgs.filter((m) => !m.off).map((m) => ({ role: m.role, content: m.content.slice(0, 1500) }));
+    const lastTopic = [...msgs].reverse().find((m) => m.topic)?.topic;
     setMsgs((m) => [...m, { role: "user", content: question }]);
     setBusy(true);
-    try {
-      const res = await fetch("/api/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [...history, { role: "user", content: question }] }),
-      });
-      if (!res.ok || !res.body) {
-        const d = (await res.json().catch(() => ({}))) as { error?: string; remaining?: number };
-        if (typeof d.remaining === "number") setRemaining(d.remaining);
-        setError(d.error || "Couldn't answer that just now — please try again.");
-        return;
-      }
-      const reader = res.body.getReader();
-      const dec = new TextDecoder();
-      let carry = "";
-      let started = false;
-      for (;;) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        carry += dec.decode(value, { stream: true });
-        const lines = carry.split("\n");
-        carry = lines.pop() ?? "";
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          const ev = JSON.parse(line) as { t: string; v?: string; remaining?: number };
-          if (ev.t === "text" && ev.v) {
-            if (!started) {
-              started = true;
-              setMsgs((m) => [...m, { role: "assistant", content: ev.v! }]);
-            } else setMsgs((m) => m.map((x, i) => (i === m.length - 1 ? { ...x, content: x.content + ev.v } : x)));
-          } else if (ev.t === "off") {
-            const gif = await nopeGif();
-            setMsgs((m) => [...m, { role: "assistant", content: "", off: { gif, line: pick(NOPE_LINES) } }]);
-            started = true;
-          } else if (ev.t === "done" && typeof ev.remaining === "number") setRemaining(ev.remaining);
-          else if (ev.t === "error") setError(ev.v || "Couldn't answer that just now.");
-        }
-      }
-    } catch {
-      setError("Couldn't reach the assistant — please try again.");
-    } finally {
+    const reply = respond(question, lastTopic);
+    const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reply.kind === "off") {
+      const [gif] = await Promise.all([nopeGif(), wait(calm ? 0 : 650)]);
+      setMsgs((m) => [...m, { role: "assistant", content: "", off: { gif, line: pick(NOPE_LINES) }, next: reply.next }]);
       setBusy(false);
+      return;
     }
+    // a short "typing" pause, then the answer appears word by word
+    await wait(calm ? 0 : 550 + Math.min(500, reply.text.length * 2));
+    const words = reply.text.split(/(\s+)/);
+    setMsgs((m) => [...m, { role: "assistant", content: calm ? reply.text : "", topic: reply.topic }]);
+    if (!calm) {
+      for (let i = 0; i < words.length; i += 3) {
+        const chunk = words.slice(i, i + 3).join("");
+        setMsgs((m) => m.map((x, k) => (k === m.length - 1 ? { ...x, content: x.content + chunk } : x)));
+        await wait(18);
+      }
+    }
+    setMsgs((m) => m.map((x, k) => (k === m.length - 1 ? { ...x, links: reply.links, next: reply.next } : x)));
+    setBusy(false);
   };
 
-  if (!enabled) return null;
+  // follow-up questions under the latest answer (not ones already asked)
+  const asked = new Set(msgs.filter((m) => m.role === "user").map((m) => m.content));
+  const lastMsg = msgs[msgs.length - 1];
+  const followUps = !busy && lastMsg?.role === "assistant" ? (lastMsg.next ?? []).map((id) => topicById(id)?.q).filter((q): q is string => !!q && !asked.has(q)) : [];
 
   return (
     <>
@@ -182,7 +150,7 @@ export default function AskPanel() {
                     </h2>
                     <div className={a.suggestions}>
                       {SUGGESTIONS.map((s) => (
-                        <button key={s} type="button" className={a.suggestion} onClick={() => ask(s)} disabled={remaining <= 0}>
+                        <button key={s} type="button" className={a.suggestion} onClick={() => ask(s)}>
                           <span aria-hidden="true">→</span> {s}
                         </button>
                       ))}
@@ -201,19 +169,33 @@ export default function AskPanel() {
                     ) : (
                       <div key={i} className={a.answer}>
                         {m.content.split(/\n{2,}/).map((p, j) => <p key={j}>{p}</p>)}
+                        {m.links?.length ? (
+                          <div className={a.links}>
+                            {m.links.map((l) => (
+                              <a key={l.href} href={l.href} className={a.link} {...(l.href.startsWith("http") || l.href.endsWith(".pdf") ? { target: "_blank", rel: "noopener noreferrer" } : {})} onClick={() => !l.href.startsWith("mailto:") && close()}>
+                                {l.label} <span aria-hidden="true">↗</span>
+                              </a>
+                            ))}
+                          </div>
+                        ) : null}
                       </div>
                     ),
                   )
                 )}
+                {followUps.length > 0 && (
+                  <div className={a.followUps} aria-label="Ask next">
+                    {followUps.map((f) => (
+                      <button key={f} type="button" className={a.followUp} onClick={() => ask(f)}>
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {busy && (msgs[msgs.length - 1]?.role === "user") && (
                   <span className={a.dots} aria-label="Thinking"><i /><i /><i /></span>
                 )}
-                {error && <p className={a.error} role="alert">{error}</p>}
               </div>
               <div className={a.bottom}>
-                <p className={a.count}>
-                  {remaining > 0 ? <>Questions available: {remaining}</> : <>No questions left today · email Nishanth anytime</>}
-                </p>
                 <form
                   className={a.bar}
                   onSubmit={(e) => {
@@ -235,13 +217,12 @@ export default function AskPanel() {
                     placeholder="Ask about Nishanth…"
                     rows={1}
                     aria-label="Your question"
-                    disabled={remaining <= 0}
                   />
-                  <button type="submit" className={a.send} disabled={!input.trim() || busy || remaining <= 0} aria-label="Ask">
+                  <button type="submit" className={a.send} disabled={!input.trim() || busy} aria-label="Ask">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
                   </button>
                 </form>
-                <p className={a.note}>Answers are written by AI from Nishanth&apos;s portfolio and can be wrong.</p>
+                <p className={a.note}>Answers come straight from Nishanth&apos;s portfolio.</p>
               </div>
             </div>
           </div>,

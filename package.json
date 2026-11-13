@@ -12,7 +12,6 @@
     "preview:single": "rm -rf out && STATIC_EXPORT=1 NEXT_PUBLIC_SITE_PREVIEW=1 next build && python3 scripts/make-single-preview.py"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^1.8.0",
     "geist": "^1.9.2",
     "gsap": "^3.12.5",
     "matter-js": "^0.20.0",
