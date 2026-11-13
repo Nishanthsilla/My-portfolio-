@@ -18,3 +18,6 @@
 .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .actions button:hover { border-color: #222; }
 .danger { color: #c2301f; }
+.tokRow { display: flex; gap: 8px; }
+.tokRow input { flex: 1; min-width: 0; }
+.eye { height: 46px; padding: 0 14px; border-radius: 10px; border: 1px solid #ddd8cf; background: #fff; font: 500 14px/1 var(--font-geist-sans), Arial; cursor: pointer; }

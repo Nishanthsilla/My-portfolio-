@@ -59,13 +59,15 @@ export async function verifyCaptcha(token: string | undefined, req: Request) {
 }
 
 /** Moderator access: a long secret token (WALL_ADMIN_TOKEN). Without one, moderation is off. */
+/** Spaces or line breaks at either end (easy to add by accident on a phone or when pasting) are ignored. */
+const adminToken = () => (process.env.WALL_ADMIN_TOKEN ?? "").trim();
 export function adminConfigured() {
-  return (process.env.WALL_ADMIN_TOKEN ?? "").length >= 24;
+  return adminToken().length >= 24;
 }
 export function isAdmin(req: Request) {
   if (!adminConfigured()) return false;
-  const given = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
+  const given = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
   const a = createHash("sha256").update(given).digest();
-  const b = createHash("sha256").update(process.env.WALL_ADMIN_TOKEN!).digest();
+  const b = createHash("sha256").update(adminToken()).digest();
   return given.length > 0 && timingSafeEqual(a, b);
 }

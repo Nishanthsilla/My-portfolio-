@@ -20,6 +20,7 @@ export default function WallAdmin() {
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [reveal, setReveal] = useState(false);
 
   useEffect(() => {
     try {
@@ -80,14 +81,19 @@ export default function WallAdmin() {
           onSubmit={(e) => {
             e.preventDefault();
             try {
-              sessionStorage.setItem(KEY, input);
+              sessionStorage.setItem(KEY, input.trim());
             } catch {}
-            setToken(input);
+            setToken(input.trim());
           }}
         >
           <h1>The Wall — moderation</h1>
           <label htmlFor="tok">Moderator token</label>
-          <input id="tok" type="password" value={input} onChange={(e) => setInput(e.target.value)} autoComplete="current-password" required />
+          <div className={a.tokRow}>
+            <input id="tok" type={reveal ? "text" : "password"} value={input} onChange={(e) => setInput(e.target.value)} autoComplete="current-password" autoCapitalize="off" autoCorrect="off" spellCheck={false} required />
+            <button type="button" className={a.eye} onClick={() => setReveal((v) => !v)} aria-label={reveal ? "Hide password" : "Show password"} aria-pressed={reveal}>
+              {reveal ? "Hide" : "Show"}
+            </button>
+          </div>
           <button type="submit">Open</button>
           {msg && <p className={a.msg}>{msg}</p>}
         </form>
