@@ -1,6 +1,7 @@
 "use client";
 
 import { gsap } from "gsap";
+import { sfx } from "@/lib/sound/engine";
 import { useEffect, useRef, type KeyboardEvent, type PointerEvent as RPointerEvent, type ReactNode, type RefObject } from "react";
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
@@ -67,6 +68,7 @@ export default function ElasticSticker({
         dragging.current = true;
         el.dataset.lifted = "";
         el.style.zIndex = "1000";
+        sfx("pick");
         // pick it up: a quick stretch
         if (!calm) gsap.to(art, { scale: 1.08, duration: 0.35, ease: "back.out(3)" });
       }
@@ -95,6 +97,7 @@ export default function ElasticSticker({
       el.style.zIndex = "";
       // let go: it snaps back with an elastic wobble
       gsap.to(art, { rotation, skewX: 0, scale: 1, duration: calm ? 0 : 1.15, ease: "elastic.out(1.15, 0.32)", overwrite: true });
+      sfx("drop");
       onMove(nx, ny);
     };
     el.addEventListener("pointermove", move);

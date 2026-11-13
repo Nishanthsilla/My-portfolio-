@@ -9,6 +9,7 @@ import { GIFS, StickerArt, stickerById } from "@/lib/wall/stickers";
 import { LIMITS, type PublicNote } from "@/lib/wall/types";
 import { addMine, loadDraft, loadLayout, loadMine, pruneMine, saveDraft, saveLayout, type MyNote, type Spot } from "@/lib/wall/local";
 import ElasticSticker from "./ElasticSticker";
+import { sfx } from "@/lib/sound/engine";
 import NoteCard from "./NoteCard";
 import SideEyeEditor from "./SideEyeEditor";
 import SideEyeMonkey from "./SideEyeMonkey";
@@ -350,6 +351,7 @@ export default function WallApp({
       });
       const d = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; note?: PublicNote };
       if (res.ok && d.ok) {
+        sfx("post");
         if (d.note) {
           addMine(d.note);
           setMine(loadMine());

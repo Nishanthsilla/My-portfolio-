@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PhotoGallery from "./PhotoGallery";
+import AmbientTrack from "../AmbientTrack";
 import site from "../site.module.css";
 import g from "./photo.module.css";
 import { photography } from "@/lib/site/about";
@@ -8,6 +9,8 @@ import { photography } from "@/lib/site/about";
 export default function PhotographyBody({ inSheet = false, photo }: { inSheet?: boolean; photo?: number }) {
   return (
     <>
+      {/* the calm ambient piece, while the gallery is open (only if sound is on) */}
+      <AmbientTrack name="photography" />
       <div className={site.container}>
         <header className={g.head} style={inSheet ? { paddingTop: 8 } : undefined}>
           <div>

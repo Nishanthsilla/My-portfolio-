@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import SoundToggle from "./SoundToggle";
 import s from "./site.module.css";
 import { projectBySlug } from "@/lib/site/content";
 
@@ -46,6 +47,7 @@ export default function Header() {
           <i aria-hidden="true" />
           Nishanth Silla
         </Link>
+        <SoundToggle />
         <button
           type="button"
           className={s.menuBtn}
