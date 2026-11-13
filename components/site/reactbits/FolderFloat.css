@@ -276,19 +276,27 @@
   }
 }
 
-/* [portfolio] photo items: a small print with a white border */
-.folder-float__item--photo { height: auto; padding: 4px; border-radius: 8px; background: #fff; }
-.folder-float__photo { display: block; width: 84px; max-width: none; height: 106px; flex: none; object-fit: cover; border-radius: 5px; pointer-events: none; }
-/* [portfolio] the stack: hovering a print brings it forward, straightens it and enlarges it */
-.folder-float__item--photo { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18); }
+/* [portfolio] photo items: a small print with a white border.
+   The button (the hover target) never moves on hover — only the print inside it does —
+   so the pointer can't slip off it and set the stack flickering. */
+.folder-float__item--photo { height: auto; padding: 0; border-radius: 8px; background: transparent; box-shadow: none; }
+.folder-float__photo {
+  display: block; width: 84px; max-width: none; height: 106px; flex: none; object-fit: cover; pointer-events: none;
+  border: 4px solid #fff; border-radius: 8px; background: #eee; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+  transition: transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 300ms ease;
+}
+@media (max-width: 640px) { .folder-float__photo { width: 66px; height: 84px; } }
 .folder-float[data-open] .folder-float__item--photo { z-index: calc(1 + var(--i)); }
+/* hover: the print rises out of the stack, straightens and grows a little */
 @media (hover: hover) and (pointer: fine) {
-  .folder-float[data-open] .folder-float__item--photo:hover {
-    z-index: 30; --r: 0deg; scale: 1.7; box-shadow: 0 18px 36px rgba(0, 0, 0, 0.3);
-    transition: transform 360ms cubic-bezier(0.34, 1.56, 0.64, 1), scale 360ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms ease;
+  .folder-float[data-open] .folder-float__item--photo:hover { z-index: 30; scale: 1; }
+  .folder-float[data-open] .folder-float__item--photo:hover .folder-float__photo {
+    transform: translateY(-42px) rotate(calc(-1 * var(--r))) scale(1.16);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.28);
   }
 }
-.folder-float[data-open] .folder-float__item--photo:focus-visible { z-index: 30; --r: 0deg; scale: 1.5; outline: 2px solid #4453ff; outline-offset: 2px; }
-/* [portfolio] the photo folder: prints sit in front of the paper sheet (still tucked behind the front flap) */
+.folder-float[data-open] .folder-float__item--photo:focus-visible { z-index: 30; outline: none; }
+.folder-float[data-open] .folder-float__item--photo:focus-visible .folder-float__photo { transform: translateY(-42px) rotate(calc(-1 * var(--r))) scale(1.16); outline: 2px solid #4453ff; outline-offset: 2px; }
+/* the photo folder: prints sit in front of the paper sheet (still tucked behind the front flap) */
 .folder-float--stack .folder-float__items { z-index: 2; }
-@media (max-width: 640px) { .folder-float__photo { width: 66px; height: 84px; } }
+@media (prefers-reduced-motion: reduce) { .folder-float__photo { transition: none; } }

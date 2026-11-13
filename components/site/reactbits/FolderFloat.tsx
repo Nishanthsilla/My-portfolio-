@@ -185,11 +185,10 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
   const pos = stack
     ? list.map((_, i) => {
         // [portfolio] a fanned pile: overlapping, gently arched, each print turned a little
-        // loosely scattered over the folder: spread out, staggered heights, a slight tilt each
+        // a tidy fan tucked into the folder: about 60% of each print shows above the front
         const k = i - (n - 1) / 2;
-        const j = jitter(i + 3);
-        const step = Math.min(58, (spread * 1.7) / Math.max(1, n - 1));
-        return { x: k * step + (j - 0.5) * 18, y: -lift - 18 - (i % 2 ? 26 : 0) - j * 14 + Math.abs(k) * 6, r: (j * 2 - 1) * 9 };
+        const step = Math.min(48, (spread * 1.3) / Math.max(1, n - 1));
+        return { x: k * step + (jitter(i + 3) - 0.5) * 4, y: -lift - 16 + Math.abs(k) * 6, r: k * 5 };
       })
     : layout(list, spread, lift, tilt, sizes);
 
@@ -488,7 +487,7 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
             >
               {item.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img className="folder-float__drift folder-float__photo" src={item.image} alt="" draggable={false} />
+                <img className="folder-float__photo" src={item.image} alt="" draggable={false} />
               ) : (
                 <span className="folder-float__drift">{item.label}</span>
               )}
