@@ -325,3 +325,41 @@
 .gyroLabel span { font-weight: 400; font-size: 12.5px; line-height: 1.35; opacity: 0.88; }
 @keyframes gyroIn { from { opacity: 0; transform: scale(0.4); } }
 @media (prefers-reduced-motion: reduce) { .gyroArrow, .gyroLabel { animation: none; } }
+
+/* =====================================================================
+   Bento look: full-bleed tiles on rich colour fields, tight gaps,
+   white titles on the image (bottom-left) — no cards, no borders.
+   ===================================================================== */
+.bento, .bentoRow { gap: 8px; }
+.tile { display: block; border: 0; border-radius: 14px; background: var(--tone, #2a2826); color: #fff; isolation: isolate; }
+.tile:hover { border-color: transparent; }
+.tileMedia { position: absolute; inset: 0; margin: 0; }
+.tileFrame { border-radius: 0 !important; background: transparent !important; border: 0 !important; }
+.tileFrame > div { transition: transform 900ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+.tile:hover .tileFrame > div { transform: scale(1.035); }
+.tileBody {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; gap: 4px; padding: 48px 16px 14px; pointer-events: none;
+  background: linear-gradient(to top, rgba(10, 9, 8, 0.6) 0%, rgba(10, 9, 8, 0.32) 55%, rgba(10, 9, 8, 0) 100%);
+}
+.large .tileBody { gap: 6px; padding: 96px 22px 20px; }
+.tileMeta { color: rgba(255, 255, 255, 0.72); font-size: 10.5px; }
+.tileTitle { color: #fff; font-size: 15px; font-weight: 520; }
+.large .tileTitle { font-size: clamp(26px, 2.3vw, 36px); font-weight: 500; letter-spacing: -0.035em; }
+.tileDesc { color: rgba(255, 255, 255, 0.82); }
+.large .tileDesc { font-size: 14px; max-width: 34em; }
+.arrow { color: rgba(255, 255, 255, 0.6); }
+.tile:hover .arrow { color: #fff; }
+.tileTag { background: rgba(255, 255, 255, 0.88); border: 0; backdrop-filter: blur(6px); }
+.tileCta { top: 14px; right: 14px; bottom: auto; background: rgba(255, 255, 255, 0.92); border: 0; color: #1d1b19; backdrop-filter: blur(6px); }
+.large .tileCta { top: 18px; right: 18px; bottom: auto; }
+.tileCta:hover { background: #fff; }
+@media (hover: none) {
+  .tileCta { position: absolute; top: 12px; right: 12px; bottom: auto; margin: 0; }
+  .large .tileCta { top: 14px; right: 14px; margin: 0; }
+  .small .tileCta { display: none; }
+}
+.browse { border: 0; border-radius: 14px; background: #1d1b19; color: #fff; }
+.browse .eyebrow { color: rgba(255, 255, 255, 0.6); }
+.browse li { border-top-color: rgba(255, 255, 255, 0.12); }
+.browse a { color: #fff; }
+.browse a span { color: rgba(255, 255, 255, 0.5); }
