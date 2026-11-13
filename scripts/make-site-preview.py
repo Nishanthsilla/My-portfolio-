@@ -43,6 +43,9 @@ PAGES = {
     "/visual-craft": "visual-craft.html",
     "/product-strategy": "product-strategy.html",
     "/design-engineering": "design-engineering.html",
+    "/photography": "photography.html",
+    "/wall": "wall.html",
+    "/wall/admin": "wall/admin.html",
 }
 for f in sorted((OUT / "work").rglob("*.html")):
     PAGES["/" + f.relative_to(OUT).with_suffix("").as_posix()] = f.relative_to(OUT).as_posix()
@@ -99,6 +102,7 @@ def map_href(value: str, me: str) -> str:
 RUNTIME = """<script>(function(){
   var f=window.fetch; window.fetch=function(u,o){
     var s=String(u&&u.url||u);
+    if(/\\/api\\//.test(s))return Promise.reject(new TypeError('offline preview: no server'));
     var abs; try{abs=new URL(s,location.href).protocol}catch(_){abs=''}
     if(abs==='file:'||/_rsc=|\\.txt(\\?|$)|__next\\./.test(s)){return new Promise(function(){});}
     return f.apply(this,arguments);

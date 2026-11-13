@@ -57,6 +57,7 @@ RUNTIME = """<script>(function(){
   var f=window.fetch; window.fetch=function(u,o){
     var s=String(u&&u.url||u);
     if(/^(data:|blob:)/.test(s))return f.apply(this,arguments);
+    if(/\\/api\\//.test(s))return Promise.reject(new TypeError('offline preview: no server'));
     if(/_rsc=|\\.txt(\\?|$)|__next\\./.test(s)||!/^https?:/.test(s)){return new Promise(function(){});}
     return f.apply(this,arguments);
   };

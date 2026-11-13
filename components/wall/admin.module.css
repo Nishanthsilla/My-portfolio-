@@ -1,0 +1,20 @@
+.page { min-height: 100vh; padding: 32px clamp(16px, 4vw, 48px) 64px; background: #fafaf7; color: #222; font-family: var(--font-geist-sans), Arial, sans-serif; }
+.page h1 { margin: 0; font-size: 26px; letter-spacing: -0.02em; }
+.login { display: grid; gap: 10px; max-width: 360px; margin: 12vh auto 0; }
+.login label { margin-top: 16px; font: 500 12px/1 var(--font-geist-mono), monospace; text-transform: uppercase; color: #777; }
+.login input { height: 46px; padding: 0 14px; border-radius: 10px; border: 1px solid #ddd8cf; font-size: 16px; }
+.login button, .actions button, .tabs button { height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid #ddd8cf; background: #fff; font: 500 14px/1 var(--font-geist-sans), Arial; cursor: pointer; }
+.login button { background: #ff4938; border-color: #ff4938; color: #fff; height: 46px; }
+.head { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; margin-bottom: 20px; }
+.tabs { display: flex; gap: 6px; }
+.tabs button[aria-selected="true"] { background: #222; color: #fff; border-color: #222; }
+.view { margin-left: auto; font-size: 14px; }
+.msg { color: #777; font-size: 14px; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+.item { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; padding: 18px; border-radius: 16px; background: #efe9df; }
+.card { padding: 4px 0; }
+.meta p { margin: 0 0 6px; font-size: 13px; color: #5f5b55; }
+.reports { color: #c2301f !important; font-weight: 600; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.actions button:hover { border-color: #222; }
+.danger { color: #c2301f; }
