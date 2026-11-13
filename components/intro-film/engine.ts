@@ -273,8 +273,8 @@ export class FilmEngine {
     const s = this.story;
     this.story.render(r, { x: (L.card.cx - s.bx) / s.bs, y: (L.card.cy - s.by) / s.bs });
 
-    /* ---- Finale: Gradient ASCII → colour takeover → the camera out of / through the button
+    /* ---- Finale: Gradient ASCII → the product → one click → Zoom Through into the button
             (story.ts + zoom.ts). ---- */
-    // (the colour takeover is drawn by the story, chapter 7)
+
   }
 }

@@ -366,7 +366,7 @@ export default function IntroFilm() {
       <div className={styles.ascii} data-ascii aria-hidden="true">
         <AsciiBridge />
       </div>
-      {/* the #FF4938 takeover, spreading from the button's spot */}
+      {/* (orange wipe layer — not used in the current cut) */}
       <div className={styles.wipe} data-wipe aria-hidden="true" />
       {/* the camera's stacked exposures + the website emerging from the button (zoom.ts) */}
       <div className={styles.zoom} data-zoom aria-hidden="true" />

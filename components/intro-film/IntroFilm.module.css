@@ -354,7 +354,7 @@
 }
 .btnLabel, .btnDone { grid-area: 1 / 1; color: #ffffff; }
 .btnPrimary { display: inline-grid; place-items: center; }
-.btnLabel { opacity: calc((1 - var(--approved)) * var(--lab, 1)); }
+.btnLabel { opacity: calc(1 - var(--approved)); }
 .btnDone { opacity: var(--approved); }
 /* metrics */
 .crLogA, .crLogB {
@@ -384,6 +384,8 @@
 .fsel i:nth-child(4) { right: -6px; bottom: -6px; }
 /* design state around "Figma" */
 .figTool, .figGuide, .figRuler, .figSpace, .figLayer, .codeSym, .textCaret, .snip { visibility: hidden; pointer-events: none; z-index: 5; }
+/* the width badge reads on top of the sentence it measures */
+.figRuler { z-index: 7; }
 .figTool {
   display: flex; gap: 2px; padding: 4px; border-radius: 10px; background: var(--ink);
   box-shadow: 0 10px 24px -12px rgba(36, 36, 36, 0.6); transform-origin: 0 100%;
@@ -435,7 +437,7 @@
 .tk_at { color: #d9d4cd; }
 .tk_str { color: #ffc9c1; }
 
-.pcur { left: 0; top: 0; visibility: hidden; z-index: 7; transform-origin: 0 0; }
+.pcur { left: 0; top: 0; visibility: hidden; z-index: 8; transform-origin: 0 0; }
 .pcur svg { display: block; width: 26px; height: 26px; fill: var(--ink); stroke: var(--white); stroke-width: 1.2; }
 .pcur .ibeam { position: absolute; left: -6px; top: -12px; width: 13px; height: 26px; fill: none; stroke: var(--ink); stroke-width: 2; opacity: 0; }
 .pcur[data-mode="text"] .arrow { opacity: 0; }
@@ -449,7 +451,7 @@
 }
 
 /* Finale */
-.zoom { position: absolute; inset: 0; overflow: hidden; visibility: hidden; pointer-events: none; contain: strict; }
+.zoom { position: absolute; inset: 0; overflow: hidden; display: none; pointer-events: none; contain: strict; }
 .zoom [data-zoom-b] *, .zoom [data-zoom-b] *::before, .zoom [data-zoom-b] *::after { animation: none !important; transition: none !important; }
 .wipe {
   position: absolute; inset: 0; background: var(--o);
