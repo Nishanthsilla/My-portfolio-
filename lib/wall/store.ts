@@ -18,8 +18,10 @@ import path from "path";
 import { Pool } from "pg";
 import type { NoteStatus, PublicNote, WallNote } from "./types";
 
-export type StoreMode = "postgres" | "sqlite";
-export const storeMode = (): StoreMode => (process.env.DATABASE_URL ? "postgres" : "sqlite");
+export type StoreMode = "postgres" | "sqlite" | "unconfigured";
+/** On serverless hosting (temporary disk) SQLite would lose notes, so there the wall refuses to store anything without DATABASE_URL. */
+const serverless = () => !!(process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME);
+export const storeMode = (): StoreMode => (process.env.DATABASE_URL ? "postgres" : serverless() ? "unconfigured" : "sqlite");
 
 const COLS = "id, message, name, sticker, x, y, rotation, status, reports, created_at";
 type Row = { id: string; message: string; name: string; sticker: string; x: number; y: number; rotation: number; status: NoteStatus; reports: number | null; created_at: string | Date };
@@ -123,6 +125,7 @@ function openPostgres(): Db {
 const g = globalThis as unknown as { __wallDb?: { mode: StoreMode; db: Db } };
 function db(): Db {
   const mode = storeMode();
+  if (mode === "unconfigured") throw new Error("The wall has no database: set DATABASE_URL (see docs/deploy.md).");
   if (!g.__wallDb || g.__wallDb.mode !== mode) g.__wallDb = { mode, db: mode === "postgres" ? openPostgres() : openSqlite() };
   return g.__wallDb.db;
 }
@@ -147,6 +150,13 @@ export async function insertPending(n: Omit<WallNote, "id" | "createdAt" | "stat
     note.id, note.message, note.name, note.sticker, note.x, note.y, note.rotation, "pending", 0, note.createdAt, ipHash,
   ]);
   return note;
+}
+
+/** Posts from one visitor (hashed IP) in the last `sinceMs` — rate limits shared by every server instance. */
+export async function countRecentByVisitor(ipHash: string, sinceMs: number): Promise<number> {
+  const since = new Date(Date.now() - sinceMs).toISOString();
+  const rows = await db().all(`SELECT id FROM wall_notes WHERE ip_hash = ? AND created_at >= ? LIMIT 20`, [ipHash, since]);
+  return rows.length;
 }
 
 /** Notes with the same text in the last `sinceMs` (duplicate check), any status. */
