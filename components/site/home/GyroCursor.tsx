@@ -8,10 +8,11 @@ import h from "./home.module.css";
  * A pointer cursor for an area (mouse / trackpad only): a blue arrow with a
  * white outline and a matching tag beside it ("View projects" and a one-line
  * description of what's inside), like a
- * collaborator's cursor. It glides after the pointer and leans a little into
+ * collaborator's cursor. It shows only while the pointer is over `only`
+ * (the folder); elsewhere the normal cursor stays. It glides after the pointer and leans a little into
  * the direction of travel. Touch screens and keyboards are unaffected.
  */
-export default function GyroCursor({ label, note, children, className = "" }: { label: string; note?: string; children: ReactNode; className?: string }) {
+export default function GyroCursor({ label, note, only = ".folder-float", children, className = "" }: { label: string; note?: string; only?: string; children: ReactNode; className?: string }) {
   const [on, setOn] = useState(false);
   const [at, setAt] = useState({ x: 0, y: 0 }); // where it appears (then it follows in the animation loop)
   const el = useRef<HTMLDivElement>(null);
@@ -37,14 +38,12 @@ export default function GyroCursor({ label, note, children, className = "" }: { 
   return (
     <div
       className={`${className} ${on ? h.gyroArea : ""}`}
-      onPointerEnter={(e) => {
-        if (e.pointerType !== "mouse" || !matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-        target.current = { x: e.clientX, y: e.clientY };
-        setAt({ x: e.clientX, y: e.clientY });
-        setOn(true);
-      }}
       onPointerMove={(e) => {
         target.current = { x: e.clientX, y: e.clientY };
+        // only over the folder itself (or what springs out of it) — not the empty card around it
+        const over = e.pointerType === "mouse" && !!(e.target as Element).closest(only) && matchMedia("(hover: hover) and (pointer: fine)").matches;
+        if (over && !on) setAt({ x: e.clientX, y: e.clientY });
+        if (over !== on) setOn(over);
       }}
       onPointerLeave={() => setOn(false)}
     >
