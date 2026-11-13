@@ -29,7 +29,7 @@
 /* ---------------- the cat in the corner (taking a bath) ---------------- */
 /* catWrap holds the speech bubble; catBox clips the cat at the "edge" it peeks over */
 .catWrap { position: absolute; right: clamp(16px, 4vw, 56px); bottom: 0; z-index: 3; width: clamp(118px, 11vw, 150px); }
-.catBox { overflow: hidden; padding: 120px 34px 0; margin: -120px -34px 0; pointer-events: none; }
+.catBox { position: relative; overflow: hidden; padding: 120px 34px 0; margin: -120px -34px 0; pointer-events: none; }
 .cat {
   display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; transform: translateY(34%); pointer-events: auto;
   transition: transform 520ms cubic-bezier(0.34, 1.56, 0.64, 1); -webkit-tap-highlight-color: transparent;
@@ -107,7 +107,8 @@
   white-space: nowrap; font: 600 15px/1.2 var(--mono, ui-monospace, monospace); box-shadow: 3px 3px 0 #1d1b19; animation: bubble 300ms cubic-bezier(0.34, 1.56, 0.64, 1) 1000ms both;
 }
 /* the peeking cat ducks out of sight while all this happens */
-.catWrap:not([data-state="idle"]):not([data-state="calm"]) .cat { transform: translateY(120%); transition: none; }
+.catWrap:not([data-state="idle"]):not([data-state="calm"]):not([data-state="startle"]) .cat { transform: translateY(120%); transition: none; }
+.catWrap[data-state="startle"] .cat { transform: translateY(14%); transition-duration: 260ms; }
 .catWrap[data-state="calm"] .cat { transform: translateY(2%); }
 .catWrap:not([data-state="idle"]) .soap { display: none; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -125,3 +126,19 @@
   .cat,   .lids, .shake, .bubble, .soap i, .splash i, .sign, .bathBubble, .bathCat { animation: none; }
   .screen { transition: none; }
 }
+
+/* the rubber duck: bobbing beside the peeking cat; jumps when the cat is found */
+.duck { position: absolute; left: -4px; bottom: -10px; width: clamp(34px, 3.2vw, 44px); height: auto; overflow: visible; animation: bob 2.6s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-4px) rotate(4deg); } }
+.catWrap[data-state="startle"] .duck { animation: duckJump 760ms cubic-bezier(0.3, 0, 0.5, 1) both; }
+@keyframes duckJump {
+  0% { transform: translateY(0) rotate(0); }
+  38% { transform: translateY(-96px) rotate(-200deg); }
+  70% { transform: translateY(2px) rotate(-340deg); }
+  84% { transform: translateY(-14px) rotate(-356deg); }
+  100% { transform: translateY(0) rotate(-360deg); }
+}
+.catWrap:not([data-state="idle"]):not([data-state="startle"]):not([data-state="calm"]) .duck { visibility: hidden; }
+.sign b { display: block; }
+.sign small { display: block; margin-top: 7px; font: 500 clamp(11px, 1vw, 13px)/1.2 var(--mono, ui-monospace, monospace); color: #6b665f; }
+@media (prefers-reduced-motion: reduce) { .duck, .catWrap[data-state="startle"] .duck { animation: none; } }
