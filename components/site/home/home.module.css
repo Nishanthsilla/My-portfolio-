@@ -191,3 +191,119 @@
   .folderObject { height: 340px; }
   .folderText { padding: 0 22px 24px; }
 }
+
+/* =====================================================================
+   The homepage journey: five scenes in a row.
+   data-mode = desktop (scroll drives the track) · touch (swipe) · stack
+   ===================================================================== */
+.journey { position: relative; }
+.journeyFrame { position: sticky; top: 68px; height: calc(100svh - 68px); overflow: hidden; }
+.journeyTrack { display: flex; height: 100%; width: max-content; will-change: transform; }
+.sceneIntro { display: flex; height: 100%; }
+.sceneWork { flex: none; height: 100%; }
+.sceneFolders, .sceneWall, .sceneContact { flex: 0 0 var(--jw, 100vw); width: var(--jw, 100vw); height: 100%; }
+.journey .panel { flex: 0 0 var(--jw, 100vw); width: var(--jw, 100vw); }
+
+/* scene 2 — the work, sideways in two rows */
+.workScene { display: flex; gap: clamp(28px, 3vw, 48px); height: 100%; padding: 24px var(--gutter) 84px; }
+.workSceneHead { flex: 0 0 clamp(230px, 21vw, 320px); align-self: center; display: grid; gap: 14px; }
+.workSceneHead .h2 { margin: 0; }
+.bentoRow {
+  display: grid; grid-auto-flow: column dense; grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-auto-columns: clamp(240px, 20vw, 300px); gap: 16px; height: 100%;
+}
+.bentoRow .browse { grid-column: span 1; grid-row: span 2; }
+.bentoRow .small .tileDesc { -webkit-line-clamp: 1; }
+
+/* scene 3 — the two folders, centred in the scene */
+.sceneFolders { display: flex; align-items: center; }
+.sceneFolders .shelf { padding-top: 0; padding-bottom: 76px; }
+.sceneFolders .shelfHead { margin-bottom: 20px; }
+.sceneFolders .folderObject { height: clamp(250px, 40vh, 420px); }
+
+/* scene 5 — contact (the site footer) */
+.sceneContact { overflow-y: auto; display: flex; flex-direction: column; justify-content: center; }
+.sceneContact footer { margin-top: 0; border-top: 0; padding-top: 32px; padding-bottom: 84px; }
+
+/* scene bar */
+.journeyNav {
+  position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 5;
+  display: flex; align-items: center; gap: 8px; padding: 6px; border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent); border: 1px solid var(--line); backdrop-filter: blur(6px);
+}
+.journeyDots { list-style: none; margin: 0; padding: 0; display: flex; gap: 2px; }
+.journeyDots button {
+  height: 36px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--muted);
+  font: 500 13.5px/1 var(--sans); cursor: pointer; white-space: nowrap; transition: background-color 200ms, color 200ms;
+}
+.journeyDots button:hover { color: var(--ink); }
+.journeyDots button[aria-current="step"] { background: var(--ink); color: #fff; }
+.dotNum { font: 500 11px/1 var(--mono); opacity: 0.7; margin-right: 4px; }
+.journeyNav .arrowBtn { width: 36px; height: 36px; }
+
+/* ---------- phones / tablets: swipe between scenes ---------- */
+.journey[data-mode="touch"] .journeyFrame {
+  position: relative; top: 0; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.journey[data-mode="touch"] .journeyFrame::-webkit-scrollbar { display: none; }
+.journey[data-mode="touch"] .journeyTrack { transform: none !important; }
+.journey[data-mode="touch"] .panel,
+.journey[data-mode="touch"] .sceneWork,
+.journey[data-mode="touch"] .sceneFolders,
+.journey[data-mode="touch"] .sceneWall,
+.journey[data-mode="touch"] .sceneContact { scroll-snap-align: start; scroll-snap-stop: always; }
+.journey[data-mode="touch"] .panel { overflow-y: auto; }
+.journey[data-mode="touch"] .sceneWork { flex: 0 0 100vw; width: 100vw; overflow-y: auto; overscroll-behavior-y: contain; }
+.journey[data-mode="touch"] .workScene { display: block; height: auto; padding: 20px var(--gutter) 96px; }
+.journey[data-mode="touch"] .workSceneHead { margin-bottom: 20px; }
+.journey[data-mode="touch"] .bentoRow {
+  grid-auto-flow: row dense; grid-template-rows: none; grid-auto-columns: auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 300px; height: auto;
+}
+.journey[data-mode="touch"] .bentoRow .browse { grid-column: span 2; grid-row: span 1; }
+.journey[data-mode="touch"] .sceneFolders { align-items: flex-start; overflow-y: auto; overscroll-behavior-y: contain; }
+.journey[data-mode="touch"] .sceneFolders .shelf { padding: 20px var(--gutter) 96px; }
+.journey[data-mode="touch"] .sceneContact { justify-content: flex-start; overscroll-behavior-y: contain; }
+.journey[data-mode="touch"] .journeyNav { position: fixed; bottom: 12px; }
+@media (max-width: 640px) {
+  .journey[data-mode="touch"] .bentoRow { grid-template-columns: 1fr; grid-auto-rows: auto; }
+  .journey[data-mode="touch"] .bentoRow > * { grid-column: span 1 !important; grid-row: auto !important; }
+  .journey[data-mode="touch"] .bentoRow .tileMedia { flex: none; aspect-ratio: 4 / 3; }
+  .journey[data-mode="touch"] .bentoRow .large .tileMedia { aspect-ratio: 1 / 1; }
+  .journeyDots button { padding: 0 8px; font-size: 12.5px; }
+  .dotNum { display: none; }
+  .journeyNav .arrowBtn { display: none; }
+}
+
+/* ---------- reduced motion: the scenes stack ---------- */
+.journey[data-mode="stack"] .journeyFrame { position: static; height: auto; overflow: visible; }
+.journey[data-mode="stack"] .journeyTrack { flex-direction: column; width: auto; transform: none !important; }
+.journey[data-mode="stack"] .sceneIntro { flex-direction: column; height: auto; }
+.journey[data-mode="stack"] .panel { flex: none; height: auto; min-height: 70svh; padding: 56px 0; }
+.journey[data-mode="stack"] .sceneWork,
+.journey[data-mode="stack"] .sceneFolders,
+.journey[data-mode="stack"] .sceneContact { width: auto; height: auto; flex: none; }
+.journey[data-mode="stack"] .sceneWall { width: auto; height: 720px; flex: none; }
+.journey[data-mode="stack"] .workScene { display: block; height: auto; }
+.journey[data-mode="stack"] .bentoRow { grid-auto-flow: row dense; grid-template-rows: none; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); grid-auto-rows: 320px; height: auto; }
+.journey[data-mode="stack"] .bentoRow .browse { grid-row: span 1; }
+
+/* ---------- the folder sheet: slides up from below ---------- */
+.sheet {
+  position: fixed; left: 0; right: 0; top: 68px; bottom: 0; z-index: 45; overflow-y: auto; overscroll-behavior: contain;
+  background: var(--bg); border-radius: 22px 22px 0 0; box-shadow: 0 -24px 60px -32px rgba(34, 34, 34, 0.45);
+  animation: sheetUp 560ms var(--ease) both;
+}
+@keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
+.sheetBar {
+  position: sticky; top: 0; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 12px var(--gutter); background: color-mix(in srgb, var(--bg) 94%, transparent); border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+}
+.sheetClose { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font: 500 14.5px/1 var(--sans); cursor: pointer; color: var(--ink); }
+.sheetClose:hover { border-color: var(--ink); }
+.sheetClose span { color: var(--accent); }
+.sheetTitle { font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
+.sheetBody { padding-bottom: 64px; }
+@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }

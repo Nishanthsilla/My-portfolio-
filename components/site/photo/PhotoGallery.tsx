@@ -18,7 +18,7 @@ const subSmall = (cb: () => void) => {
  * drag, scroll or use the arrow keys; click or press Enter to open a photograph
  * full size (Esc closes). ?photo=N opens that photograph on arrival.
  */
-export default function PhotoGallery() {
+export default function PhotoGallery({ photo }: { photo?: number } = {}) {
   const isClient = useSyncExternalStore(noop, () => true, () => false);
   const small = useSyncExternalStore(subSmall, () => matchMedia(smallQ).matches, () => false);
   const [active, setActive] = useState(0);
@@ -27,7 +27,7 @@ export default function PhotoGallery() {
 
   // arriving from a photo in the folder: open that photograph
   useEffect(() => {
-    const n = Number(new URLSearchParams(location.search).get("photo"));
+    const n = photo ?? (Number(new URLSearchParams(location.search).get("photo")) || Number(location.hash.match(/^#photography\/(\d+)/)?.[1]));
     if (!n || n < 1 || n > photos.length) return;
     let tries = 0;
     const t = window.setInterval(() => {
@@ -36,7 +36,7 @@ export default function PhotoGallery() {
       if (btn) window.setTimeout(() => btn.click(), 650);
     }, 100);
     return () => window.clearInterval(t);
-  }, [photos.length]);
+  }, [photos.length, photo]);
 
   return (
     <div ref={stage} className={g.stage}>

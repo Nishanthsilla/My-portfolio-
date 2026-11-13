@@ -21,8 +21,39 @@ function ordered(): { p: Project; size: TileSize }[] {
  * relevant projects (bigger canvas, animated product covers, more context),
  * small tiles for supporting work. Every tile opens its project.
  */
-export default function Bento() {
+export default function Bento({ variant = "page" }: { variant?: "page" | "journey" }) {
   const tiles = ordered();
+  const browse = (
+    <nav key="browse" className={h.browse} aria-label="Browse work by category">
+      <p className={h.eyebrow}>Browse by category</p>
+      <ul>
+        {categories.map((c) => (
+          <li key={c.id}>
+            <Link href={categoryHref(c.id)}>
+              {c.label} <span aria-hidden="true">→</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+  // scene 2 of the homepage journey: the tiles run sideways in two rows
+  if (variant === "journey")
+    return (
+      <section id="work" className={h.workScene} aria-labelledby="work-title">
+        <div className={h.workSceneHead}>
+          <p className={h.eyebrow}>Selected work</p>
+          <h2 id="work-title" className={h.h2}>Things I&apos;ve shipped</h2>
+          <p className={h.workLine}>Enterprise AI, FinTech and learning platforms, from first flows to design-system handoff.</p>
+        </div>
+        <CursorScope>
+          <div className={h.bentoRow}>
+            {tiles.map(({ p, size }) => <Tile key={p.slug} p={p} size={size} />)}
+            {browse}
+          </div>
+        </CursorScope>
+      </section>
+    );
   return (
     <section id="work" className={h.work} aria-labelledby="work-title">
       <div className={h.workHead}>
@@ -36,18 +67,7 @@ export default function Bento() {
         <AnimatedContent className={h.bento} distance={18} duration={0.6} stagger={0.06} threshold={0.06}>
           {[
             ...tiles.map(({ p, size }) => <Tile key={p.slug} p={p} size={size} />),
-            <nav key="browse" className={h.browse} aria-label="Browse work by category">
-              <p className={h.eyebrow}>Browse by category</p>
-              <ul>
-                {categories.map((c) => (
-                  <li key={c.id}>
-                    <Link href={categoryHref(c.id)}>
-                      {c.label} <span aria-hidden="true">→</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>,
+            browse,
           ]}
         </AnimatedContent>
       </CursorScope>
