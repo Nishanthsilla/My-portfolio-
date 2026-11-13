@@ -48,18 +48,20 @@ export default function Header() {
           <i aria-hidden="true" />
           Nishanth Silla
         </Link>
-        <AskPanel />
-        <SoundToggle />
-        <button
-          type="button"
-          className={s.menuBtn}
-          aria-expanded={menu}
-          aria-controls="site-nav"
-          aria-label={menu ? "Close menu" : "Open menu"}
-          onClick={() => setMenu((m) => !m)}
-        >
-          <span />
-        </button>
+        <div className={s.tools}>
+          <AskPanel />
+          <SoundToggle />
+          <button
+            type="button"
+            className={s.menuBtn}
+            aria-expanded={menu}
+            aria-controls="site-nav"
+            aria-label={menu ? "Close menu" : "Open menu"}
+            onClick={() => setMenu((m) => !m)}
+          >
+            <span />
+          </button>
+        </div>
         <nav id="site-nav" className={`${s.nav} ${menu ? s.navOpen : ""}`} aria-label="Main">
           {NAV.map((n, i) => (
             <Link
