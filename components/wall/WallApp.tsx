@@ -71,8 +71,12 @@ export default function WallApp({
   const [hidden, setHidden] = useState<string[]>([]);
   const [step, setStep] = useState<Step>("browse");
   const [draft, setDraft] = useState<Draft | null>(null);
-  const [message, setMessage] = useState("");
-  const [name, setName] = useState("");
+  // one line: the note, then "@name" to sign it
+  const [line, setLine] = useState("");
+  const { message, name } = useMemo(() => {
+    const i = line.lastIndexOf("@");
+    return i < 0 ? { message: line.trim(), name: "" } : { message: line.slice(0, i).trim(), name: line.slice(i + 1).trim().slice(0, LIMITS.name) };
+  }, [line]);
   const [tab, setTab] = useState<"animated" | "gifs">("animated");
   const [gifsOn, setGifsOn] = useState(false); // GIPHY search is available (server has a key)
   const [gifQ, setGifQ] = useState("");
@@ -220,8 +224,7 @@ export default function WallApp({
     setLayout(loadLayout());
     if (saved?.draft && !embedded) {
       setDraft({ ...saved.draft, font: saved.draft.font ?? DEFAULT_FONT, shape: saved.draft.shape ?? DEFAULT_SHAPE, color: saved.draft.color ?? DEFAULT_COLOR });
-      setMessage(saved.message);
-      setName(saved.name);
+      setLine(saved.message + (saved.name ? ` @${saved.name}` : ""));
       setStep("compose");
     }
     setRestored(true);
@@ -333,8 +336,7 @@ export default function WallApp({
       setStep("sent");
         setPanel(null);
       setDraft(null);
-      setMessage("");
-      setName("");
+      setLine("");
       setStartedAt(0);
       return;
     }
@@ -355,8 +357,7 @@ export default function WallApp({
         setStep("sent");
         setPanel(null);
         setDraft(null);
-        setMessage("");
-        setName("");
+        setLine("");
         setStartedAt(0);
       } else setError(d.error || "Something went wrong — please try again.");
     } catch {
@@ -553,7 +554,7 @@ export default function WallApp({
             </div>
           )}
           <div className={w.promptBox}>
-            <SideEyeEditor bare value={message} onChange={setMessage} max={LIMITS.message} label="Message" placeholder="Write something…" autoFocus />
+            <SideEyeEditor bare signature value={line} onChange={setLine} max={LIMITS.message + LIMITS.name + 4} label="Your note, then @ and your name" placeholder="Write something…  @your name" autoFocus />
             <div className={w.promptRow}>
               <button type="button" className={w.tool} aria-expanded={panel === "sticker"} onClick={() => setPanel((p) => (p === "sticker" ? null : "sticker"))} aria-label="Choose a sticker" title="Sticker">
                 <StickerArt id={draft.sticker} size={24} />
@@ -564,9 +565,7 @@ export default function WallApp({
               <button type="button" className={w.tool} aria-expanded={panel === "font"} onClick={() => setPanel((p) => (p === "font" ? null : "font"))} aria-label="Choose the handwriting" title="Font">
                 <span style={{ fontFamily: FONTS.find((f) => f.id === draft.font)?.family, fontSize: 17 }}>Aa</span>
               </button>
-              <div className={w.promptName}>
-                <SideEyeEditor bare value={name} onChange={setName} max={LIMITS.name} label="Your name" placeholder="your name" multiline={false} />
-              </div>
+              <span className={w.promptSpacer} />
               <button type="button" className={w.toolGhost} onClick={cancel} aria-label="Cancel" title="Cancel">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
               </button>

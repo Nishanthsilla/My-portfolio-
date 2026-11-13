@@ -1,6 +1,6 @@
 import { fontById } from "@/lib/wall/fonts";
 import { paperOf } from "@/lib/wall/notes";
-import { StickerArt } from "@/lib/wall/stickers";
+import { StickerArt, isGiphy } from "@/lib/wall/stickers";
 import w from "./wall.module.css";
 
 /**
@@ -40,8 +40,8 @@ export default function NoteCard({
         <p className={w.noteName}>— {name || "your name"}</p>
       </div>
       {shape === "square" && <span className={w.tape} aria-hidden="true" />}
-      <span className={w.tagSticker}>
-        <StickerArt id={sticker} size={42} />
+      <span className={`${w.tagSticker} ${isGiphy(sticker) ? w.tagGif : ""}`}>
+        <StickerArt id={sticker} size={isGiphy(sticker) ? 70 : 42} />
       </span>
     </div>
   );
