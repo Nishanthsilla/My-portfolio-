@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "preview:file": "rm -rf out && STATIC_EXPORT=1 next build && python3 scripts/make-preview.py",
-    "preview:site": "rm -rf out && STATIC_EXPORT=1 NEXT_PUBLIC_SITE_PREVIEW=1 next build && python3 scripts/make-site-preview.py"
+    "preview:site": "rm -rf out && STATIC_EXPORT=1 NEXT_PUBLIC_SITE_PREVIEW=1 next build && python3 scripts/make-site-preview.py && python3 scripts/make-single-preview.py",
+    "preview:single": "rm -rf out && STATIC_EXPORT=1 NEXT_PUBLIC_SITE_PREVIEW=1 next build && python3 scripts/make-single-preview.py"
   },
   "dependencies": {
     "geist": "^1.9.2",

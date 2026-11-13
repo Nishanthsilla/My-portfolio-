@@ -183,4 +183,5 @@ def main():
     print(f"wrote {DEST} · zip {z.stat().st_size / 1024 / 1024:.1f} MB")
 
 
-main()
+if __name__ == "__main__":
+    main()
