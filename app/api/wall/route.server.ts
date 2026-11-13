@@ -7,7 +7,7 @@
  */
 import { connection } from "next/server";
 import { isClean, normalizeText } from "@/lib/wall/moderation";
-import { STICKER_IDS } from "@/lib/wall/stickers";
+import { STICKER_IDS, isGiphy } from "@/lib/wall/stickers";
 import { DEFAULT_FONT, FONT_IDS } from "@/lib/wall/fonts";
 import { LIMITS, type Submission } from "@/lib/wall/types";
 import { captchaRequired, clientHash, rateLimit, recordPost, verifyCaptcha } from "@/lib/wall/guard";
@@ -19,7 +19,7 @@ const json = (data: unknown, status = 200, headers: Record<string, string> = {})
 export async function GET() {
   await connection();
   try {
-    return json({ ok: true, mode: storeMode(), captcha: captchaRequired(), notes: await listApproved() });
+    return json({ ok: true, mode: storeMode(), captcha: captchaRequired(), gifs: !!process.env.GIPHY_API_KEY, notes: await listApproved() });
   } catch {
     return json({ ok: false, mode: storeMode(), notes: [], error: "The wall can't be loaded right now." }, 503);
   }
@@ -53,7 +53,8 @@ export async function POST(req: Request) {
   if (message.length < LIMITS.minMessage || message.length > LIMITS.message) return json({ ok: false, error: `Messages are ${LIMITS.minMessage}–${LIMITS.message} characters.` }, 400);
   if (name.length < 1 || name.length > LIMITS.name) return json({ ok: false, error: `Names are up to ${LIMITS.name} characters.` }, 400);
   if (/<[a-z/!]/i.test(message) || /<[a-z/!]/i.test(name)) return json({ ok: false, error: "Plain text only, please." }, 400);
-  if (typeof body.sticker !== "string" || !STICKER_IDS.has(body.sticker)) return json({ ok: false, error: "Pick a sticker first." }, 400);
+  const gifOk = typeof body.sticker === "string" && isGiphy(body.sticker) && !!process.env.GIPHY_API_KEY;
+  if (typeof body.sticker !== "string" || (!STICKER_IDS.has(body.sticker) && !gifOk)) return json({ ok: false, error: "Pick a sticker first." }, 400);
   const font = body.font === undefined ? DEFAULT_FONT : body.font;
   if (typeof font !== "string" || !FONT_IDS.has(font)) return json({ ok: false, error: "Pick a font from the list." }, 400);
   if (!num(body.x, 0, 1) || !num(body.y, 0, 1) || !num(body.rotation, -45, 45)) return json({ ok: false, error: "Place your sticker on the wall first." }, 400);

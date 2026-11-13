@@ -77,6 +77,7 @@ export default function Journey({
     if (!sec || !fr || !tr) return;
     if (mode === "desktop") {
       let dist = 0, top = 0, target = 0, current = 0, raf = 0, idle = 0, settling = false, shown = -1;
+      // (dir: the direction of the last scroll — see settle)
       const measure = () => {
         // every full-width scene is exactly the visible frame (100vw would include the scrollbar)
         sec.style.setProperty("--jw", `${fr.clientWidth}px`);
@@ -115,14 +116,24 @@ export default function Journey({
         const points: number[] = [];
         tr.querySelectorAll<HTMLElement>("[data-snap]").forEach((el) => points.push(Math.min(dist, el.offsetLeft)));
         tr.querySelectorAll<HTMLElement>("[data-snap-end]").forEach((el) => points.push(Math.min(dist, el.offsetLeft + el.offsetWidth - vw)));
+        // settle only forward (the way the visitor was going), or onto a scene that's practically there —
+        // never pull them back against their scroll
         let best = Infinity;
-        for (const q of points) if (Math.abs(q - p) < Math.abs(best - p)) best = q;
-        if (Math.abs(best - p) > vw * 0.22 || Math.abs(best - p) < 2) return;
+        for (const q of points) {
+          const d = q - p;
+          const ahead = Math.sign(d) === dir && Math.abs(d) < vw * 0.3;
+          const near = Math.abs(d) < vw * 0.06;
+          if ((ahead || near) && Math.abs(d) < Math.abs(best - p)) best = q;
+        }
+        if (!Number.isFinite(best) || Math.abs(best - p) < 2) return;
         settling = true;
         scrollTo({ top: top + best, behavior: "smooth" });
         window.setTimeout(() => (settling = false), 700);
       };
+      let lastY = scrollY, dir = 1;
       const onScroll = () => {
+        if (scrollY !== lastY) dir = scrollY > lastY ? 1 : -1;
+        lastY = scrollY;
         target = Math.min(dist, Math.max(0, scrollY - top));
         kick();
         window.clearTimeout(idle);

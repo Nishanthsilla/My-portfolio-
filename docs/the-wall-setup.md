@@ -134,3 +134,12 @@ up automatically.
 - Every note is a "HELLO" name-tag sticker. Visitors pick an emoji or an animated sticker (Noto Animated Emoji by Google, CC BY 4.0, stored in `public/images/wall/gifs`) and a handwriting (`lib/wall/fonts.ts`, Google Fonts).
 - The database stores the font in a `font` column, which is added automatically to existing tables.
 - Anyone can drag any sticker around. That layout is saved only in the visitor's own browser and never sent. A new note is posted where its writer drops it.
+
+## GIFs (optional, GIPHY)
+
+The composer's **GIFs** tab searches GIPHY (G-rated only). It appears automatically once a key is set:
+
+1. Create a free key at developers.giphy.com: **Create an App → API**, and copy the API key.
+2. In Vercel: **Project → Settings → Environment Variables**, add `GIPHY_API_KEY` = your key (Production, Preview), and redeploy.
+
+The key stays on the server (`/api/wall/gifs`); visitors never see it. Every note, GIF or not, still waits for your approval.

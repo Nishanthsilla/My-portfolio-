@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { findFlags } from "@/lib/wall/moderation";
 import { DEFAULT_FONT, FONTS, FONTS_HREF } from "@/lib/wall/fonts";
-import { GIFS, STICKERS, StickerArt, stickerById } from "@/lib/wall/stickers";
+import { GIFS, StickerArt, stickerById } from "@/lib/wall/stickers";
 import { LIMITS, type PublicNote } from "@/lib/wall/types";
 import { addMine, loadDraft, loadLayout, loadMine, pruneMine, saveDraft, saveLayout, type MyNote, type Spot } from "@/lib/wall/local";
 import ElasticSticker from "./ElasticSticker";
@@ -18,19 +18,26 @@ type Step = "browse" | "compose" | "sent";
 type Draft = { sticker: string; font: string; x: number; y: number; rotation: number };
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+/** the canvas, in px — bigger than any screen, so there's always room to stick another note */
+const WORLD = { w: 2000, h: 1300 };
 
 /** Decoration only (no messages), so the wall never looks empty — these can be moved around too. */
 const DECOR: { id: string; x: number; y: number; r: number; s: number }[] = [
-  { id: "sparkles", x: 0.08, y: 0.34, r: 0, s: 38 },
-  { id: "gif-rainbow", x: 0.5, y: 0.07, r: -8, s: 64 },
-  { id: "star", x: 0.92, y: 0.12, r: 12, s: 46 },
-  { id: "blossom", x: 0.88, y: 0.82, r: -10, s: 48 },
-  { id: "gif-wave", x: 0.3, y: 0.88, r: 10, s: 58 },
-  { id: "sparkles", x: 0.66, y: 0.56, r: 0, s: 28 },
-  { id: "coffee", x: 0.05, y: 0.78, r: 8, s: 46 },
+  { id: "sparkles", x: 0.3, y: 0.38, r: 0, s: 32 },
+  { id: "gif-rainbow", x: 0.5, y: 0.3, r: -8, s: 54 },
+  { id: "star", x: 0.68, y: 0.34, r: 12, s: 38 },
+  { id: "blossom", x: 0.66, y: 0.68, r: -10, s: 40 },
+  { id: "gif-wave", x: 0.42, y: 0.7, r: 10, s: 48 },
+  { id: "coffee", x: 0.31, y: 0.62, r: 8, s: 38 },
+  { id: "gif-sparkles", x: 0.14, y: 0.2, r: 0, s: 40 },
+  { id: "gif-heart", x: 0.86, y: 0.22, r: 8, s: 44 },
+  { id: "gif-rocket", x: 0.12, y: 0.78, r: -12, s: 46 },
+  { id: "gif-party", x: 0.88, y: 0.8, r: 6, s: 46 },
+  { id: "sunflower", x: 0.52, y: 0.1, r: -6, s: 36 },
+  { id: "camera", x: 0.5, y: 0.9, r: 8, s: 36 },
 ];
 /** Nishanth's own pinned note (his words from the brief), clearly labelled. */
-const PINNED = { id: "pinned", sticker: "gif-heart", font: "scribble", message: "A thought, a note, or just a little sticker. I'd love to see what you leave.", name: "Nishanth", x: 0.22, y: 0.2, rotation: -4 };
+const PINNED = { id: "pinned", sticker: "gif-heart", font: "scribble", message: "A thought, a note, or just a little sticker. I'd love to see what you leave.", name: "Nishanth", x: 0.4, y: 0.44, rotation: -4 };
 
 /**
  * The Wall. On the homepage it lives in its own scene (embedded) and opens full
@@ -65,7 +72,10 @@ export default function WallApp({
   const [draft, setDraft] = useState<Draft | null>(null);
   const [message, setMessage] = useState("");
   const [name, setName] = useState("");
-  const [tab, setTab] = useState<"gifs" | "emoji">("gifs");
+  const [tab, setTab] = useState<"animated" | "gifs">("animated");
+  const [gifsOn, setGifsOn] = useState(false); // GIPHY search is available (server has a key)
+  const [gifQ, setGifQ] = useState("");
+  const [gifs, setGifs] = useState<{ id: string; title: string; src: string }[]>([]);
   const [panel, setPanel] = useState<"sticker" | "font" | null>(null);
   const [startedAt, setStartedAt] = useState(0);
   const [honey, setHoney] = useState("");
@@ -89,14 +99,108 @@ export default function WallApp({
     document.head.appendChild(l);
   }, []);
 
+  /* ---------- the canvas: bigger than the screen; drag (or, full screen, scroll) to look around ---------- */
+  const pan = useRef({ x: 0, y: 0 });
+  // zoomed out a little in the homepage scene (and on phones), so more notes fit in view
+  const zoom = useRef(1);
+  const applyPan = useCallback(() => {
+    const v = scroller.current, b = board.current;
+    if (!v || !b) return;
+    const p = pan.current, z = zoom.current;
+    p.x = clamp(p.x, Math.min(0, v.clientWidth - WORLD.w * z), 0);
+    p.y = clamp(p.y, Math.min(0, v.clientHeight - WORLD.h * z), 0);
+    b.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0) scale(${z})`;
+  }, []);
+  useEffect(() => {
+    const v = scroller.current;
+    if (!v) return;
+    zoom.current = embedded ? 0.78 : v.clientWidth < 640 ? 0.82 : 1;
+    // start in the middle of the wall
+    pan.current = { x: (v.clientWidth - WORLD.w * zoom.current) / 2, y: (v.clientHeight - WORLD.h * zoom.current) / 2 };
+    applyPan();
+    const ro = new ResizeObserver(applyPan);
+    ro.observe(v);
+    // full screen: the wheel / trackpad moves around the canvas (embedded, it scrolls the page as usual)
+    const wheel = (e: WheelEvent) => {
+      if (embedded) return;
+      e.preventDefault();
+      pan.current.x -= e.shiftKey && !e.deltaX ? e.deltaY : e.deltaX;
+      pan.current.y -= e.shiftKey && !e.deltaX ? 0 : e.deltaY;
+      applyPan();
+    };
+    v.addEventListener("wheel", wheel, { passive: false });
+    return () => {
+      ro.disconnect();
+      v.removeEventListener("wheel", wheel);
+    };
+  }, [embedded, applyPan]);
+  const panDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 || (e.target as HTMLElement).closest("[data-sticker-art], button, input, textarea, [data-nodrag]")) return;
+    if (embedded && e.pointerType !== "mouse") return; // phones: the page swipes; "Explore canvas" opens it full screen
+    const v = e.currentTarget;
+    v.setPointerCapture(e.pointerId);
+    v.dataset.panning = "";
+    let lx = e.clientX, ly = e.clientY, lt = performance.now(), vx = 0, vy = 0;
+    const move = (ev: PointerEvent) => {
+      const now = performance.now(), dt = Math.max(8, now - lt);
+      const dx = ev.clientX - lx, dy = ev.clientY - ly;
+      vx = dx / dt;
+      vy = dy / dt;
+      lx = ev.clientX;
+      ly = ev.clientY;
+      lt = now;
+      pan.current.x += dx;
+      pan.current.y += dy;
+      applyPan();
+    };
+    const up = () => {
+      v.removeEventListener("pointermove", move);
+      v.removeEventListener("pointerup", up);
+      v.removeEventListener("pointercancel", up);
+      delete v.dataset.panning;
+      // a little glide after letting go
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const glide = () => {
+        vx *= 0.92;
+        vy *= 0.92;
+        if (Math.abs(vx) + Math.abs(vy) < 0.02) return;
+        pan.current.x += vx * 16;
+        pan.current.y += vy * 16;
+        applyPan();
+        requestAnimationFrame(glide);
+      };
+      requestAnimationFrame(glide);
+    };
+    v.addEventListener("pointermove", move);
+    v.addEventListener("pointerup", up);
+    v.addEventListener("pointercancel", up);
+  };
+
+  // GIF search (GIPHY, through our server): trending first, then whatever is typed
+  useEffect(() => {
+    if (!gifsOn || tab !== "gifs" || panel !== "sticker") return;
+    let alive = true;
+    const t = setTimeout(() => {
+      fetch(`/api/wall/gifs?q=${encodeURIComponent(gifQ)}`)
+        .then((r) => (r.ok ? r.json() : { gifs: [] }))
+        .then((d: { gifs: { id: string; title: string; src: string }[] }) => alive && setGifs(d.gifs ?? []))
+        .catch(() => alive && setGifs([]));
+    }, gifQ ? 350 : 0);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, [gifsOn, tab, panel, gifQ]);
+
   // load the approved notes; if there is no server (offline copy), say so
   useEffect(() => {
     let alive = true;
     fetch("/api/wall", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((d: { mode: Mode; notes: PublicNote[]; captcha?: boolean }) => {
+      .then((d: { mode: Mode; notes: PublicNote[]; captcha?: boolean; gifs?: boolean }) => {
         if (!alive) return;
         setMode(d.mode);
+        setGifsOn(!!d.gifs);
         setNotes(d.notes);
         setCaptcha(!!d.captcha);
         setMine(pruneMine(new Set(d.notes.map((n) => n.id))));
@@ -163,10 +267,11 @@ export default function WallApp({
 
   /* ---------- writing a note ---------- */
   const visibleSpot = () => {
-    const sc = scroller.current, b = board.current;
-    if (!sc || !b) return { x: 0.5, y: 0.4 };
-    // a little above the middle of what's in view (the composer sits at the bottom)
-    return { x: 0.5, y: clamp((sc.scrollTop + sc.clientHeight * 0.32) / b.offsetHeight, 0.12, 0.9) };
+    const v = scroller.current;
+    if (!v) return { x: 0.5, y: 0.45 };
+    // the middle of what's in view, a little high (the composer sits at the bottom)
+    const z = zoom.current;
+    return { x: clamp((v.clientWidth / 2 - pan.current.x) / (WORLD.w * z), 0.05, 0.95), y: clamp((v.clientHeight * 0.36 - pan.current.y) / (WORLD.h * z), 0.05, 0.95) };
   };
   const start = () => {
     if (embedded && onCompose) return onCompose();
@@ -266,44 +371,41 @@ export default function WallApp({
   const shown = notes.filter((n) => !hidden.includes(n.id));
   const st = draft ? stickerById(draft.sticker) : null;
   const moved = Object.keys(layout).length > 0;
-  const tray = tab === "gifs" ? GIFS : STICKERS;
+  
 
   return (
     <div className={`${w.wall} ${embedded ? w.wallEmbedded : ""}`}>
-      <header className={w.bar}>
-        <div>
-          <h1 className={w.barTitle}>The Wall</h1>
-          <p className={w.barSub}>
-            {mode === "loading" ? "Loading…" : mode === "offline" || mode === "unconfigured" ? "Posting isn't connected here yet" : `${shown.length} ${shown.length === 1 ? "note" : "notes"} · new notes appear once approved`}
-          </p>
-        </div>
-        <div className={w.barActions}>
-          {moved && step !== "compose" && (
-            <button type="button" className={w.btnLink} onClick={resetLayout} title="Put every sticker back where its writer left it">
-              Reset layout
-            </button>
+      {/* floating controls only — the canvas is the whole thing */}
+      {embedded ? (
+        <button type="button" className={w.fabExpand} onClick={onExpand} aria-label="Explore the wall full screen" title="Explore the wall">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7" />
+          </svg>
+        </button>
+      ) : (
+        <>
+          <button type="button" className={w.fabBack} onClick={close}>
+            <span aria-hidden="true">←</span> Back to portfolio
+          </button>
+          {(mode === "offline" || mode === "unconfigured") && <p className={w.fabNote}>Posting isn&apos;t connected here yet</p>}
+          {step === "browse" && (
+            <div className={w.fabBar}>
+              <span className={w.fabHint}>Drag to look around · pick up any sticker to move it</span>
+              {moved && (
+                <button type="button" className={w.btnLink} onClick={resetLayout} title="Put every sticker back where its writer left it">
+                  Reset
+                </button>
+              )}
+              <button type="button" className={w.btnPrimary} onClick={start}>
+                Add a note
+              </button>
+            </div>
           )}
-          {step !== "compose" && (
-            <button type="button" className={w.btnPrimary} onClick={start}>
-              Add a note
-            </button>
-          )}
-          {embedded ? (
-            <button type="button" className={w.expand} onClick={onExpand} aria-label="Open the wall full screen">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7" />
-              </svg>
-            </button>
-          ) : (
-            <button type="button" className={w.close} onClick={close} aria-label="Close the wall">
-              ×
-            </button>
-          )}
-        </div>
-      </header>
+        </>
+      )}
 
-      <div ref={scroller} className={w.scroller}>
-        <div ref={board} className={w.board} aria-label="The wall">
+      <div ref={scroller} className={w.scroller} onPointerDown={panDown}>
+        <div ref={board} className={w.board} style={{ width: WORLD.w, height: WORLD.h }} aria-label="The wall">
           {DECOR.map((d, i) => {
             const id = `decor-${i}`, p = spot(id, d.x, d.y);
             return (
@@ -365,10 +467,6 @@ export default function WallApp({
         </div>
       </div>
 
-      {/* browsing: a quiet hint that everything moves */}
-      {step === "browse" && !embedded && (
-        <p className={w.moveHint}>Pick up any sticker and move it around — only you see your layout.</p>
-      )}
 
       {step === "sent" && (
         <div className={w.sent} role="status">
@@ -389,16 +487,32 @@ export default function WallApp({
           {panel === "sticker" && (
             <div className={w.pop}>
               <div className={w.tabs} role="tablist" aria-label="Sticker type">
-                <button type="button" role="tab" aria-selected={tab === "gifs"} className={w.tab} onClick={() => setTab("gifs")}>Animated</button>
-                <button type="button" role="tab" aria-selected={tab === "emoji"} className={w.tab} onClick={() => setTab("emoji")}>Emoji</button>
+                <button type="button" role="tab" aria-selected={tab === "animated"} className={w.tab} onClick={() => setTab("animated")}>Animated</button>
+                {gifsOn && <button type="button" role="tab" aria-selected={tab === "gifs"} className={w.tab} onClick={() => setTab("gifs")}>GIFs</button>}
               </div>
-              <div className={w.tray} role="listbox" aria-label={tab === "gifs" ? "Animated stickers" : "Emoji stickers"} aria-orientation="horizontal">
-                {tray.map((s) => (
-                  <button key={s.id} type="button" role="option" aria-selected={draft.sticker === s.id} className={w.trayItem} title={s.label} aria-label={s.label} onClick={() => setSticker(s.id)}>
-                    <StickerArt id={s.id} size={36} />
-                  </button>
-                ))}
-              </div>
+              {tab === "gifs" && gifsOn ? (
+                <>
+                  <input className={w.gifSearch} type="search" placeholder="Search GIFs" value={gifQ} onChange={(e) => setGifQ(e.target.value.slice(0, 50))} aria-label="Search GIFs" />
+                  <div className={w.tray} role="listbox" aria-label="GIFs" aria-orientation="horizontal">
+                    {gifs.map((g) => (
+                      <button key={g.id} type="button" role="option" aria-selected={draft.sticker === g.id} className={`${w.trayItem} ${w.gifItem}`} title={g.title} aria-label={g.title} onClick={() => setSticker(g.id)}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={g.src} alt="" loading="lazy" draggable={false} />
+                      </button>
+                    ))}
+                    {!gifs.length && <span className={w.gifEmpty}>{gifQ ? "No GIFs for that — try another word." : "Loading…"}</span>}
+                  </div>
+                  <p className={w.giphyCredit}>Powered by GIPHY</p>
+                </>
+              ) : (
+                <div className={w.tray} role="listbox" aria-label="Animated stickers" aria-orientation="horizontal">
+                  {GIFS.map((s) => (
+                    <button key={s.id} type="button" role="option" aria-selected={draft.sticker === s.id} className={w.trayItem} title={s.label} aria-label={s.label} onClick={() => setSticker(s.id)}>
+                      <StickerArt id={s.id} size={36} />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
           {panel === "font" && (
