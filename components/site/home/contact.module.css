@@ -16,7 +16,7 @@
 .base { display: flex; justify-content: space-between; gap: 16px; margin-top: clamp(24px, 6vh, 64px); padding-top: 14px; border-top: 1px solid var(--line, #e8e6e1); font-size: 14px; color: var(--muted, #777); }
 @media (max-width: 760px) {
   .contact, .screen { height: auto; min-height: 100%; }
-  .inner { justify-content: flex-start; padding-top: 12px; padding-bottom: 80px; }
+  .inner { justify-content: flex-start; padding-top: 40px; padding-bottom: 80px; }
   .title { font-size: clamp(30px, 8.6vw, 40px); }
   .grid { grid-template-columns: 1fr; gap: 18px; margin-top: 16px; }
   .col { gap: 6px; }

@@ -258,7 +258,7 @@
 .journey[data-mode="touch"] .sceneContact { scroll-snap-align: start; scroll-snap-stop: always; }
 .journey[data-mode="touch"] .panel { overflow-y: auto; }
 .journey[data-mode="touch"] .sceneWork { flex: 0 0 100vw; width: 100vw; overflow-y: auto; overscroll-behavior-y: contain; }
-.journey[data-mode="touch"] .workScene { display: block; height: auto; padding: 20px var(--gutter) 96px; }
+.journey[data-mode="touch"] .workScene { display: block; height: auto; padding: 40px var(--gutter) 96px; }
 .journey[data-mode="touch"] .workSceneHead { margin-bottom: 20px; }
 .journey[data-mode="touch"] .bentoRow {
   grid-auto-flow: row dense; grid-template-rows: none; grid-auto-columns: auto;
@@ -266,7 +266,7 @@
 }
 .journey[data-mode="touch"] .bentoRow .browse { grid-column: span 2; grid-row: span 1; }
 .journey[data-mode="touch"] .sceneFolders { align-items: flex-start; overflow-y: auto; overscroll-behavior-y: contain; }
-.journey[data-mode="touch"] .sceneFolders .shelf { padding: 20px var(--gutter) 96px; }
+.journey[data-mode="touch"] .sceneFolders .shelf { padding: 40px var(--gutter) 96px; }
 .journey[data-mode="touch"] .contactBody { justify-content: flex-start; overscroll-behavior-y: contain; }
 .journey[data-mode="touch"] .journeyNav { position: fixed; bottom: 12px; }
 @media (max-width: 640px) {
