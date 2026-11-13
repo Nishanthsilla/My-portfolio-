@@ -46,7 +46,7 @@ export default function WallAdmin() {
         return;
       }
       setNotes(d.notes ?? []);
-      setMsg(d.mode === "local" ? "Storage: local file on this server (not Supabase)." : "");
+      setMsg(d.mode === "sqlite" ? "Database: SQLite (data/wall.db on this server)." : d.mode === "postgres" ? "Database: PostgreSQL." : "");
     } catch {
       setMsg("Can't reach the moderation API here (the offline preview has no server).");
     } finally {

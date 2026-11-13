@@ -1,176 +1,173 @@
 /**
- * The Wall — persistent storage (server only).
+ * The Wall — storage in an open-source database (server only).
  *
- *  · Supabase (recommended for a deployed site): set SUPABASE_URL and
- *    SUPABASE_SERVICE_ROLE_KEY. Uses the REST API with the service-role key,
- *    which never reaches the browser. Table + policies: docs/the-wall-setup.md.
- *  · Local file (when Supabase is not configured): data/wall-notes.json on the
- *    machine running `next start`. Shared by every visitor of that server and
- *    persistent on its disk — but NOT on serverless hosting, where the disk is
- *    temporary. The API reports the mode so the interface can say so.
+ *  · SQLite (default): a single database file, data/wall.db, on the machine
+ *    running `next start`. Uses the SQLite built into Node.js (node:sqlite) —
+ *    nothing to install or sign up for. Right for a server with a disk
+ *    (a VPS, Railway/Render/Fly with a volume, your own machine).
+ *  · PostgreSQL: set DATABASE_URL to any Postgres database (self-hosted, or a
+ *    hosted one such as Neon or Supabase). Required on serverless hosting
+ *    (e.g. Vercel), where the server's disk is temporary.
+ *
+ * Both create the table on first use. Every query uses bound parameters —
+ * visitor text is never spliced into SQL. Notes from the earlier JSON file
+ * (data/wall-notes.json) are imported into SQLite once, automatically.
  */
-import { promises as fs } from "fs";
+import { existsSync, mkdirSync, readFileSync, renameSync } from "fs";
 import path from "path";
+import { Pool } from "pg";
 import type { NoteStatus, PublicNote, WallNote } from "./types";
 
-export type StoreMode = "supabase" | "local";
+export type StoreMode = "postgres" | "sqlite";
+export const storeMode = (): StoreMode => (process.env.DATABASE_URL ? "postgres" : "sqlite");
 
-export const storeMode = (): StoreMode => (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY ? "supabase" : "local");
-
-const TABLE = "wall_notes";
-const FILE = path.join(process.cwd(), "data", "wall-notes.json");
-
-/* ---------------- Supabase (REST) ---------------- */
-
-type Row = {
-  id: string; message: string; name: string; sticker: string; x: number; y: number; rotation: number;
-  created_at: string; status: NoteStatus; reports: number | null; ip_hash?: string | null;
-};
+const COLS = "id, message, name, sticker, x, y, rotation, status, reports, created_at";
+type Row = { id: string; message: string; name: string; sticker: string; x: number; y: number; rotation: number; status: NoteStatus; reports: number | null; created_at: string | Date };
 const fromRow = (r: Row): WallNote => ({
-  id: r.id, message: r.message, name: r.name, sticker: r.sticker, x: r.x, y: r.y, rotation: r.rotation,
-  createdAt: r.created_at, status: r.status, reports: r.reports ?? 0,
+  id: r.id, message: r.message, name: r.name, sticker: r.sticker, x: Number(r.x), y: Number(r.y), rotation: Number(r.rotation),
+  status: r.status, reports: Number(r.reports ?? 0), createdAt: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at),
 });
+const toPublic = (n: WallNote): PublicNote => ({ id: n.id, message: n.message, name: n.name, sticker: n.sticker, x: n.x, y: n.y, rotation: n.rotation, createdAt: n.createdAt });
 
-async function sb(pathAndQuery: string, init: RequestInit = {}) {
-  const base = process.env.SUPABASE_URL!.replace(/\/$/, "");
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  const res = await fetch(`${base}/rest/v1/${pathAndQuery}`, {
-    ...init,
-    headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Prefer: "return=representation", ...(init.headers ?? {}) },
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error(`storage ${res.status}`);
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
+/** The same queries for both databases; `?` placeholders are rewritten to $1, $2… for Postgres. */
+interface Db {
+  all(sql: string, params?: unknown[]): Promise<Row[]>;
+  run(sql: string, params?: unknown[]): Promise<number>; // rows changed
 }
 
-/* ---------------- Local file ---------------- */
+/* ---------------- SQLite (node:sqlite, built into Node.js) ---------------- */
 
-type FileData = { notes: (WallNote & { ipHash?: string })[] };
-let chain: Promise<unknown> = Promise.resolve();
-/** Serialise file writes so concurrent posts can't overwrite each other. */
-function locked<T>(fn: () => Promise<T>): Promise<T> {
-  const next = chain.then(fn, fn);
-  chain = next.catch(() => {});
-  return next;
+type SqliteStmt = { all(...p: unknown[]): unknown[]; run(...p: unknown[]): { changes: number | bigint } };
+type SqliteDb = { exec(sql: string): void; prepare(sql: string): SqliteStmt };
+const DIR = path.join(process.cwd(), "data");
+
+function openSqlite(): Db {
+  // loaded at runtime (not bundled): node:sqlite is a Node.js built-in
+  const { DatabaseSync } = process.getBuiltinModule("node:sqlite") as { DatabaseSync: new (file: string) => SqliteDb };
+  mkdirSync(DIR, { recursive: true });
+  const db = new DatabaseSync(path.join(DIR, "wall.db"));
+  db.exec(`
+    PRAGMA journal_mode = WAL;
+    PRAGMA busy_timeout = 3000;
+    CREATE TABLE IF NOT EXISTS wall_notes (
+      id         TEXT PRIMARY KEY,
+      message    TEXT NOT NULL CHECK (length(message) BETWEEN 1 AND 140),
+      name       TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 32),
+      sticker    TEXT NOT NULL,
+      x          REAL NOT NULL CHECK (x BETWEEN 0 AND 1),
+      y          REAL NOT NULL CHECK (y BETWEEN 0 AND 1),
+      rotation   REAL NOT NULL CHECK (rotation BETWEEN -45 AND 45),
+      status     TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+      reports    INTEGER NOT NULL DEFAULT 0,
+      ip_hash    TEXT,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS wall_notes_status ON wall_notes (status, created_at);
+  `);
+  importLegacyJson(db);
+  return {
+    all: async (sql, p = []) => db.prepare(sql).all(...p) as Row[],
+    run: async (sql, p = []) => Number(db.prepare(sql).run(...p).changes),
+  };
 }
-async function readFile(): Promise<FileData> {
+
+/** One-time import of notes saved by the earlier JSON-file storage. */
+function importLegacyJson(db: SqliteDb) {
+  const file = path.join(DIR, "wall-notes.json");
+  if (!existsSync(file)) return;
   try {
-    return JSON.parse(await fs.readFile(FILE, "utf8")) as FileData;
-  } catch {
-    return { notes: [] };
-  }
+    const { notes } = JSON.parse(readFileSync(file, "utf8")) as { notes: (WallNote & { ipHash?: string })[] };
+    const ins = db.prepare(`INSERT OR IGNORE INTO wall_notes (${COLS}, ip_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    for (const n of notes) ins.run(n.id, n.message, n.name, n.sticker, n.x, n.y, n.rotation, n.status, n.reports ?? 0, n.createdAt, n.ipHash ?? null);
+    renameSync(file, `${file}.imported`);
+  } catch {}
 }
-async function writeFile(d: FileData) {
-  await fs.mkdir(path.dirname(FILE), { recursive: true });
-  const tmp = `${FILE}.${process.pid}.tmp`;
-  await fs.writeFile(tmp, JSON.stringify(d, null, 2));
-  await fs.rename(tmp, FILE);
+
+/* ---------------- PostgreSQL ---------------- */
+
+function openPostgres(): Db {
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5 });
+  const ready = pool.query(`
+    CREATE TABLE IF NOT EXISTS wall_notes (
+      id         uuid PRIMARY KEY,
+      message    text NOT NULL CHECK (char_length(message) BETWEEN 1 AND 140),
+      name       text NOT NULL CHECK (char_length(name) BETWEEN 1 AND 32),
+      sticker    text NOT NULL,
+      x          real NOT NULL CHECK (x BETWEEN 0 AND 1),
+      y          real NOT NULL CHECK (y BETWEEN 0 AND 1),
+      rotation   real NOT NULL CHECK (rotation BETWEEN -45 AND 45),
+      status     text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+      reports    integer NOT NULL DEFAULT 0,
+      ip_hash    text,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS wall_notes_status ON wall_notes (status, created_at);
+  `);
+  const pg = (sql: string) => {
+    let i = 0;
+    return sql.replace(/\?/g, () => `$${++i}`);
+  };
+  return {
+    all: async (sql, p = []) => {
+      await ready;
+      return (await pool.query(pg(sql), p)).rows as Row[];
+    },
+    run: async (sql, p = []) => {
+      await ready;
+      return (await pool.query(pg(sql), p)).rowCount ?? 0;
+    },
+  };
+}
+
+/* one connection per server process (kept across dev reloads) */
+const g = globalThis as unknown as { __wallDb?: { mode: StoreMode; db: Db } };
+function db(): Db {
+  const mode = storeMode();
+  if (!g.__wallDb || g.__wallDb.mode !== mode) g.__wallDb = { mode, db: mode === "postgres" ? openPostgres() : openSqlite() };
+  return g.__wallDb.db;
 }
 
 /* ---------------- API ---------------- */
 
-const omitIp = (n: WallNote & { ipHash?: string }): WallNote => {
-  const c = { ...n };
-  delete c.ipHash;
-  return c;
-};
-const toPublic = (n: WallNote): PublicNote => ({ id: n.id, message: n.message, name: n.name, sticker: n.sticker, x: n.x, y: n.y, rotation: n.rotation, createdAt: n.createdAt });
-
 export async function listApproved(): Promise<PublicNote[]> {
-  if (storeMode() === "supabase") {
-    const rows = (await sb(`${TABLE}?status=eq.approved&select=id,message,name,sticker,x,y,rotation,created_at,status,reports&order=created_at.asc&limit=400`)) as Row[];
-    return rows.map(fromRow).map(toPublic);
-  }
-  const d = await readFile();
-  return d.notes.filter((n) => n.status === "approved").map(toPublic);
+  const rows = await db().all(`SELECT ${COLS} FROM wall_notes WHERE status = 'approved' ORDER BY created_at ASC LIMIT 400`);
+  return rows.map(fromRow).map(toPublic);
 }
 
 export async function listAll(status?: NoteStatus): Promise<WallNote[]> {
-  if (storeMode() === "supabase") {
-    const q = status ? `&status=eq.${status}` : "";
-    const rows = (await sb(`${TABLE}?select=id,message,name,sticker,x,y,rotation,created_at,status,reports${q}&order=created_at.desc&limit=500`)) as Row[];
-    return rows.map(fromRow);
-  }
-  const d = await readFile();
-  return d.notes
-    .filter((n) => !status || n.status === status)
-    .map(omitIp)
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const rows = status
+    ? await db().all(`SELECT ${COLS} FROM wall_notes WHERE status = ? ORDER BY created_at DESC LIMIT 500`, [status])
+    : await db().all(`SELECT ${COLS} FROM wall_notes ORDER BY created_at DESC LIMIT 500`);
+  return rows.map(fromRow);
 }
 
 export async function insertPending(n: Omit<WallNote, "id" | "createdAt" | "status">, ipHash: string): Promise<WallNote> {
-  if (storeMode() === "supabase") {
-    const rows = (await sb(TABLE, {
-      method: "POST",
-      body: JSON.stringify({ message: n.message, name: n.name, sticker: n.sticker, x: n.x, y: n.y, rotation: n.rotation, status: "pending", reports: 0, ip_hash: ipHash }),
-    })) as Row[];
-    return fromRow(rows[0]);
-  }
-  return locked(async () => {
-    const d = await readFile();
-    const note: WallNote & { ipHash: string } = { ...n, id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: "pending", reports: 0, ipHash };
-    d.notes.push(note);
-    await writeFile(d);
-    return omitIp(note);
-  });
+  const note: WallNote = { ...n, id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: "pending", reports: 0 };
+  await db().run(`INSERT INTO wall_notes (${COLS}, ip_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+    note.id, note.message, note.name, note.sticker, note.x, note.y, note.rotation, "pending", 0, note.createdAt, ipHash,
+  ]);
+  return note;
 }
 
-/** Recent notes with the same text (duplicate check), any status. */
+/** Notes with the same text in the last `sinceMs` (duplicate check), any status. */
 export async function recentSameMessage(message: string, sinceMs: number): Promise<number> {
   const since = new Date(Date.now() - sinceMs).toISOString();
-  if (storeMode() === "supabase") {
-    const rows = (await sb(`${TABLE}?select=id&message=eq.${encodeURIComponent(message)}&created_at=gte.${encodeURIComponent(since)}&limit=5`)) as unknown[];
-    return rows.length;
-  }
-  const d = await readFile();
-  return d.notes.filter((n) => n.createdAt >= since && n.message.toLowerCase() === message.toLowerCase()).length;
+  const rows = await db().all(`SELECT id FROM wall_notes WHERE lower(message) = lower(?) AND created_at >= ? LIMIT 5`, [message, since]);
+  return rows.length;
 }
 
 export async function setStatus(id: string, status: NoteStatus): Promise<boolean> {
-  if (storeMode() === "supabase") {
-    const rows = (await sb(`${TABLE}?id=eq.${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify({ status }) })) as Row[];
-    return rows.length > 0;
-  }
-  return locked(async () => {
-    const d = await readFile();
-    const n = d.notes.find((x) => x.id === id);
-    if (!n) return false;
-    n.status = status;
-    await writeFile(d);
-    return true;
-  });
+  return (await db().run(`UPDATE wall_notes SET status = ? WHERE id = ?`, [status, id])) > 0;
 }
 
 export async function removeNote(id: string): Promise<boolean> {
-  if (storeMode() === "supabase") {
-    const rows = (await sb(`${TABLE}?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" })) as Row[];
-    return rows.length > 0;
-  }
-  return locked(async () => {
-    const d = await readFile();
-    const before = d.notes.length;
-    d.notes = d.notes.filter((x) => x.id !== id);
-    await writeFile(d);
-    return d.notes.length < before;
-  });
+  return (await db().run(`DELETE FROM wall_notes WHERE id = ?`, [id])) > 0;
 }
 
 /** A visitor report: after 3, an approved note goes back to pending for review. */
 export async function report(id: string): Promise<void> {
-  if (storeMode() === "supabase") {
-    const rows = (await sb(`${TABLE}?id=eq.${encodeURIComponent(id)}&select=reports,status`)) as Row[];
-    if (!rows[0]) return;
-    const reports = (rows[0].reports ?? 0) + 1;
-    await sb(`${TABLE}?id=eq.${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify({ reports, ...(reports >= 3 && rows[0].status === "approved" ? { status: "pending" } : {}) }) });
-    return;
-  }
-  await locked(async () => {
-    const d = await readFile();
-    const n = d.notes.find((x) => x.id === id);
-    if (!n) return;
-    n.reports = (n.reports ?? 0) + 1;
-    if (n.reports >= 3 && n.status === "approved") n.status = "pending";
-    await writeFile(d);
-  });
+  await db().run(
+    `UPDATE wall_notes SET reports = reports + 1, status = CASE WHEN reports + 1 >= 3 AND status = 'approved' THEN 'pending' ELSE status END WHERE id = ?`,
+    [id],
+  );
 }

@@ -11,7 +11,7 @@ import SideEyeEditor from "./SideEyeEditor";
 import SideEyeMonkey from "./SideEyeMonkey";
 import w from "./wall.module.css";
 
-type Mode = "loading" | "supabase" | "local" | "offline";
+type Mode = "loading" | "sqlite" | "postgres" | "offline";
 type Step = "browse" | "place" | "compose" | "sent";
 type Draft = { sticker: string; x: number; y: number; rotation: number };
 
