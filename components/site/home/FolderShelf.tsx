@@ -27,7 +27,7 @@ const subSmall = (cb: () => void) => {
  * Two folders, one component (React Bits Folder Float), two contents:
  *  · Beyond the Interface — the explorations spring out as notes;
  *  · Photography — a handful of photographs spring out as small prints.
- * Mouse: hover opens, and a gyroscope cursor says what a click does
+ * Mouse: hover opens, and a pointer cursor with a tag says what a click does
  * ("View projects" / "View gallery"); a note or print opens that item.
  * Touch: the first tap opens, the next enters. Keyboard: the folder is a
  * button (Enter opens it), then each note / print is a button.
@@ -49,7 +49,7 @@ export default function FolderShelf() {
   };
 
   // the same folder, sized for the screen
-  const size = small ? { width: 180, height: 132, spread: 150, lift: 26 } : { width: 214, height: 156, spread: 210, lift: 28 };
+  const size = small ? { width: 180, height: 132, spread: 150, lift: 26 } : { width: 248, height: 180, spread: 220, lift: 30 };
   const shared = {
     trigger: (canHover ? "hover" : "click") as "hover" | "click",
     closeOnSelect: false,
@@ -65,11 +65,10 @@ export default function FolderShelf() {
   return (
     <section className={h.shelf} aria-labelledby="shelf-title">
       <div className={h.shelfHead}>
-        <p className={h.eyebrow}>Beyond the work</p>
-        <h2 id="shelf-title" className={h.h2}>Two folders worth opening.</h2>
+        <h2 id="shelf-title" className={h.shelfTitle}>Two folders worth opening.</h2>
       </div>
       <div className={h.shelfGrid}>
-        <article className={h.folderCard}>
+        <article className={h.folderCard} aria-label={folders.beyond.title}>
           <GyroCursor label="View projects" className={h.folderObject}>
             {isClient && (
               <FolderFloat
@@ -85,13 +84,9 @@ export default function FolderShelf() {
               />
             )}
           </GyroCursor>
-          <div className={h.folderText}>
-            <h3 className={h.folderTitle}>{folders.beyond.title}</h3>
-            <p className={h.folderDesc}>{folders.beyond.description}</p>
-          </div>
         </article>
 
-        <article className={h.folderCard}>
+        <article className={h.folderCard} aria-label={folders.photography.title}>
           <GyroCursor label="View gallery" className={h.folderObject}>
             {isClient && (
               <FolderFloat
@@ -100,6 +95,8 @@ export default function FolderShelf() {
                 label={folders.photography.title}
                 sublabel={`${photography.photos.length} photographs`}
                 defaultOpen={back === "photography"}
+                stack
+                physics={false}
                 folderColor="#D9301F"
                 frontColor="#FF4938"
                 onSelect={(n) => enter("photography", `${folders.photography.href}?photo=${n}`, Number(n))}
@@ -107,10 +104,6 @@ export default function FolderShelf() {
               />
             )}
           </GyroCursor>
-          <div className={h.folderText}>
-            <h3 className={h.folderTitle}>{folders.photography.title}</h3>
-            <p className={h.folderDesc}>{folders.photography.description}</p>
-          </div>
         </article>
       </div>
     </section>
