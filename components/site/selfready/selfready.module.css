@@ -136,6 +136,29 @@
   .flowLink { display: none; }
 }
 
+/* five-stage workflow */
+.stages { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 16px; }
+.stage5 { position: relative; display: grid; gap: 8px; align-content: start; padding-top: 28px; color: #8a847c; transition: color 240ms ease; }
+.stage5 b { font-size: 19px; font-weight: 560; letter-spacing: -0.01em; }
+.stage5 p { margin: 0; font-size: 14px; line-height: 1.5; }
+.stageDot { position: absolute; left: 0; top: 0; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 2px solid #d6d2cb; transition: all 240ms ease; }
+.stage5.flowOn { color: #222; }
+.stage5.flowOn .stageDot { background: #ff4938; border-color: #ff4938; box-shadow: 0 0 0 5px rgba(255, 73, 56, 0.15); }
+.stage5.flowPast { color: #444; }
+.stage5.flowPast .stageDot { background: #222; border-color: #222; }
+.stageLink { position: absolute; left: 22px; right: -8px; top: 6px; height: 2px; background: #e3dfda; }
+.stageLink i { position: absolute; inset: 0; background: #222; transform-origin: 0 50%; }
+@media (max-width: 860px) {
+  .stages { grid-template-columns: 1fr; gap: 20px; }
+  .stage5 { padding: 0 0 0 30px; }
+  .stageLink { display: none; }
+}
+/* association */
+.assocShelf { left: 0; top: 0; width: 640px; border-radius: 12px; overflow: hidden; border: 1px solid #e3dfda; }
+.assocCard { left: 668px; top: 40px; width: 320px; display: flex; flex-direction: column; gap: 10px; background: #fff; border: 1px solid #e3dfda; border-radius: 14px; padding: 16px; }
+.n .assocShelf { width: 440px; }
+.n .assocCard { left: 0; top: 296px; width: 440px; }
+
 /* ---------- narrow (phone) layouts: same scenes, stacked ---------- */
 .n .coverBody { grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: 14px; padding: 14px; }
 .n .hierShelf { display: none; }
@@ -195,6 +218,9 @@
 .panel { border-radius: 18px; background: #efece6; padding: clamp(16px, 3vw, 40px); }
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 960px) { .grid3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .grid3 { grid-template-columns: 1fr; } }
 .quoteBox { padding: 28px 32px; border-radius: 16px; background: #fff; border: 1px solid var(--line, #e8e6e1); font-size: clamp(20px, 2vw, 26px); line-height: 1.4; letter-spacing: -0.015em; }
 .quoteBox small { display: block; margin-top: 14px; font: 500 12px/1.4 var(--mono, monospace); color: var(--muted, #777); letter-spacing: 0.02em; }
 .ladder { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: l; }

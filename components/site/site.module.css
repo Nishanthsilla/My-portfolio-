@@ -87,14 +87,17 @@
 .headerRow { display: flex !important; align-items: center; gap: var(--s4) !important; height: 68px; padding-block: 0 !important; }
 .logo { display: inline-flex !important; align-items: center; gap: 10px !important; font: 600 16px/1 var(--sans) !important; letter-spacing: -0.02em !important; color: var(--ink); }
 .logo i { width: 9px !important; height: 9px !important; border-radius: 50%; background: var(--accent) !important; }
-.nav { display: flex; align-items: center; gap: var(--s4); margin-left: auto; }
+.nav { display: flex; align-items: center; gap: var(--s3); margin-left: auto; }
+/* the three work categories read as one group */
+.navWorkFirst { margin-left: var(--s1); padding-left: var(--s3) !important; border-left: 1px solid var(--line); }
 .navLink { position: relative; font-size: 15px; color: var(--muted); padding: 6px 0; transition: color var(--t-hover) var(--ease); }
 .navLink:hover, .navLink[aria-current="page"] { color: var(--ink); }
 .navLink[aria-current="page"]::after {
   content: ""; position: absolute; left: 50%; bottom: -4px; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--accent);
 }
 .menuBtn { display: none; }
-@media (max-width: 760px) {
+@media (max-width: 1120px) {
+  .navWorkFirst { margin-left: 0; padding-left: 0 !important; border-left: 0; }
   .nav { display: none; }
   .navOpen { display: flex; position: absolute; top: 68px; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 0;
     background: var(--bg); border-bottom: 1px solid var(--line); padding: var(--s1) var(--gutter) var(--s3); }
@@ -287,3 +290,26 @@
 /* failsafe: if a reveal animation never runs (script error, blocked JS), its content still appears */
 .site :global([data-reveal]) { animation: revealFailsafe 1ms linear 4s forwards; }
 @keyframes revealFailsafe { to { visibility: visible; } }
+
+/* a project with no cover yet */
+.coverSlot { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; text-align: center; padding: 24px;
+  border: 1.5px dashed #cfcac2; border-radius: var(--radius); background: #f3f1ec; }
+.coverSlot b { font: 600 12px/1.4 var(--mono); letter-spacing: 0.04em; text-transform: uppercase; color: #3c3833; }
+
+/* category page switcher */
+.catSwitch { display: flex; flex-wrap: wrap; gap: var(--s1); margin-top: var(--s5); }
+.catLink { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 var(--s2); border-radius: 999px; border: 1px solid var(--line);
+  background: var(--surface); font-size: 15px; color: var(--muted); transition: color var(--t-hover) var(--ease), border-color var(--t-hover) var(--ease); }
+.catLink:hover { color: var(--ink); border-color: #cfccc5; }
+.catLink[aria-current="page"] { color: var(--ink); border-color: var(--ink); }
+
+/* in-site card: whole card → overview, plus a direct case-study link */
+.cardStretch { position: relative; }
+.stretch { position: absolute; inset: 0; z-index: 1; border-radius: var(--radius); }
+.stretch:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.cardCta { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 6px; width: max-content; margin-top: -8px;
+  font-size: 15px; font-weight: 500; color: var(--ink); border-bottom: 1px solid var(--line); padding-bottom: 2px;
+  transition: border-color var(--t-hover) var(--ease); }
+.cardCta span { color: var(--accent); transition: transform var(--t-hover) var(--ease); }
+.cardCta:hover { border-color: var(--accent); }
+.cardCta:hover span { transform: translateX(3px); }

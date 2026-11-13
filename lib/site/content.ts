@@ -37,7 +37,11 @@ export type Project = {
     | { kind: "visual"; id: VisualId }
     | { kind: "image"; src: string; alt: string; fit?: "cover" | "contain"; bg?: string }
     /** an animated product-UI cover (Self-Ready) */
-    | { kind: "scene"; id: "self-ready" };
+    | { kind: "scene"; id: "self-ready" }
+    /** no visual yet: a designed "ADD IMAGE HERE" cover */
+    | { kind: "placeholder"; need: string };
+  /** facts that still need Nishanth's confirmation, shown with a marker */
+  pending?: string[];
   /** featured projects have their own overview + full case-study routes and a full-width card */
   featured?: { overview: string; caseStudy: string; tags: string[] };
   /** Projects whose case study lives elsewhere for now (Notion, Behance, live site). */
@@ -52,7 +56,7 @@ export const projects: Project[] = [
     category: "product-strategy",
     title: "Self-Ready",
     eyebrow: "AI / Retail Intelligence",
-    description: "Making AI-powered retail shelf intelligence easier to review, understand, and act on.",
+    description: "Making AI-powered retail shelf intelligence easier to understand, review and act on.",
     preview: { kind: "scene", id: "self-ready" },
     featured: {
       overview: "/work/self-ready",
@@ -62,9 +66,9 @@ export const projects: Project[] = [
     source: "site",
   },
   {
-    slug: "salespulze",
+    slug: "salespulze-heat-map",
     category: "product-strategy",
-    title: "SalesPulze",
+    title: "SalesPulze — Heat Map",
     eyebrow: "Agentic AI · Sales platform",
     org: "Covasant",
     year: "2026",
@@ -79,9 +83,9 @@ export const projects: Project[] = [
     source: "site",
   },
   {
-    slug: "agent-control-room",
+    slug: "mao",
     category: "product-strategy",
-    title: "Agent Control Room",
+    title: "MAO — Multi-Agent Orchestrator",
     eyebrow: "Multi-agent orchestration",
     org: "Covasant",
     year: "2026",
@@ -97,9 +101,9 @@ export const projects: Project[] = [
     source: "site",
   },
   {
-    slug: "thriving-springs-ai",
+    slug: "thriving-springs-e-learning",
     category: "product-strategy",
-    title: "Thriving Springs AI",
+    title: "Thriving Springs — E-learning",
     eyebrow: "AI-driven gamified LMS",
     year: "2024 – 25",
     role: "Lead UX Designer",
@@ -156,6 +160,16 @@ export const projects: Project[] = [
     source: "webflow",
   },
 
+  {
+    slug: "ambient-ai",
+    category: "product-strategy",
+    title: "Ambient AI",
+    eyebrow: "Case study",
+    preview: { kind: "placeholder", need: "Ambient AI cover" },
+    pending: ["One-line description", "Role", "Timeline", "Company", "Cover visual"],
+    source: "site",
+  },
+
   // ---------- Visual Craft ----------
   {
     slug: "disprz",
@@ -208,7 +222,7 @@ export const projects: Project[] = [
   {
     slug: "covasant-design-system",
     category: "design-engineering",
-    title: "Covasant Design System",
+    title: "Covasant — Design System",
     eyebrow: "Design system · Component library",
     org: "Covasant",
     year: "2026",

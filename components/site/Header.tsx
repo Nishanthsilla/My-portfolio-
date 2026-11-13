@@ -4,9 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import s from "./site.module.css";
+import { projectBySlug } from "@/lib/site/content";
+
+/** A category page, or a project page that belongs to that category. */
+function inCategory(path: string, id: string) {
+  if (path.startsWith(`/${id}`)) return true;
+  const slug = path.match(/^\/work\/([^/]+)/)?.[1];
+  return !!slug && projectBySlug(slug)?.category === id;
+}
 
 const NAV = [
-  { href: "/", label: "Work", match: (p: string) => p === "/" || p.startsWith("/work") },
+  { href: "/", label: "Home", match: (p: string) => p === "/" },
+  { href: "/visual-craft", label: "Visual Craft", match: (p: string) => inCategory(p, "visual-craft"), work: true },
+  { href: "/product-strategy", label: "Product Strategy", match: (p: string) => inCategory(p, "product-strategy"), work: true },
+  { href: "/design-engineering", label: "Design Engineering", match: (p: string) => inCategory(p, "design-engineering"), work: true },
   { href: "/beyond", label: "Beyond the Interface", match: (p: string) => p.startsWith("/beyond") },
   { href: "/about", label: "About", match: (p: string) => p.startsWith("/about") },
 ];
@@ -46,8 +57,14 @@ export default function Header() {
           <span />
         </button>
         <nav id="site-nav" className={`${s.nav} ${menu ? s.navOpen : ""}`} aria-label="Main">
-          {NAV.map((n) => (
-            <Link key={n.href} href={n.href} className={s.navLink} aria-current={n.match(path) ? "page" : undefined} onClick={() => setMenu(false)}>
+          {NAV.map((n, i) => (
+            <Link
+              key={n.href}
+              href={n.href}
+              className={`${s.navLink} ${n.work ? s.navWork : ""} ${n.work && !NAV[i - 1]?.work ? s.navWorkFirst : ""}`}
+              aria-current={n.match(path) ? "page" : undefined}
+              onClick={() => setMenu(false)}
+            >
               {n.label}
             </Link>
           ))}

@@ -262,12 +262,12 @@ export function HierarchyScene() {
 /* 4. Reviewing one association — six steps, ~10 s, with a synced stepper    */
 /* ======================================================================== */
 export const REVIEW_STEPS = [
-  "The shelf image",
-  "A detected product and its label",
-  "The association and its state",
-  "The supporting evidence",
-  "The reviewer inspects the result",
-  "The action, and feedback",
+  "The detected product",
+  "The corresponding shelf label",
+  "The current association state",
+  "The available supporting evidence",
+  "The action required from the reviewer",
+  "What happens after that action",
 ];
 export function ReviewScene() {
   const STEP = 1.75, D = STEP * 6 + 0.6;
@@ -278,10 +278,10 @@ export function ReviewScene() {
   const at = (k: number) => ease(prog(t, k * STEP, k * STEP + 0.5));
   const reset = prog(t, D - 0.6, D);
   const st: ShelfState = {
-    products: at(1),
+    products: at(0),
     labels: at(1),
     links: [{ i: I, p: at(2), tone: step >= 5 && t % STEP > 0.6 ? "done" : "flag" }],
-    focus: { i: I, a: at(1) },
+    focus: { i: I, a: at(0) },
     flag: step >= 2 && !(step >= 5 && t % STEP > 0.6) ? { i: I, a: 1 } : null,
     done: step >= 5 && t % STEP > 0.6 ? [I] : [],
     boxesOut: reset,
@@ -411,41 +411,77 @@ export function ExceptionScene() {
 }
 
 /* ======================================================================== */
-/* 6. Workflow — the modules named in the project material, in journey order */
+/* 6. Workflow — the draft's narrative: Capture → Analyse → Review → Resolve → Publish */
 /* ======================================================================== */
-const FLOW = [
-  { k: "Capture Sessions", g: "Capture" },
-  { k: "Capture Detail", g: "Capture" },
-  { k: "Shelf Analysis", g: "Analysis" },
-  { k: "Exceptions", g: "Review" },
-  { k: "Product Intelligence", g: "Review" },
-  { k: "Label Intelligence", g: "Review" },
-  { k: "Versions", g: "Publish" },
-  { k: "Publish", g: "Publish" },
-  { k: "Activity / Audit", g: "Traceability" },
+export const STAGES = [
+  { k: "Capture", d: "Shelf information is captured and organised into sessions." },
+  { k: "Analyse", d: "The system processes the shelf information and identifies relevant products and labels." },
+  { k: "Review", d: "Users inspect the detected product-label associations and understand which results require attention." },
+  { k: "Resolve", d: "Users review uncertain or unresolved results and take the appropriate supported action." },
+  { k: "Publish", d: "Reviewed information can move forward through the relevant publishing workflow, if confirmed as part of Self-Ready." },
 ];
 export function WorkflowScene() {
-  const D = 9.5;
-  const { ref, t } = useLoop(D, 4.0);
-  const per = D / FLOW.length;
-  const active = Math.floor(t / per) % FLOW.length;
+  const D = 10;
+  const { ref, t } = useLoop(D, 4.2);
+  const per = D / STAGES.length;
+  const active = Math.floor(t / per) % STAGES.length;
   const within = (t % per) / per;
   return (
-    <div ref={ref} className={s.flow} aria-label="Journey through the areas named in the project material: capture, analysis, review, publishing and traceability. Scope to be confirmed.">
-      {FLOW.map((n, k) => {
+    <div ref={ref} className={s.stages} aria-label="Workflow: capture, analyse, review, resolve, publish">
+      {STAGES.map((n, k) => {
         const on = k === active, past = k < active;
         return (
-          <div key={n.k} className={`${s.flowNode} ${on ? s.flowOn : past ? s.flowPast : ""}`}>
-            <span className={s.flowGroup}>{n.g}</span>
-            <b>{n.k}</b>
-            {k < FLOW.length - 1 && (
-              <span className={s.flowLink} aria-hidden="true">
+          <div key={n.k} className={`${s.stage5} ${on ? s.flowOn : past ? s.flowPast : ""}`}>
+            <span className={s.stageDot} aria-hidden="true" />
+            {k < STAGES.length - 1 && (
+              <span className={s.stageLink} aria-hidden="true">
                 <i style={{ transform: `scaleX(${past ? 1 : on ? ease(within) : 0})` }} />
               </span>
             )}
+            <span className={s.flowGroup}>{String(k + 1).padStart(2, "0")}</span>
+            <b>{n.k}</b>
+            <p>{n.d}</p>
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/* ======================================================================== */
+/* 7. Product–label association — keep the relationship visible, 9 s         */
+/* ======================================================================== */
+export function AssociationScene() {
+  const D = 9;
+  const { ref, t } = useLoop(D, 6.6);
+  const n = useNarrow(ref);
+  const SEQ = [2, 6, FLAG];
+  const k = Math.min(2, Math.floor(t / 3));
+  const local = t - k * 3;
+  const I = SEQ[k];
+  const a = window01(local, 0.1, 0.6, 2.5, 2.95);
+  const flag = I === FLAG;
+  const st: ShelfState = {
+    products: 1,
+    labels: 1,
+    links: SEQ.slice(0, k + 1).map((i, j) => ({ i, p: j < k ? 1 : ease(prog(local, 0.1, 0.7)), tone: i === FLAG ? ("flag" as const) : undefined })),
+    focus: { i: I, a },
+    flag: flag ? { i: I, a: 1 } : null,
+  };
+  return (
+    <div ref={ref} className={`${s.sceneWrap} ${n ? s.n : ""}`}>
+      <Stage w={n ? 440 : 1000} h={n ? 600 : 470} label="Illustrative: each detected product stays visibly connected to its shelf label, with its state and evidence beside it.">
+        <div className={s.assocShelf}><Shelf st={st} /></div>
+        <div className={s.assocCard} style={{ opacity: a, transform: `translateY(${(1 - a) * 10}px)` }}>
+          <p className={s.paneTitle}>Association</p>
+          <p className={s.reviewTitle}>{NAME(I)} ↔ {LABEL(I)}</p>
+          {flag ? <Chip tone="confirm">Needs confirmation</Chip> : <Chip tone="auto">Auto-admitted</Chip>}
+          <div className={s.evidence}>
+            <figure><Crop i={I} part="product" /><figcaption>Product</figcaption></figure>
+            <figure><Crop i={I} part="label" /><figcaption>Shelf label</figcaption></figure>
+          </div>
+        </div>
+      </Stage>
     </div>
   );
 }
