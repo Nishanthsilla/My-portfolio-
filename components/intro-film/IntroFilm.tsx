@@ -362,13 +362,14 @@ export default function IntroFilm() {
         </div>
       </div>
 
-      {/* Ch7 */}
-      <div className={styles.wipe} data-wipe aria-hidden="true" />
-
-      {/* After the push-through: a brief full-screen Gradient ASCII bridge, then the website */}
+      {/* Ch7: after "…ship it in code.", a full-screen Gradient ASCII screen */}
       <div className={styles.ascii} data-ascii aria-hidden="true">
         <AsciiBridge />
       </div>
+      {/* the #FF4938 takeover, spreading from the button's spot */}
+      <div className={styles.wipe} data-wipe aria-hidden="true" />
+      {/* the camera's stacked exposures + the website emerging from the button (zoom.ts) */}
+      <div className={styles.zoom} data-zoom aria-hidden="true" />
 
       <div className={styles.controls} data-film-controls>
         <button type="button" className={styles.ctrl} onClick={toggleSound} aria-pressed={sound === "on"}>

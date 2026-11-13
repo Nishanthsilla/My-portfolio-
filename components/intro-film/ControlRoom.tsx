@@ -74,7 +74,7 @@ export default function ControlRoom() {
           <span className={styles.btnGhost}>{a.edit}</span>
           <span className={styles.btnPrimary} data-t="btn">
             <span className={styles.btnLabel}>{a.approve}</span>
-            <span className={styles.btnDone}>✓ Sent</span>
+            <span className={styles.btnDone} data-t="btnDone">✓ Sent</span>
           </span>
         </span>
       </aside>

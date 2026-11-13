@@ -354,7 +354,7 @@
 }
 .btnLabel, .btnDone { grid-area: 1 / 1; color: #ffffff; }
 .btnPrimary { display: inline-grid; place-items: center; }
-.btnLabel { opacity: calc(1 - var(--approved)); }
+.btnLabel { opacity: calc((1 - var(--approved)) * var(--lab, 1)); }
 .btnDone { opacity: var(--approved); }
 /* metrics */
 .crLogA, .crLogB {
@@ -449,6 +449,8 @@
 }
 
 /* Finale */
+.zoom { position: absolute; inset: 0; overflow: hidden; visibility: hidden; pointer-events: none; contain: strict; }
+.zoom [data-zoom-b] *, .zoom [data-zoom-b] *::before, .zoom [data-zoom-b] *::after { animation: none !important; transition: none !important; }
 .wipe {
   position: absolute; inset: 0; background: var(--o);
   clip-path: circle(0 at 50% 50%); visibility: hidden; pointer-events: none;

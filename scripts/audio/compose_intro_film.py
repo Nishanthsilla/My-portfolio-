@@ -269,27 +269,27 @@ for i in range(30):                                         # the snippet being 
     place(click(0.045, 5400 + 250 * (i % 4)), 24.65 + i * 0.033, pan=0.2)
 place(swoosh(0.4, 1500, 500, 0.06, "down"), 26.15)
 
-# ---------- 7: the product → one click (26.4 – 29.2) ----------
-place(swoosh(0.6, 800, 2600, 0.07), 26.35)                  # the product arrives
-place(pad([midi(n) for n in FMAJ7], 3.0, 0.055, 0.4, 0.9, 2200), 26.45)
-groove(26.6, 29.2, kick_g=0.48, bass_g=0.23, pluck_g=0.065, bar0=2)
-place(pop(1100, 0.1, 0.09), 27.9)                           # Draft done
-place(swoosh(0.6, 700, 1700, 0.03), 28.15)                  # the cursor moves to the button
-place(click(0.06, 2800), 28.72, pan=0.2)                    # hover
-place(click(0.24, 3300), 29.05)                             # the click — once
-place(pop(900, 0.12, 0.07), 29.07)
+# ---------- 7: Gradient ASCII → #FF4938 takeover → out of the button → one click → zoom through (26.25 – 32.7) ----------
+for k in range(16):                                         # characters forming
+    place(hat(0.022 + 0.002 * (k % 5), 0.03), 26.3 + k * 0.1, pan=-0.6 + (k % 7) * 0.2)
+place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 1.9, 0.06, 0.25, 0.5, 2600), 26.3)
+place(swoosh(0.4, 500, 3800, 0.09), 27.92)                  # the colour takes over
+place(pop(700, 0.1, 0.12), 28.28)
+place(swoosh(1.0, 4200, 380, 0.1, "down"), 28.32)            # the camera backs out of the button
+place(pad([midi(n) for n in FMAJ7], 3.0, 0.055, 0.4, 0.9, 2200), 28.95)
+groove(29.3, 31.5, kick_g=0.48, bass_g=0.23, pluck_g=0.065, bar0=2)
+place(pop(1100, 0.1, 0.09), 29.98)                          # Draft done
+place(swoosh(0.7, 700, 1700, 0.03), 30.1)                   # the cursor sets off for the button
+place(click(0.06, 2800), 30.82, pan=0.2)                    # hover
+place(click(0.24, 3300), 31.35)                             # the click — once
+place(pop(900, 0.12, 0.07), 31.37)
 for k, n in enumerate([76, 81, 84, 88]):                    # approved & sent
-    place(pluck(midi(n), 0.1, 1.0, 4600), 29.17 + k * 0.07, pan=-0.3 + 0.2 * k)
-
-# ---------- camera push-through → Gradient ASCII → the website (29.2 – 32.45) ----------
-place(riser(1.35, 0.14), 29.25)                             # travelling forward into the button
-place(swoosh(1.3, 300, 4800, 0.12), 29.3)
-place(impact(0.26), 30.55)                                  # through the surface
-for k in range(14):                                         # characters forming
-    place(hat(0.022 + 0.002 * (k % 5), 0.03), 30.5 + k * 0.1, pan=-0.6 + (k % 7) * 0.2)
-place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 2.4, 0.07, 0.15, 1.3, 2800), 30.6)
-place(swoosh(0.5, 2400, 600, 0.05, "down"), 31.9)           # the bridge clears to the website
-# (the level-clear jingle plays separately as the website is revealed)
+    place(pluck(midi(n), 0.1, 1.0, 4600), 31.45 + k * 0.06, pan=-0.3 + 0.2 * k)
+place(riser(0.7, 0.14), 31.5)                               # the camera dives into the button
+place(swoosh(0.75, 300, 4800, 0.12), 31.55)
+place(impact(0.24), 32.12)                                  # through the surface
+place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 1.4, 0.06, 0.1, 1.0, 2800), 32.2)   # the website lands
+# (the level-clear jingle plays separately as the website settles)
 
 # ---------- master ----------
 mix = np.stack([L, R])

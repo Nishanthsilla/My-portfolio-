@@ -25,17 +25,22 @@ export const T = {
   // 5 + 6 — both sentences; the cursor hovers "Figma" (design state), then "code" (code state)
   sent1In: [20.25, 20.8], sent2In: [20.4, 20.95], cursorIn5: [21.0, 21.6],
   figmaAt: 21.55, toCode: [23.15, 23.7], codeAt: 23.65, sentOut: [26.15, 26.55],
-  // 7 — the product; one click on Approve & send; the camera travels into the button;
-  //     a brief full-screen Gradient ASCII bridge; the website is revealed
-  crIn: [26.4, 27.1], draftDone: [27.45, 27.95],
-  cursorIn: [28.15, 28.85], hover: [28.7, 28.9], click: 29.05,
-  approved: [29.15, 29.45], flowDone: [29.2, 29.75], push: [29.2, 30.6],
-  asciiMount: 29.0, asciiIn: [30.35, 30.75],
-  handoff: [31.95, 32.4],
-  end: 32.45,
+  // 7 — "…ship it in code." clears to a full-screen Gradient ASCII; the colour takes over from the
+  //     button's spot; the camera pulls back out of the button to reveal the product; the cursor
+  //     approaches and clicks Approve & send once; the camera zooms through the button and the
+  //     website emerges from inside its surface (zoom.ts).
+  asciiMount: 25.6, asciiIn: [26.25, 26.75],
+  takeover: [27.95, 28.3],
+  crIn: [28.3, 29.3],
+  draftDone: [29.55, 30.05],
+  cursorIn: [30.1, 30.95], hover: [30.8, 31.0], click: 31.35,
+  approved: [31.43, 31.68], flowDone: [31.45, 31.95],
+  push: [31.5, 32.65],
+  handoff: [31.8, 32.65],
+  end: 32.7,
 } as const;
 
-/** The level-clear sound's held note lands as the orange dot reaches the logo. */
+/** The level-clear sound's held note lands as the website settles. */
 export const VICTORY_AT = T.handoff[1] - 0.62;
 /** No full-dark chapter. */
 export const DARK_RANGE = [-1, -1] as const;
@@ -52,6 +57,27 @@ export const outQuint = (t: number) => 1 - Math.pow(1 - t, 5);
 export const inQuint = (t: number) => t ** 5;
 export const inOutQuint = (t: number) => (t < 0.5 ? 16 * t ** 5 : 1 - Math.pow(-2 * t + 2, 5) / 2);
 export const inOutCubic = (t: number) => (t < 0.5 ? 4 * t ** 3 : 1 - Math.pow(-2 * t + 2, 3) / 2);
+/** cubic-bezier(x1,y1,x2,y2) as a function of t (Newton solve on x). */
+export function bezier(x1: number, y1: number, x2: number, y2: number) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const X = (t: number) => ((ax * t + bx) * t + cx) * t;
+  const dX = (t: number) => (3 * ax * t + 2 * bx) * t + cx;
+  return (x: number) => {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    let t = x;
+    for (let i = 0; i < 8; i++) {
+      const d = dX(t);
+      if (Math.abs(d) < 1e-6) break;
+      t -= (X(t) - x) / d;
+    }
+    t = Math.min(1, Math.max(0, t));
+    return ((ay * t + by) * t + cy) * t;
+  };
+}
+/** The camera's move: eases in from rest, travels, and lands softly (no overshoot). */
+export const settle = bezier(0.7, 0, 0.16, 1);
 export const inOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
 
 export function rng(seed: number) {
