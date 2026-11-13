@@ -15,7 +15,7 @@ const LAYOUT = "nishanth.wall.layout";
 const KEEP_MS = 30 * 24 * 3600_000;
 
 export type SavedDraft = {
-  draft: { sticker: string; font?: string; x: number; y: number; rotation: number } | null;
+  draft: { sticker: string; font?: string; shape?: string; color?: string; x: number; y: number; rotation: number } | null;
   message: string;
   name: string;
   step: "place" | "compose"; // "place" from older saves is read as "compose"

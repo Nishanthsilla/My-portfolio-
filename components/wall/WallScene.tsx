@@ -10,7 +10,7 @@ const EASE = "cubic-bezier(0.7, 0, 0.2, 1)";
 
 /**
  * Scene 4 of the homepage journey: The Wall, live, beside its heading and two
- * actions — "Add a note" and "Explore canvas". Either one grows the canvas out
+ * actions — "Add a note" and "See what people left". Either one grows the canvas out
  * of its place into full screen (its own history entry: Back, or "Back to
  * portfolio", shrinks it back into the scene).
  */
@@ -66,7 +66,7 @@ export default function WallScene() {
             Add a note
           </button>
           <button type="button" className={w.btnGhost} onClick={() => open("the-wall")}>
-            Explore canvas <span aria-hidden="true">↗</span>
+            See what people left <span aria-hidden="true">↗</span>
           </button>
         </div>
       </div>

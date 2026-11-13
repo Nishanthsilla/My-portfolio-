@@ -8,3 +8,7 @@ html.intro-lock body {
   overflow: hidden;
   overscroll-behavior: none;
 }
+
+/* keep the scrollbar's space even when a full-screen layer locks the page (the wall, a folder sheet):
+   otherwise the page gets wider for a moment and the homepage journey shifts sideways */
+html { scrollbar-gutter: stable; }

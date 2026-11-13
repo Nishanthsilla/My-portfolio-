@@ -12,6 +12,9 @@ export type WallNote = {
   sticker: string;
   /** the handwriting picked for the note (lib/wall/fonts.ts) */
   font: string;
+  /** the sticky note: shape and paper colour (lib/wall/notes.ts) */
+  shape: string;
+  color: string;
   x: number;
   y: number;
   rotation: number;
@@ -21,13 +24,15 @@ export type WallNote = {
 };
 
 /** What the public wall receives: approved notes only, no moderation data. */
-export type PublicNote = Pick<WallNote, "id" | "message" | "name" | "sticker" | "font" | "x" | "y" | "rotation" | "createdAt">;
+export type PublicNote = Pick<WallNote, "id" | "message" | "name" | "sticker" | "font" | "shape" | "color" | "x" | "y" | "rotation" | "createdAt">;
 
 export type Submission = {
   message: string;
   name: string;
   sticker: string;
   font?: string;
+  shape?: string;
+  color?: string;
   x: number;
   y: number;
   rotation: number;

@@ -9,6 +9,7 @@ import { connection } from "next/server";
 import { isClean, normalizeText } from "@/lib/wall/moderation";
 import { STICKER_IDS, isGiphy } from "@/lib/wall/stickers";
 import { DEFAULT_FONT, FONT_IDS } from "@/lib/wall/fonts";
+import { COLOR_IDS, DEFAULT_COLOR, DEFAULT_SHAPE, SHAPE_IDS } from "@/lib/wall/notes";
 import { LIMITS, type Submission } from "@/lib/wall/types";
 import { captchaRequired, clientHash, rateLimit, recordPost, verifyCaptcha } from "@/lib/wall/guard";
 import { countRecentByVisitor, insertPending, listApproved, recentSameMessage, storeMode } from "@/lib/wall/store";
@@ -57,6 +58,9 @@ export async function POST(req: Request) {
   if (typeof body.sticker !== "string" || (!STICKER_IDS.has(body.sticker) && !gifOk)) return json({ ok: false, error: "Pick a sticker first." }, 400);
   const font = body.font === undefined ? DEFAULT_FONT : body.font;
   if (typeof font !== "string" || !FONT_IDS.has(font)) return json({ ok: false, error: "Pick a font from the list." }, 400);
+  const shape = body.shape === undefined ? DEFAULT_SHAPE : body.shape;
+  const color = body.color === undefined ? DEFAULT_COLOR : body.color;
+  if (typeof shape !== "string" || !SHAPE_IDS.has(shape) || typeof color !== "string" || !COLOR_IDS.has(color)) return json({ ok: false, error: "Pick a note from the list." }, 400);
   if (!num(body.x, 0, 1) || !num(body.y, 0, 1) || !num(body.rotation, -45, 45)) return json({ ok: false, error: "Place your sticker on the wall first." }, 400);
 
   // the Side-Eye Filter, authoritative: the text as sent and its normalised form
@@ -69,10 +73,10 @@ export async function POST(req: Request) {
     if ((await countRecentByVisitor(id, 10 * 60_000)) >= 3 || (await countRecentByVisitor(id, 24 * 3600_000)) >= 10)
       return json({ ok: false, error: "You've left a few already — come back a little later." }, 429, { "Retry-After": "600" });
     if ((await recentSameMessage(message, 24 * 3600_000)) > 0) return json({ ok: false, error: "That note is already on its way." }, 409);
-    const note = await insertPending({ message, name, sticker: body.sticker, font, x: body.x, y: body.y, rotation: body.rotation }, id);
+    const note = await insertPending({ message, name, sticker: body.sticker, font, shape, color, x: body.x, y: body.y, rotation: body.rotation }, id);
     recordPost(id);
     // the id lets the visitor's browser keep showing its own pending note (to them only) until approved
-    return json({ ok: true, status: "pending", note: { id: note.id, message: note.message, name: note.name, sticker: note.sticker, font: note.font, x: note.x, y: note.y, rotation: note.rotation, createdAt: note.createdAt } }, 201);
+    return json({ ok: true, status: "pending", note: { id: note.id, message: note.message, name: note.name, sticker: note.sticker, font: note.font, shape: note.shape, color: note.color, x: note.x, y: note.y, rotation: note.rotation, createdAt: note.createdAt } }, 201);
   } catch {
     // storage unavailable: fail safe — nothing is published
     return json({ ok: false, error: "The wall can't take notes right now. Please try again later." }, 503);

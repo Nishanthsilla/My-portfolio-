@@ -130,7 +130,7 @@ export default function WallAdmin() {
         {notes.map((n) => (
           <li key={n.id} className={a.item}>
             <div className={a.card}>
-              <NoteCard sticker={n.sticker} font={n.font} message={n.message} name={n.name} />
+              <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name={n.name} />
             </div>
             <div className={a.meta}>
               <p>{new Date(n.createdAt).toLocaleString()}</p>

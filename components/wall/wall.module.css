@@ -51,7 +51,7 @@
 .placed { position: absolute; width: max-content; transform: translate(-50%, -50%); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
 .placed > [data-sticker-art] { transform-origin: 50% 50%; will-change: transform; }
 .placed[data-lifted] { cursor: grabbing; }
-.placed[data-lifted] .note { box-shadow: 0 2px 0 rgba(34, 34, 34, 0.05), 0 34px 50px -22px rgba(34, 34, 34, 0.5); }
+.placed[data-lifted] .note { filter: drop-shadow(0 2px 0 rgba(34, 34, 34, 0.06)) drop-shadow(0 26px 22px rgba(34, 34, 34, 0.28)); }
 .placed:focus-visible { outline: none; }
 .placed:focus-visible .note, .placed:focus-visible.decor { outline: 2px solid #ff4938; outline-offset: 6px; border-radius: 16px; }
 .empty { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); margin: 0; padding: 12px 18px; border-radius: 999px; background: rgba(255, 255, 255, 0.7); border: 1px dashed #cfc6b8; font-size: 15px; color: var(--muted); text-align: center; }
@@ -185,35 +185,32 @@
   .sceneLine { font-size: 15px; }
 }
 
-/* ---------------- a note: the "HELLO" name-tag sticker ---------------- */
-.note {
-  position: relative; width: clamp(150px, 11.5vw, 172px); padding: 5px; border-radius: 13px; background: #fff;
-  box-shadow: 0 1px 0 rgba(34, 34, 34, 0.06), 0 14px 26px -16px rgba(34, 34, 34, 0.42); transition: box-shadow 240ms;
+/* ---------------- a note: a sticky note (shape + paper colour picked by its writer) ---------------- */
+.note { position: relative; width: clamp(150px, 11.5vw, 168px); filter: drop-shadow(0 1px 0 rgba(34, 34, 34, 0.08)) drop-shadow(0 12px 14px rgba(34, 34, 34, 0.16)); transition: filter 240ms; }
+.paper {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 148px; padding: 18px 14px 14px; text-align: center;
+  background: var(--paper, #ffe98f); color: #1d1b19;
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0.04));
 }
-.tagTop, .noteMsg, .tagBottom { border: 1.75px solid #1d1b19; }
-.tagTop { position: relative; display: grid; justify-items: center; padding: 6px 26px 5px; border-radius: 9px 9px 0 0; border-bottom: 0; background: #ff4938; color: #fff; }
-.tagHello { font: 800 22px/0.95 "Bricolage Grotesque", var(--font-geist-sans), Arial, sans-serif; letter-spacing: 0.02em; }
-.tagSub { margin-top: 2px; font: 700 9px/1.1 "Bricolage Grotesque", var(--font-geist-sans), Arial, sans-serif; white-space: nowrap; }
-.tagSticker { position: absolute; right: -16px; top: -18px; transform: rotate(10deg); z-index: 2; }
-.noteMsg {
-  margin: 0; min-height: 48px; padding: 7px 9px; display: grid; place-items: center; text-align: center; background: #fff; color: #1d1b19;
-  border-top: 0; border-bottom: 0; line-height: 1.15; overflow-wrap: anywhere; white-space: pre-wrap;
+.hi { margin: 0; font: 500 12px/1.2 "Hanken Grotesk", var(--font-geist-sans), Arial, sans-serif; color: rgba(29, 27, 25, 0.58); letter-spacing: -0.005em; }
+.noteMsg { flex: 1; display: grid; place-items: center; margin: 0; width: 100%; line-height: 1.15; overflow-wrap: anywhere; white-space: pre-wrap; }
+.noteName { margin: 0; font: 600 10px/1.2 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(29, 27, 25, 0.62); overflow-wrap: anywhere; }
+.tagSticker { position: absolute; right: -14px; top: -16px; transform: rotate(10deg); z-index: 2; }
+/* shapes */
+.note[data-shape="square"] .paper { border-radius: 2px 2px 3px 18px / 2px 2px 3px 8px; }
+.tape { position: absolute; left: 50%; top: -9px; width: 58px; height: 20px; margin-left: -29px; transform: rotate(-4deg); background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(29, 27, 25, 0.08); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06); }
+.note[data-shape="rounded"] .paper { border-radius: 24px; }
+.note[data-shape="circle"] { width: clamp(166px, 12.5vw, 184px); }
+.note[data-shape="circle"] .paper { aspect-ratio: 1; min-height: 0; border-radius: 50%; padding: 30px 24px 26px; justify-content: center; }
+.note[data-shape="circle"] .tagSticker { right: 4px; top: -6px; }
+.note[data-shape="blob"] .paper { border-radius: 58% 42% 54% 46% / 44% 56% 44% 56%; padding: 26px 20px 22px; }
+.note[data-shape="torn"] .paper {
+  padding-bottom: 22px;
+  clip-path: polygon(0 0, 100% 0, 100% 92%, 94% 97%, 87% 93%, 80% 98%, 72% 94%, 64% 99%, 56% 94%, 48% 98%, 40% 93%, 32% 98%, 24% 94%, 16% 99%, 8% 94%, 0 98%);
 }
-.tagBottom { margin: 0; padding: 3px 8px 4px; border-radius: 0 0 9px 9px; border-top: 0; background: #ff4938; }
-.noteName { display: block; font: 600 9px/1.2 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; overflow-wrap: anywhere; }
-.noteTag { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); padding: 4px 9px; border-radius: 999px; background: #1d1b19; color: #fff; white-space: nowrap; font: 600 10px/1.2 var(--font-geist-mono), monospace; letter-spacing: 0.04em; text-transform: uppercase; }
 .noteGhost .noteMsg { color: rgba(29, 27, 25, 0.38); }
 .noteGhost .noteName { opacity: 0.7; }
-/* a corner that starts to peel on hover */
-.note::after {
-  content: ""; position: absolute; right: 6px; bottom: 6px; width: 0; height: 0; border-radius: 0 0 11px 0;
-  background: linear-gradient(315deg, #efe9df 50%, #fff 50%, #e9e4dc 100%); box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.12);
-  transition: width 260ms cubic-bezier(0.34, 1.56, 0.64, 1), height 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@media (hover: hover) { .placed:hover .note::after { width: 20px; height: 20px; } }
-.mine .note { outline: 2px dashed rgba(194, 48, 31, 0.6); outline-offset: 5px; }
-.decor { opacity: 0.97; }
-.draft .note { box-shadow: 0 0 0 2px #ff4938, 0 24px 40px -20px rgba(255, 73, 56, 0.55); }
+.draft .paper { outline: 2px dashed rgba(255, 73, 56, 0.85); outline-offset: 5px; }
 .draftHint { position: absolute; left: 50%; top: calc(100% + 10px); transform: translateX(-50%); padding: 4px 10px; border-radius: 999px; background: #ff4938; color: #fff; white-space: nowrap; font: 600 11px/1.2 var(--font-geist-mono), monospace; letter-spacing: 0.03em; pointer-events: none; animation: bob 1.8s ease-in-out infinite; }
 @keyframes bob { 50% { transform: translate(-50%, -3px); } }
 .report { z-index: 2; }
@@ -309,3 +306,18 @@
 .sceneActions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
 @media (max-width: 899px) { .sceneActions { margin-top: 6px; } .sceneActions button { height: 42px; padding: 0 18px; font-size: 14px; } }
 .wallEmbedded .report { display: none; }
+
+/* the note picker (shape + paper) */
+.shapes { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.shapeChip { display: grid; justify-items: center; gap: 4px; width: 62px; padding: 6px 4px; border-radius: 12px; border: 1.5px solid transparent; background: #f6f2ea; cursor: pointer; font: 500 11px/1 var(--font-geist-sans), Arial, sans-serif; color: #4a4640; }
+.shapeChip[aria-checked="true"] { border-color: #ff4938; background: #fff4f2; }
+.shapeChip i { display: block; width: 28px; height: 26px; background: var(--paper); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15); }
+.shapeChip[data-shape="square"] i { border-radius: 2px 2px 2px 8px; }
+.shapeChip[data-shape="rounded"] i { border-radius: 8px; }
+.shapeChip[data-shape="circle"] i { width: 27px; height: 27px; border-radius: 50%; }
+.shapeChip[data-shape="blob"] i { border-radius: 58% 42% 54% 46% / 44% 56% 44% 56%; }
+.shapeChip[data-shape="torn"] i { clip-path: polygon(0 0, 100% 0, 100% 86%, 83% 98%, 66% 86%, 50% 98%, 33% 86%, 16% 98%, 0 86%); }
+.swatches { display: flex; gap: 8px; padding: 2px; }
+.swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1.5px #e3ddd2; background: var(--paper); cursor: pointer; }
+.swatch[aria-checked="true"] { box-shadow: 0 0 0 2.5px #ff4938; }
+.toolSwatch { display: block; width: 20px; height: 20px; border-radius: 5px; background: var(--paper); box-shadow: inset 0 0 0 1.5px rgba(29, 27, 25, 0.25); }
