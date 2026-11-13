@@ -62,9 +62,10 @@ export async function POST(req: Request) {
 
   try {
     if ((await recentSameMessage(message, 24 * 3600_000)) > 0) return json({ ok: false, error: "That note is already on its way." }, 409);
-    await insertPending({ message, name, sticker: body.sticker, x: body.x, y: body.y, rotation: body.rotation }, id);
+    const note = await insertPending({ message, name, sticker: body.sticker, x: body.x, y: body.y, rotation: body.rotation }, id);
     recordPost(id);
-    return json({ ok: true, status: "pending" }, 201);
+    // the id lets the visitor's browser keep showing its own pending note (to them only) until approved
+    return json({ ok: true, status: "pending", note: { id: note.id, message: note.message, name: note.name, sticker: note.sticker, x: note.x, y: note.y, rotation: note.rotation, createdAt: note.createdAt } }, 201);
   } catch {
     // storage unavailable: fail safe — nothing is published
     return json({ ok: false, error: "The wall can't take notes right now. Please try again later." }, 503);

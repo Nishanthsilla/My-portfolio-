@@ -174,3 +174,7 @@
   .placeBar .btnGhost, .placeBar .btnPrimary { height: 40px; padding: 0 14px; font-size: 14px; white-space: nowrap; }
   .trayItem { width: 54px; height: 54px; }
 }
+/* the visitor's own notes (pending / saved on this device): a dashed edge says "only you see this" */
+.mine .notePaper { outline: 1.5px dashed rgba(194, 48, 31, 0.55); outline-offset: 4px; }
+.teaserBoard { width: 100%; padding: 0; font: inherit; text-align: left; cursor: pointer; }
+.teaserBoard:hover { border-color: #d6cdbf; }
