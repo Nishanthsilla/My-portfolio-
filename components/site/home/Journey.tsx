@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { onIntroDone } from "@/lib/introState";
+import GlyphEmbers from "./GlyphEmbers";
 import { JourneyContext, type BranchId } from "./journeyContext";
 import { useHashLayer } from "./useHashLayer";
 import h from "./home.module.css";
@@ -286,7 +287,8 @@ export default function Journey({
               {wall}
             </div>
             <div className={h.sceneContact} data-scene="contact" data-snap>
-              {contact}
+              <GlyphEmbers className={h.embers} />
+              <div className={h.contactBody}>{contact}</div>
             </div>
           </div>
           {mode !== "stack" && (
