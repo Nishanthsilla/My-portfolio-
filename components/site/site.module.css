@@ -313,3 +313,42 @@
 .cardCta span { color: var(--accent); transition: transform var(--t-hover) var(--ease); }
 .cardCta:hover { border-color: var(--accent); }
 .cardCta:hover span { transform: translateX(3px); }
+
+/* =====================================================================
+   Floating navbar: a compact dark-glass capsule centred over the page.
+   (The header keeps its 68px slot so the page layout doesn't move.)
+   ===================================================================== */
+.header { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 0; pointer-events: none; }
+.headerScrolled { border-bottom-color: transparent; }
+.headerRow {
+  position: relative; pointer-events: auto; width: max-content !important; max-width: calc(100% - 24px) !important; height: 48px; margin: 10px auto 0 !important;
+  padding: 0 6px 0 18px !important; gap: 22px !important; border-radius: 999px;
+  background: rgba(24, 23, 21, 0.8); backdrop-filter: saturate(150%) blur(16px); -webkit-backdrop-filter: saturate(150%) blur(16px);
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+.logo { color: #fff; font-size: 14px !important; }
+.logo i { width: 8px !important; height: 8px !important; }
+.nav { gap: 18px; margin-left: 0; }
+.navWorkFirst { border-left-color: rgba(255, 255, 255, 0.16); padding-left: 18px !important; margin-left: 0; }
+.navLink { font-size: 13.5px; color: rgba(255, 255, 255, 0.62); padding: 4px 0; }
+.navLink:hover, .navLink[aria-current="page"] { color: #fff; }
+.navLink[aria-current="page"]::after { bottom: -6px; width: 4px; height: 4px; margin-left: -2px; }
+.headerRow .btnPrimary {
+  height: 36px; padding: 0 16px; font-size: 13.5px; background: rgba(255, 255, 255, 0.14); color: #fff; border: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+.headerRow .btnPrimary:hover { background: rgba(255, 255, 255, 0.22); }
+@media (max-width: 1120px) {
+  .headerRow { width: calc(100% - 24px) !important; padding: 0 5px 0 16px !important; }
+  .menuBtn { width: 38px; height: 38px; border: 0; background: rgba(255, 255, 255, 0.12); }
+  .menuBtn span, .menuBtn span::before, .menuBtn span::after { background: #fff; }
+  .menuBtn[aria-expanded="true"] span { background: transparent; }
+  .navOpen {
+    top: 56px; left: 0; right: 0; padding: 8px 18px 16px; border: 0; border-radius: 22px;
+    background: #1c1b19;
+    box-shadow: 0 20px 40px -18px rgba(0, 0, 0, 0.55);
+  }
+  .navWorkFirst { padding-left: 0 !important; border-left: 0; }
+  .navOpen .navLink { font-size: 17px; border-bottom-color: rgba(255, 255, 255, 0.1); }
+  .navOpen .btn { height: 44px; }
+}
