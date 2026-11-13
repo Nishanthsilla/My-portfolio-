@@ -1,6 +1,6 @@
 /**
  * The film's single clock (seconds). Every visual and audio cue is in this
- * table so pacing can be tuned in one place. ~33 s, seven chapters:
+ * table so pacing can be tuned in one place. ~38.5 s, seven chapters:
  *   Prologue + 1 (intro) · 2 complexity · 3 clarity · 4 proof ·
  *   5–6 Figma, then code (typography + selection) · 7 finished product + reveal
  */
@@ -12,30 +12,31 @@ export const T = {
   nameOut: [3.15, 3.5], dotToCard: [3.2, 3.75],
   // 1 — I make things that help others do their …
   lines: [3.45, 3.55, 3.65], lineDur: 0.55, cardIn: [3.8, 4.25],
-  verbs: [4.25, 4.82, 5.39, 5.96, 6.53, 7.1], verbStep: 0.57, thing: 7.67,
-  highlight: [7.8, 8.1], cardToDot: [7.67, 8.0], headOut: [8.55, 8.85],
+  // one word every 1.5 s (three beats at 120 BPM) so each project card can be read
+  verbs: [4.25, 5.75, 7.25, 8.75, 10.25, 11.75], verbStep: 1.5, thing: 13.25,
+  highlight: [13.38, 13.68], cardToDot: [13.25, 13.58], headOut: [14.13, 14.43],
   // 2 — Even when it's complex,  (documents and data, some from the sides)
-  scatter: [8.7, 9.6], complexIn: [9.0, 9.5], links: [10.4, 11.2], gather: [11.1, 12.0], complexOut: [11.95, 12.25],
+  scatter: [14.28, 15.18], complexIn: [14.58, 15.08], links: [15.98, 16.78], gather: [16.68, 17.58], complexOut: [17.53, 17.83],
   // 3 — I make it clear.  chaos (both sides) → the transform frame → clarity
-  spread: [12.05, 12.8], extrasIn: [12.25, 13.05], gateIn: [12.2, 12.85], clearIn: [12.35, 12.9],
-  flowStart: 13.2, flowStagger: 0.17, flowTravel: 0.72,
-  clearOut: [16.6, 16.9], wireOut: [16.6, 17.0],
+  spread: [17.63, 18.38], extrasIn: [17.83, 18.63], gateIn: [17.78, 18.43], clearIn: [17.93, 18.48],
+  flowStart: 18.78, flowStagger: 0.17, flowTravel: 0.72,
+  clearOut: [22.18, 22.48], wireOut: [22.18, 22.58],
   // 4 — proof: all three together
-  accentToRule: [16.65, 17.3], statsIn: [17.0, 17.4], roll: [17.1, 18.5], labelsIn: [18.0, 18.4], statsOut: [20.0, 20.35],
+  accentToRule: [22.23, 22.88], statsIn: [22.58, 22.98], roll: [22.68, 24.08], labelsIn: [23.58, 23.98], statsOut: [25.58, 25.93],
   // 5 + 6 — both sentences; the cursor hovers "Figma" (design state), then "code" (code state)
-  sent1In: [20.25, 20.8], sent2In: [20.4, 20.95], cursorIn5: [21.0, 21.6],
-  figmaAt: 21.55, toCode: [23.15, 23.7], codeAt: 23.65, sentOut: [26.15, 26.55],
+  sent1In: [25.83, 26.38], sent2In: [25.98, 26.53], cursorIn5: [26.58, 27.18],
+  figmaAt: 27.13, toCode: [28.73, 29.28], codeAt: 29.23, sentOut: [31.73, 32.13],
   // 7 — "…ship it in code." clears to a full-screen Gradient ASCII; its characters turn #FF4938
   //     (asciiTint), then it fades away to the finished product (crIn); the cursor approaches and clicks Approve & send once; the camera zooms
   //     through the button and the website emerges from inside its surface (zoom.ts).
-  asciiMount: 25.6, asciiIn: [26.3, 26.55], asciiTint: [27.45, 27.7],
-  crIn: [27.95, 28.35],
-  draftDone: [29.55, 30.05],
-  cursorIn: [30.1, 30.95], hover: [30.8, 31.0], click: 31.35,
-  approved: [31.43, 31.68], flowDone: [31.45, 31.95],
-  push: [31.5, 32.35], reveal: [32.15, 32.9],
-  handoff: [31.8, 32.9],
-  end: 32.95,
+  asciiMount: 31.18, asciiIn: [31.88, 32.13], asciiTint: [33.03, 33.28],
+  crIn: [33.53, 33.93],
+  draftDone: [35.13, 35.63],
+  cursorIn: [35.68, 36.53], hover: [36.38, 36.58], click: 36.93,
+  approved: [37.01, 37.26], flowDone: [37.03, 37.53],
+  push: [37.08, 37.93], reveal: [37.73, 38.48],
+  handoff: [37.38, 38.48],
+  end: 38.53,
 } as const;
 
 /** The level-clear sound's held note lands as the website settles. */
