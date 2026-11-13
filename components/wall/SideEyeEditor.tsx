@@ -19,6 +19,7 @@ export default function SideEyeEditor({
   placeholder,
   multiline = true,
   autoFocus,
+  bare = false,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -27,6 +28,8 @@ export default function SideEyeEditor({
   placeholder?: string;
   multiline?: boolean;
   autoFocus?: boolean;
+  /** prompt-bar style: no visible label or counter box (the label stays for screen readers) */
+  bare?: boolean;
 }) {
   const id = useId();
   const mirror = useRef<HTMLDivElement>(null);
@@ -72,8 +75,8 @@ export default function SideEyeEditor({
   };
 
   return (
-    <div className={`${w.editor} ${multiline ? w.editorMulti : w.editorSingle} ${flags.length ? w.editorFlagged : ""}`}>
-      <label htmlFor={id} className={w.editorLabel}>
+    <div className={`${w.editor} ${multiline ? w.editorMulti : w.editorSingle} ${flags.length ? w.editorFlagged : ""} ${bare ? w.editorBare : ""}`}>
+      <label htmlFor={id} className={bare ? w.srOnly : w.editorLabel}>
         {label}
         <span id={`${id}-count`} className={w.editorCount} aria-live="off">
           {value.length}/{max}
@@ -83,7 +86,7 @@ export default function SideEyeEditor({
         <div ref={mirror} className={w.editorMirror} aria-hidden="true">
           {parts}
         </div>
-        {multiline ? <textarea {...common} rows={4} /> : <input {...common} type="text" autoComplete="nickname" />}
+        {multiline ? <textarea {...common} rows={bare ? 2 : 4} /> : <input {...common} type="text" autoComplete="nickname" />}
       </div>
     </div>
   );

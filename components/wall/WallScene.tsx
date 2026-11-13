@@ -20,7 +20,7 @@ export default function WallScene() {
         <h2 id="wall-scene-title" className={w.sceneTitle}>Leave a little something.</h2>
         <p className={w.sceneLine}>A thought, a note, or just a little sticker. I&apos;d love to see what you leave.</p>
       </div>
-      <div className={w.sceneWall}>{!full && <WallApp embedded onExpand={() => open("the-wall")} />}</div>
+      <div className={w.sceneWall}>{!full && <WallApp embedded onExpand={() => open("the-wall")} onCompose={() => open("the-wall/note")} />}</div>
       {full && createPortal(<WallApp onClose={close} compose={hash === "the-wall/note"} />, document.body)}
     </section>
   );

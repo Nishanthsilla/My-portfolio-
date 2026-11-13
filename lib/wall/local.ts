@@ -11,13 +11,14 @@ import type { PublicNote } from "./types";
 
 const DRAFT = "nishanth.wall.draft";
 const MINE = "nishanth.wall.mine";
+const LAYOUT = "nishanth.wall.layout";
 const KEEP_MS = 30 * 24 * 3600_000;
 
 export type SavedDraft = {
-  draft: { sticker: string; x: number; y: number; rotation: number } | null;
+  draft: { sticker: string; font?: string; x: number; y: number; rotation: number } | null;
   message: string;
   name: string;
-  step: "place" | "compose";
+  step: "place" | "compose"; // "place" from older saves is read as "compose"
 };
 export type MyNote = PublicNote & { local?: boolean };
 
@@ -52,3 +53,8 @@ export function pruneMine(publicIds: Set<string>) {
   write(MINE, kept.length ? kept : null);
   return kept;
 }
+
+/** This visitor's own arrangement: note/sticker id → where they put it (wall-relative) and its stacking order. */
+export type Spot = { x: number; y: number; z: number };
+export const loadLayout = () => read<Record<string, Spot>>(LAYOUT) ?? {};
+export const saveLayout = (l: Record<string, Spot> | null) => write(LAYOUT, l && Object.keys(l).length ? l : null);

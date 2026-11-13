@@ -128,3 +128,9 @@ image file:
 
 The toolbar, the wall, the composer and the server's allowed list all pick it
 up automatically.
+
+## Notes, stickers and fonts
+
+- Every note is a "HELLO" name-tag sticker. Visitors pick an emoji or an animated sticker (Noto Animated Emoji by Google, CC BY 4.0, stored in `public/images/wall/gifs`) and a handwriting (`lib/wall/fonts.ts`, Google Fonts).
+- The database stores the font in a `font` column, which is added automatically to existing tables.
+- Anyone can drag any sticker around. That layout is saved only in the visitor's own browser and never sent. A new note is posted where its writer drops it.
