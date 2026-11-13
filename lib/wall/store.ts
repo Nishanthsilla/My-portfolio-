@@ -67,6 +67,8 @@ function openSqlite(): Db {
       created_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS wall_notes_status ON wall_notes (status, created_at);
+    CREATE TABLE IF NOT EXISTS ask_usage (ip_hash TEXT NOT NULL, created_at TEXT NOT NULL);
+    CREATE INDEX IF NOT EXISTS ask_usage_ip ON ask_usage (ip_hash, created_at);
   `);
   // added later: the note's handwriting (older notes get the default)
   try {
@@ -118,6 +120,8 @@ function openPostgres(): Db {
     ALTER TABLE wall_notes ADD COLUMN IF NOT EXISTS font text NOT NULL DEFAULT 'scribble';
     ALTER TABLE wall_notes ADD COLUMN IF NOT EXISTS shape text NOT NULL DEFAULT 'square';
     ALTER TABLE wall_notes ADD COLUMN IF NOT EXISTS color text NOT NULL DEFAULT 'yellow';
+    CREATE TABLE IF NOT EXISTS ask_usage (ip_hash text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+    CREATE INDEX IF NOT EXISTS ask_usage_ip ON ask_usage (ip_hash, created_at);
   `);
   const pg = (sql: string) => {
     let i = 0;
@@ -194,4 +198,16 @@ export async function report(id: string): Promise<void> {
     `UPDATE wall_notes SET reports = reports + 1, status = CASE WHEN reports + 1 >= 3 AND status = 'approved' THEN 'pending' ELSE status END WHERE id = ?`,
     [id],
   );
+}
+
+/* ---------------- Ask Nishanth: questions per visitor (hashed IP), shared by every server instance ---------------- */
+
+export async function countAsks(ipHash: string, sinceMs: number): Promise<number> {
+  const since = new Date(Date.now() - sinceMs).toISOString();
+  const rows = await db().all(`SELECT ip_hash AS id FROM ask_usage WHERE ip_hash = ? AND created_at >= ? LIMIT 50`, [ipHash, since]);
+  return rows.length;
+}
+
+export async function recordAsk(ipHash: string): Promise<void> {
+  await db().run(`INSERT INTO ask_usage (ip_hash, created_at) VALUES (?, ?)`, [ipHash, new Date().toISOString()]);
 }
