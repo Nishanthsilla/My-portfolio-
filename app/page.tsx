@@ -2,9 +2,13 @@ import Link from "next/link";
 import SiteShell from "@/components/site/SiteShell";
 import SocialLinks from "@/components/site/SocialLinks";
 import WorkTabs from "@/components/site/WorkTabs";
+import PhotoFolder from "@/components/site/PhotoFolder";
+import EasterSticker from "@/components/site/EasterSticker";
+import b from "@/components/site/beyond.module.css";
 import AnimatedContent from "@/components/site/reactbits/AnimatedContent";
 import s from "@/components/site/site.module.css";
 import { intro, socials, workIntro } from "@/lib/site/content";
+import { photography } from "@/lib/site/about";
 
 /** Homepage: a short introduction, then the work. (The intro film plays above this on load.) */
 export default function HomePage() {
@@ -65,6 +69,28 @@ export default function HomePage() {
           </AnimatedContent>
         </div>
       </section>
+
+      <section className={s.container} style={{ paddingTop: 96 }} aria-labelledby="photo-title">
+        <div className={b.photoBlock}>
+          <div>
+            <PhotoFolder compact />
+          </div>
+          <AnimatedContent distance={16} duration={0.6}>
+            <span className={s.eyebrow}>{photography.label}</span>
+            <h2 id="photo-title" className={b.h2}>{photography.subtitle}</h2>
+            <p className={b.lead} style={{ marginTop: 20 }}>{photography.note}</p>
+            <p style={{ marginTop: 20 }}>
+              <Link className={s.arrowLink} href="/beyond">
+                All {photography.photos.length} photographs <span className={s.arrow} aria-hidden="true">→</span>
+              </Link>
+            </p>
+          </AnimatedContent>
+        </div>
+      </section>
+
+      <div className={s.container}>
+        <EasterSticker />
+      </div>
     </SiteShell>
   );
 }

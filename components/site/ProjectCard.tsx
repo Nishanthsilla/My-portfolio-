@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Project } from "@/lib/site/content";
 import ProjectMedia from "./ProjectMedia";
+import { caseStudyHref, overviewHref } from "@/lib/site/routes";
 import s from "./site.module.css";
 
 /** One project in the work grid. Case studies open inside the site; older work opens its original page. */
@@ -10,7 +11,7 @@ export default function ProjectCard({ project }: { project: Project }) {
   const meta = [p.org, p.year].filter(Boolean).join(" · ") || p.external?.label;
   const inner = (
     <>
-      <div style={{ position: "relative" }}>
+      <div style={{ position: "relative" }} {...(p.external ? { className: "cursor-target", "data-cursor-label": `Open on ${p.external.label}` } : {})}>
         <ProjectMedia project={p} />
         {p.external && <span className={s.mediaTag}>{p.external.label} ↗</span>}
       </div>
@@ -32,14 +33,22 @@ export default function ProjectCard({ project }: { project: Project }) {
       </div>
     </>
   );
-  return p.external ? (
-    <a className={s.card} href={p.external.href} target="_blank" rel="noopener noreferrer" aria-label={`${p.title} — opens on ${p.external.label}`}>
+  if (p.external)
+    return (
+      <a className={s.card} href={p.external.href} target="_blank" rel="noopener noreferrer" aria-label={`${p.title} — opens on ${p.external.label}`}>
+        {inner}
+      </a>
+    );
+  // in-site projects: the whole card opens the overview (a stretched link);
+  // "Read full case study" sits above it and goes straight to the full story
+  return (
+    <div className={`${s.card} ${s.cardStretch} cursor-target`} data-cursor-label="View project">
       {inner}
-    </a>
-  ) : (
-    <Link className={s.card} href={`/work/${p.slug}`}>
-      {inner}
-    </Link>
+      <Link className={s.stretch} href={overviewHref(p)} aria-label={`${p.title} — project overview`} />
+      <Link className={s.cardCta} href={caseStudyHref(p)}>
+        Read full case study <span aria-hidden="true">→</span>
+      </Link>
+    </div>
   );
 }
 
@@ -51,7 +60,7 @@ function FeaturedCard({ project: p }: { project: Project }) {
   const f = p.featured!;
   return (
     <div className={`${s.card} ${s.featured}`}>
-      <Link href={f.overview} className={s.featuredMedia} aria-label={`${p.title} — project overview`}>
+      <Link href={f.overview} className={`${s.featuredMedia} cursor-target`} data-cursor-label="View project" aria-label={`${p.title} — project overview`}>
         <ProjectMedia project={p} className={s.featuredFrame} />
       </Link>
       <div className={s.featuredBody}>

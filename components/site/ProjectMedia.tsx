@@ -49,7 +49,12 @@ export default function ProjectMedia({ project, className = "", fill, eager = fa
   return (
     <div className={`${s.media} ${className}`} style={p.kind === "image" && p.bg ? { background: p.bg } : undefined}>
       <div className={s.mediaInner}>
-        {p.kind === "scene" ? (
+        {p.kind === "placeholder" ? (
+          <div className={s.coverSlot} role="img" aria-label={`Placeholder: ${p.need}`}>
+            <span className={s.badge}>Placeholder</span>
+            <b>ADD IMAGE HERE — {p.need}</b>
+          </div>
+        ) : p.kind === "scene" ? (
           <CoverScene />
         ) : p.kind === "visual" ? (
           <FitVisual id={p.id} fill={fill} />

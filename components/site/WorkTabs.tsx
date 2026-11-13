@@ -4,6 +4,7 @@ import { useRef, useState, useSyncExternalStore, type KeyboardEvent } from "reac
 import { categories, projectsIn, type CategoryId } from "@/lib/site/content";
 import ProjectCard, { PlaceholderCard } from "./ProjectCard";
 import AnimatedContent from "./reactbits/AnimatedContent";
+import CursorScope from "./CursorScope";
 import s from "./site.module.css";
 
 /**
@@ -75,6 +76,7 @@ export default function WorkTabs() {
         </div>
       </div>
       <div ref={gridTop} className={s.container} style={{ scrollMarginTop: 68 + 57 + 24 }}>
+        <CursorScope>
         {(() => {
           const cards = [
             ...list.map((p) => <ProjectCard key={p.slug} project={p} />),
@@ -92,6 +94,7 @@ export default function WorkTabs() {
             </AnimatedContent>
           );
         })()}
+        </CursorScope>
       </div>
     </>
   );

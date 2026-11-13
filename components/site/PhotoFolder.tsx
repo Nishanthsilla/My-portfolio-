@@ -24,7 +24,7 @@ const subscribe = (cb: () => void) => {
  * touch screens) holds a curated six; every photograph is in the grid below.
  * Clicking any photo opens the viewer at that photo.
  */
-export default function PhotoFolder() {
+export default function PhotoFolder({ compact = false }: { compact?: boolean }) {
   const canHover = useSyncExternalStore(subscribe, () => matchMedia(hoverQuery).matches, () => true);
   // the Folder computes its colours with a canvas, so it renders in the browser only
   const isClient = useSyncExternalStore(noop, () => true, () => false);
@@ -55,14 +55,14 @@ export default function PhotoFolder() {
       </div>
       <p className={s.folderHint}>{canHover ? "Hover the folder to open it · click a photo to view it" : "Tap the folder to open it · tap a photo to view it"}</p>
 
-      <div className={s.gallery}>
+      {!compact && <div className={s.gallery}>
         {photos.map((p, i) => (
           <button key={p.src} type="button" className={s.thumb} onClick={() => setViewing(i)} aria-label={`Open photograph ${i + 1} of ${photos.length}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={p.thumb} alt="" loading="lazy" decoding="async" />
           </button>
         ))}
-      </div>
+      </div>}
       {viewing !== null && <PhotoViewer photos={photos} index={viewing} onClose={() => setViewing(null)} />}
     </>
   );

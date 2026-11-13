@@ -46,16 +46,16 @@ export default function SelfReadyOverview() {
         <AnimatedContent className={`${s.section} ${s.split}`} distance={16} duration={0.6}>
           <div>
             <span className={s.num}>Overview</span>
-            <h2 className={s.h2}>What happens after the AI has looked at the shelf.</h2>
+            <h2 className={s.h2}>Make AI-generated information easier for people to trust, validate and act on.</h2>
           </div>
           <div style={{ display: "grid", gap: 16 }}>
             <p className={s.lead}>
-              Self-Ready uses AI to identify likely product and shelf-label associations. The design challenge is what comes
-              next: people still need to understand the result, inspect the evidence, resolve uncertainty, and decide what
-              happens next.
+              Self-Ready is associated with an AI-powered retail shelf intelligence experience designed around analysing
+              shelf information and helping users review the results.
             </p>
             <p className={s.p}>
-              <NeedsConfirmation>Overview copy drafted from the brief — confirm</NeedsConfirmation>
+              The central design challenge was not simply displaying what AI had detected. It was making those results
+              understandable and actionable for the people responsible for reviewing them.
             </p>
           </div>
         </AnimatedContent>
