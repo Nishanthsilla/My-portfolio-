@@ -25,13 +25,11 @@ export const T = {
   // 5 + 6 — both sentences; the cursor hovers "Figma" (design state), then "code" (code state)
   sent1In: [20.25, 20.8], sent2In: [20.4, 20.95], cursorIn5: [21.0, 21.6],
   figmaAt: 21.55, toCode: [23.15, 23.7], codeAt: 23.65, sentOut: [26.15, 26.55],
-  // 7 — "…ship it in code." clears to a full-screen Gradient ASCII; the colour takes over from the
-  //     button's spot; the camera pulls back out of the button to reveal the product; the cursor
-  //     approaches and clicks Approve & send once; the camera zooms through the button and the
-  //     website emerges from inside its surface (zoom.ts).
-  asciiMount: 25.6, asciiIn: [26.25, 26.75],
-  takeover: [27.95, 28.3],
-  crIn: [28.3, 29.3],
+  // 7 — "…ship it in code." clears to a full-screen Gradient ASCII; its characters turn #FF4938
+  //     (asciiTint), then it fades away to the finished product (crIn); the cursor approaches and clicks Approve & send once; the camera zooms
+  //     through the button and the website emerges from inside its surface (zoom.ts).
+  asciiMount: 25.6, asciiIn: [26.3, 26.55], asciiTint: [27.45, 27.7],
+  crIn: [27.95, 28.35],
   draftDone: [29.55, 30.05],
   cursorIn: [30.1, 30.95], hover: [30.8, 31.0], click: 31.35,
   approved: [31.43, 31.68], flowDone: [31.45, 31.95],

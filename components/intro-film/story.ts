@@ -11,10 +11,10 @@
  *   5–6  "I design it in Figma, / then ship it in code." — the cursor hovers "Figma"
  *      (design state: selection, tools, rulers, guides) then "code" (code state:
  *      text cursor, symbols, a snippet being written); visitors can hover or tap too
- *   7  one continuous ending: full-screen Gradient ASCII → the #FF4938 takeover
- *      from the button's spot → the camera backs out of the button to reveal the
- *      product → the cursor clicks Approve & send once → Zoom Through: the camera
- *      dives into the button and the website emerges from its surface (zoom.ts)
+ *   7  one continuous ending: full-screen Gradient ASCII → it clears to the
+ *      finished product → the cursor clicks Approve & send once → Zoom Through:
+ *      the camera dives into the button and the website emerges from its
+ *      surface (zoom.ts)
  * Everything is a pure function of time r.
  */
 import styles from "./IntroFilm.module.css";
@@ -167,6 +167,7 @@ export class Story {
   private lastR = 0;
   private user: { k: WordKey; at: number; prev: WordKey | null } | null = null;
   private asciiOn = false;
+  private asciiTint = -1;
   private zoom: ZoomThrough;
 
   constructor(private root: HTMLElement) {
@@ -403,20 +404,20 @@ export class Story {
     this.lastR = r;
     if (this.user && (r < T.sent1In[0] || r >= T.sentOut[1])) this.user = null;
     // Gradient ASCII mounts shortly before it is shown, so its own intro plays on cue
-    const asciiOn = r >= T.asciiMount && r < T.crIn[0] + 0.1;
+    const asciiOn = r >= T.asciiMount && r < T.crIn[1] + 0.1;
     if (asciiOn !== this.asciiOn) {
       this.asciiOn = asciiOn;
       this.root.dispatchEvent(new CustomEvent("film-ascii", { detail: asciiOn }));
     }
-    const asciiA = r < T.crIn[0] ? outCubic(span(r, T.asciiIn)) : 0;
-    // the colour takes over from the button's spot, spreading past every edge
-    const tk = r >= T.takeover[0] && r < T.crIn[0] + 0.1;
-    show(e.wipe, tk);
-    if (tk) {
-      const o = this.zoom.origin();
-      const far = Math.hypot(Math.max(o.x, this.vw - o.x), Math.max(o.y, this.vh - o.y)) + 2;
-      e.wipe.style.clipPath = `circle(${(inOutCubic(span(r, T.takeover)) * far).toFixed(1)}px at ${o.x.toFixed(1)}px ${o.y.toFixed(1)}px)`;
+    // the ASCII clears to reveal the finished product, already at rest underneath
+    const asciiA = outCubic(span(r, T.asciiIn)) * (1 - inOutCubic(span(r, T.crIn)));
+    // the characters turn primary orange for a moment before the screen fades away
+    const tint = Math.round(inOutCubic(span(r, T.asciiTint)) * 12) / 12;
+    if (asciiOn && tint !== this.asciiTint) {
+      this.asciiTint = tint;
+      this.root.dispatchEvent(new CustomEvent("film-ascii-tint", { detail: tint }));
     }
+    show(e.wipe, false);
     show(e.ascii, asciiA > 0.001);
     e.ascii.style.opacity = asciiA.toFixed(3);
     const boardOn = r >= T.scatter[0] && (r < T.asciiIn[1] || r >= T.crIn[0]);
@@ -711,9 +712,8 @@ export class Story {
       e.cr.style.setProperty("--hover", hover.toFixed(3));
       e.cr.style.setProperty("--press", press.toFixed(4));
       e.cr.style.setProperty("--approved", approvedP.toFixed(3));
-      e.cr.style.setProperty("--lab", this.zoom.label(r).toFixed(3));
       // the camera is moving: keep the plane on the compositor
-      const moving = (r > T.crIn[0] && r < T.crIn[1]) || r > T.push[0];
+      const moving = r > T.push[0];
       if (e.cr.style.willChange !== (moving ? "transform" : "")) e.cr.style.willChange = moving ? "transform" : "";
     }
 

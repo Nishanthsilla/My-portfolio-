@@ -269,15 +269,14 @@ for i in range(30):                                         # the snippet being 
     place(click(0.045, 5400 + 250 * (i % 4)), 24.65 + i * 0.033, pan=0.2)
 place(swoosh(0.4, 1500, 500, 0.06, "down"), 26.15)
 
-# ---------- 7: Gradient ASCII → #FF4938 takeover → out of the button → one click → zoom through (26.25 – 32.7) ----------
+# ---------- 7: Gradient ASCII → the product → one click → zoom through (26.25 – 32.7) ----------
 for k in range(16):                                         # characters forming
     place(hat(0.022 + 0.002 * (k % 5), 0.03), 26.3 + k * 0.1, pan=-0.6 + (k % 7) * 0.2)
 place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 1.9, 0.06, 0.25, 0.5, 2600), 26.3)
-place(swoosh(0.4, 500, 3800, 0.09), 27.92)                  # the colour takes over
-place(pop(700, 0.1, 0.12), 28.28)
-place(swoosh(1.0, 4200, 380, 0.1, "down"), 28.32)            # the camera backs out of the button
-place(pad([midi(n) for n in FMAJ7], 3.0, 0.055, 0.4, 0.9, 2200), 28.95)
-groove(29.3, 31.5, kick_g=0.48, bass_g=0.23, pluck_g=0.065, bar0=2)
+place(swoosh(0.3, 900, 2600, 0.05), 27.42)                  # the characters turn orange
+place(swoosh(0.5, 2600, 700, 0.06, "down"), 27.92)          # the ASCII clears to the product
+place(pad([midi(n) for n in FMAJ7], 3.0, 0.055, 0.4, 0.9, 2200), 28.0)
+groove(28.6, 31.5, kick_g=0.48, bass_g=0.23, pluck_g=0.065, bar0=2)
 place(pop(1100, 0.1, 0.09), 29.98)                          # Draft done
 place(swoosh(0.7, 700, 1700, 0.03), 30.1)                   # the cursor sets off for the button
 place(click(0.06, 2800), 30.82, pan=0.2)                    # hover
