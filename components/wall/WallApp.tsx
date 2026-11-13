@@ -1,51 +1,60 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent as RPointerEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { findFlags } from "@/lib/wall/moderation";
-import { STICKERS, StickerArt, stickerById } from "@/lib/wall/stickers";
+import { DEFAULT_FONT, FONTS, FONTS_HREF } from "@/lib/wall/fonts";
+import { GIFS, STICKERS, StickerArt, stickerById } from "@/lib/wall/stickers";
 import { LIMITS, type PublicNote } from "@/lib/wall/types";
-import { addMine, loadDraft, loadMine, pruneMine, saveDraft, type MyNote } from "@/lib/wall/local";
+import { addMine, loadDraft, loadLayout, loadMine, pruneMine, saveDraft, saveLayout, type MyNote, type Spot } from "@/lib/wall/local";
+import ElasticSticker from "./ElasticSticker";
 import NoteCard from "./NoteCard";
 import SideEyeEditor from "./SideEyeEditor";
 import SideEyeMonkey from "./SideEyeMonkey";
 import w from "./wall.module.css";
 
 type Mode = "loading" | "sqlite" | "postgres" | "unconfigured" | "offline";
-type Step = "browse" | "place" | "compose" | "sent";
-type Draft = { sticker: string; x: number; y: number; rotation: number };
+type Step = "browse" | "compose" | "sent";
+type Draft = { sticker: string; font: string; x: number; y: number; rotation: number };
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
-const X = [0.05, 0.95], Y = [0.04, 0.96];
 
-/** Decoration only (no messages), so the wall never looks empty. */
+/** Decoration only (no messages), so the wall never looks empty — these can be moved around too. */
 const DECOR: { id: string; x: number; y: number; r: number; s: number }[] = [
-  { id: "sparkles", x: 0.08, y: 0.32, r: 0, s: 38 },
-  { id: "rainbow", x: 0.47, y: 0.07, r: -8, s: 56 },
+  { id: "sparkles", x: 0.08, y: 0.34, r: 0, s: 38 },
+  { id: "gif-rainbow", x: 0.5, y: 0.07, r: -8, s: 64 },
   { id: "star", x: 0.92, y: 0.12, r: 12, s: 46 },
   { id: "blossom", x: 0.88, y: 0.82, r: -10, s: 48 },
-  { id: "wave", x: 0.3, y: 0.9, r: 14, s: 46 },
+  { id: "gif-wave", x: 0.3, y: 0.88, r: 10, s: 58 },
   { id: "sparkles", x: 0.66, y: 0.56, r: 0, s: 28 },
-  { id: "coffee", x: 0.04, y: 0.78, r: 8, s: 46 },
+  { id: "coffee", x: 0.05, y: 0.78, r: 8, s: 46 },
 ];
 /** Nishanth's own pinned note (his words from the brief), clearly labelled. */
-const PINNED = { sticker: "heart", message: "A thought, a note, or just a little sticker. I'd love to see what you leave.", name: "Nishanth", x: 0.2, y: 0.16, rotation: -4 };
+const PINNED = { id: "pinned", sticker: "gif-heart", font: "scribble", message: "A thought, a note, or just a little sticker. I'd love to see what you leave.", name: "Nishanth", x: 0.22, y: 0.2, rotation: -4 };
 
 /**
- * The Wall. On the homepage it opens as a full-screen layer over the page
- * (onClose = back to exactly where the visitor was); at /wall it is its own page.
+ * The Wall. On the homepage it lives in its own scene (embedded) and opens full
+ * screen over the page (onClose = back to exactly where the visitor was); at
+ * /wall it is its own page.
+ *
+ * Every note is a "HELLO" name-tag sticker. Anyone can pick up any sticker and
+ * move it (an elastic drag), but that arrangement is theirs alone — kept on
+ * this device. A new note is posted where its writer drops it.
  */
 export default function WallApp({
   onClose,
   compose = false,
   embedded = false,
   onExpand,
+  onCompose,
 }: {
   onClose?: () => void;
   compose?: boolean;
   /** inside the homepage journey (scene 4): fits its scene, doesn't lock the page */
   embedded?: boolean;
   onExpand?: () => void;
+  /** embedded: "Add a note" opens the full-screen wall with the composer */
+  onCompose?: () => void;
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("loading");
@@ -56,21 +65,29 @@ export default function WallApp({
   const [draft, setDraft] = useState<Draft | null>(null);
   const [message, setMessage] = useState("");
   const [name, setName] = useState("");
+  const [tab, setTab] = useState<"gifs" | "emoji">("gifs");
+  const [panel, setPanel] = useState<"sticker" | "font" | null>(null);
   const [startedAt, setStartedAt] = useState(0);
   const [honey, setHoney] = useState("");
   const [token, setToken] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  // arriving via "Leave a note": a small hint over the sticker toolbar until a sticker is picked
   const fromCompose = useSyncExternalStore(() => () => {}, () => compose || !!new URLSearchParams(location.search).get("compose"), () => compose);
   const [mine, setMine] = useState<MyNote[]>([]);
+  const [layout, setLayout] = useState<Record<string, Spot>>({});
   const [restored, setRestored] = useState(false);
-  const [coachOff, setCoachOff] = useState(false);
-  const coach = fromCompose && !coachOff;
   const scroller = useRef<HTMLDivElement>(null);
   const board = useRef<HTMLDivElement>(null);
-  const draftEl = useRef<HTMLDivElement>(null);
-  const ghost = useRef<HTMLDivElement>(null);
+
+  // the handwriting fonts (Google Fonts), loaded only where the wall is
+  useEffect(() => {
+    if (document.querySelector("link[data-wall-fonts]")) return;
+    const l = document.createElement("link");
+    l.rel = "stylesheet";
+    l.href = FONTS_HREF;
+    l.dataset.wallFonts = "";
+    document.head.appendChild(l);
+  }, []);
 
   // load the approved notes; if there is no server (offline copy), say so
   useEffect(() => {
@@ -95,21 +112,23 @@ export default function WallApp({
     const saved = loadDraft();
     /* eslint-disable react-hooks/set-state-in-effect -- one-time sync from browser storage */
     setMine(loadMine());
-    if (saved?.draft) {
-      setDraft(saved.draft);
+    setLayout(loadLayout());
+    if (saved?.draft && !embedded) {
+      setDraft({ ...saved.draft, font: saved.draft.font ?? DEFAULT_FONT });
       setMessage(saved.message);
       setName(saved.name);
-      setStep(saved.step);
-      setCoachOff(true);
+      setStep("compose");
     }
     setRestored(true);
     /* eslint-enable react-hooks/set-state-in-effect */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
     if (!restored) return;
-    if (draft && (step === "place" || step === "compose")) saveDraft({ draft, message, name, step });
+    if (embedded) return; // only the full-screen wall writes the draft
+    if (draft && step === "compose") saveDraft({ draft, message, name, step });
     else saveDraft(null);
-  }, [restored, draft, message, name, step]);
+  }, [restored, embedded, draft, message, name, step]);
 
   // no page scrolling behind the full-screen wall
   useEffect(() => {
@@ -128,113 +147,50 @@ export default function WallApp({
     else router.push("/");
   };
 
-  /* ---------- placing ---------- */
-  const visibleCenter = () => {
+  /* ---------- the visitor's own arrangement (this device only) ---------- */
+  const spot = (id: string, x: number, y: number) => layout[id] ?? { x, y, z: 1 };
+  const moveTo = (id: string) => (x: number, y: number) =>
+    setLayout((l) => {
+      const top = Object.values(l).reduce((m, v) => Math.max(m, v.z), 1);
+      const next = { ...l, [id]: { x, y, z: top + 1 } };
+      saveLayout(next);
+      return next;
+    });
+  const resetLayout = () => {
+    setLayout({});
+    saveLayout(null);
+  };
+
+  /* ---------- writing a note ---------- */
+  const visibleSpot = () => {
     const sc = scroller.current, b = board.current;
-    if (!sc || !b) return { x: 0.5, y: 0.5 };
-    return { x: 0.5, y: clamp((sc.scrollTop + sc.clientHeight * 0.45) / b.offsetHeight, Y[0], Y[1]) };
+    if (!sc || !b) return { x: 0.5, y: 0.4 };
+    // a little above the middle of what's in view (the composer sits at the bottom)
+    return { x: 0.5, y: clamp((sc.scrollTop + sc.clientHeight * 0.32) / b.offsetHeight, 0.12, 0.9) };
   };
-  const toBoard = (cx: number, cy: number) => {
-    const r = board.current!.getBoundingClientRect();
-    return { x: clamp((cx - r.left) / r.width, X[0], X[1]), y: clamp((cy - r.top) / r.height, Y[0], Y[1]) };
-  };
-  const pick = (id: string, at?: { x: number; y: number }) => {
-    setCoachOff(true);
+  const start = () => {
+    if (embedded && onCompose) return onCompose();
     setError("");
-    setDraft((d) => ({ sticker: id, rotation: d?.rotation ?? Math.round((Math.random() - 0.5) * 12), ...(d && !at ? { x: d.x, y: d.y } : at ?? visibleCenter()) }));
-    if (step === "browse" || step === "sent") setStep("place");
-    requestAnimationFrame(() => draftEl.current?.focus({ preventScroll: true }));
-  };
-
-  // drag a sticker out of the toolbar onto the wall (mouse / pen); a tap or click places it in view
-  const dragFromBar = (e: RPointerEvent<HTMLButtonElement>, id: string) => {
-    if (e.pointerType === "touch" || e.button !== 0) return;
-    const sx = e.clientX, sy = e.clientY;
-    let dragging = false;
-    const move = (ev: PointerEvent) => {
-      if (!dragging && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 8) {
-        dragging = true;
-        ghost.current?.setAttribute("data-on", id);
-        ghost.current?.querySelectorAll<HTMLElement>("[data-ghost]").forEach((g) => (g.style.display = g.dataset.ghost === id ? "block" : "none"));
-      }
-      if (dragging && ghost.current) ghost.current.style.transform = `translate(${ev.clientX - 34}px, ${ev.clientY - 34}px)`;
-    };
-    const up = (ev: PointerEvent) => {
-      removeEventListener("pointermove", move);
-      removeEventListener("pointerup", up);
-      ghost.current?.removeAttribute("data-on");
-      if (!dragging) return;
-      const r = scroller.current!.getBoundingClientRect();
-      if (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) pick(id, toBoard(ev.clientX, ev.clientY));
-    };
-    addEventListener("pointermove", move);
-    addEventListener("pointerup", up);
-  };
-
-  // move / rotate the placed sticker
-  const dragDraft = (e: RPointerEvent<HTMLDivElement>) => {
-    if (!draft || step !== "place" || (e.target as HTMLElement).closest("[data-rotate]")) return;
-    e.preventDefault();
-    const el = e.currentTarget;
-    el.setPointerCapture(e.pointerId);
-    const r = board.current!.getBoundingClientRect();
-    const ox = e.clientX - (r.left + draft.x * r.width), oy = e.clientY - (r.top + draft.y * r.height);
-    const move = (ev: PointerEvent) => {
-      const p = toBoard(ev.clientX - ox, ev.clientY - oy);
-      setDraft((d) => (d ? { ...d, ...p } : d));
-    };
-    const up = () => {
-      el.removeEventListener("pointermove", move);
-      el.removeEventListener("pointerup", up);
-      el.removeEventListener("pointercancel", up);
-    };
-    el.addEventListener("pointermove", move);
-    el.addEventListener("pointerup", up);
-    el.addEventListener("pointercancel", up);
-  };
-  const rotateDraft = (e: RPointerEvent<HTMLButtonElement>) => {
-    if (!draft) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const el = e.currentTarget;
-    el.setPointerCapture(e.pointerId);
-    const c = draftEl.current!.getBoundingClientRect();
-    const cx = c.left + c.width / 2, cy = c.top + c.height / 2;
-    const a0 = Math.atan2(e.clientY - cy, e.clientX - cx), r0 = draft.rotation;
-    const move = (ev: PointerEvent) => {
-      const a = Math.atan2(ev.clientY - cy, ev.clientX - cx);
-      setDraft((d) => (d ? { ...d, rotation: Math.round(clamp(r0 + ((a - a0) * 180) / Math.PI, -30, 30)) } : d));
-    };
-    const up = () => {
-      el.removeEventListener("pointermove", move);
-      el.removeEventListener("pointerup", up);
-    };
-    el.addEventListener("pointermove", move);
-    el.addEventListener("pointerup", up);
-  };
-  const nudge = (dx: number, dy: number, dr = 0) =>
-    setDraft((d) => (d ? { ...d, x: clamp(d.x + dx, X[0], X[1]), y: clamp(d.y + dy, Y[0], Y[1]), rotation: clamp(d.rotation + dr, -30, 30) } : d));
-  const keyDraft = (e: KeyboardEvent) => {
-    const k = e.shiftKey ? 0.05 : 0.01;
-    const map: Record<string, () => void> = {
-      ArrowLeft: () => nudge(-k, 0), ArrowRight: () => nudge(k, 0), ArrowUp: () => nudge(0, -k), ArrowDown: () => nudge(0, k),
-      "[": () => nudge(0, 0, -3), "]": () => nudge(0, 0, 3), Enter: () => openComposer(), Escape: () => cancel(),
-    };
-    if (map[e.key] && step === "place") {
-      e.preventDefault();
-      map[e.key]();
-    }
-  };
-
-  /* ---------- composing ---------- */
-  const openComposer = () => {
-    if (!draft) return;
+    setDraft((d) => d ?? { sticker: "gif-wave", font: DEFAULT_FONT, rotation: Math.round((Math.random() - 0.5) * 10), ...visibleSpot() });
     setStartedAt((t) => t || Date.now());
-    setError("");
     setStep("compose");
   };
+  const setSticker = (id: string) => setDraft((d) => (d ? { ...d, sticker: id } : d));
+  const setFont = (id: string) => setDraft((d) => (d ? { ...d, font: id } : d));
+
+  // arriving via "Leave a note" (or from the homepage scene): open the composer straight away
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!restored || autoStarted.current || !fromCompose || embedded) return;
+    autoStarted.current = true;
+    start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restored, fromCompose, embedded]);
+
+  /* ---------- composing ---------- */
   const cancel = useCallback(() => {
     setDraft(null);
+    setPanel(null);
     setStep("browse");
     setError("");
   }, []);
@@ -267,6 +223,7 @@ export default function WallApp({
       addMine({ id: `local-${Date.now()}`, message, name, ...draft, createdAt: new Date().toISOString(), local: true });
       setMine(loadMine());
       setStep("sent");
+        setPanel(null);
       setDraft(null);
       setMessage("");
       setName("");
@@ -288,6 +245,7 @@ export default function WallApp({
           setMine(loadMine());
         }
         setStep("sent");
+        setPanel(null);
         setDraft(null);
         setMessage("");
         setName("");
@@ -307,6 +265,8 @@ export default function WallApp({
 
   const shown = notes.filter((n) => !hidden.includes(n.id));
   const st = draft ? stickerById(draft.sticker) : null;
+  const moved = Object.keys(layout).length > 0;
+  const tray = tab === "gifs" ? GIFS : STICKERS;
 
   return (
     <div className={`${w.wall} ${embedded ? w.wallEmbedded : ""}`}>
@@ -318,8 +278,13 @@ export default function WallApp({
           </p>
         </div>
         <div className={w.barActions}>
-          {step === "browse" && (
-            <button type="button" className={w.btnPrimary} onClick={() => pick(STICKERS[0].id)}>
+          {moved && step !== "compose" && (
+            <button type="button" className={w.btnLink} onClick={resetLayout} title="Put every sticker back where its writer left it">
+              Reset layout
+            </button>
+          )}
+          {step !== "compose" && (
+            <button type="button" className={w.btnPrimary} onClick={start}>
               Add a note
             </button>
           )}
@@ -339,71 +304,75 @@ export default function WallApp({
 
       <div ref={scroller} className={w.scroller}>
         <div ref={board} className={w.board} aria-label="The wall">
-          {DECOR.map((d, i) => (
-            <span key={i} className={w.decor} aria-hidden="true" style={{ left: `${d.x * 100}%`, top: `${d.y * 100}%`, transform: `translate(-50%,-50%) rotate(${d.r}deg)` }}>
-              <StickerArt id={d.id} size={d.s} />
-            </span>
-          ))}
+          {DECOR.map((d, i) => {
+            const id = `decor-${i}`, p = spot(id, d.x, d.y);
+            return (
+              <ElasticSticker key={id} board={board} x={p.x} y={p.y} z={p.z} rotation={d.r} onMove={moveTo(id)} label={stickerById(d.id)?.label ?? "Sticker"} className={`${w.placed} ${w.decor}`}>
+                <StickerArt id={d.id} size={d.s} />
+              </ElasticSticker>
+            );
+          })}
 
-          <div className={w.placed} style={{ left: `${PINNED.x * 100}%`, top: `${PINNED.y * 100}%`, transform: `translate(-50%,-50%) rotate(${PINNED.rotation}deg)` }}>
-            <NoteCard sticker={PINNED.sticker} message={PINNED.message} name={PINNED.name} tag="Pinned · from Nishanth" />
-          </div>
+          {(() => {
+            const p = spot(PINNED.id, PINNED.x, PINNED.y);
+            return (
+              <ElasticSticker board={board} x={p.x} y={p.y} z={p.z} rotation={PINNED.rotation} onMove={moveTo(PINNED.id)} label="Pinned note from Nishanth" className={w.placed}>
+                <NoteCard sticker={PINNED.sticker} font={PINNED.font} message={PINNED.message} name={PINNED.name} tag="Pinned · from Nishanth" />
+              </ElasticSticker>
+            );
+          })()}
 
-          {shown.map((n) => (
-            <div key={n.id} className={w.placed} style={{ left: `${n.x * 100}%`, top: `${n.y * 100}%`, transform: `translate(-50%,-50%) rotate(${n.rotation}deg)` }}>
-              <NoteCard sticker={n.sticker} message={n.message} name={n.name} />
-              <button type="button" className={w.report} onClick={() => report(n.id)} aria-label={`Report the note from ${n.name}`}>
-                Report
-              </button>
-            </div>
-          ))}
+          {shown.map((n) => {
+            const p = spot(n.id, n.x, n.y);
+            return (
+              <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Note from ${n.name}: ${n.message}`} className={w.placed}>
+                <NoteCard sticker={n.sticker} font={n.font} message={n.message} name={n.name} />
+                <button type="button" data-nodrag className={w.report} onClick={() => report(n.id)} aria-label={`Report the note from ${n.name}`}>
+                  Report
+                </button>
+              </ElasticSticker>
+            );
+          })}
 
-          {mine.map((n) => (
-            <div key={n.id} className={`${w.placed} ${w.mine}`} style={{ left: `${n.x * 100}%`, top: `${n.y * 100}%`, transform: `translate(-50%,-50%) rotate(${n.rotation}deg)` }}>
-              <NoteCard sticker={n.sticker} message={n.message} name={n.name} tag={n.local ? "Saved on this device · not sent" : "Waiting for approval · only you see this"} />
-            </div>
-          ))}
+          {mine.map((n) => {
+            const p = spot(n.id, n.x, n.y);
+            return (
+              <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Your note: ${n.message}`} className={`${w.placed} ${w.mine}`}>
+                <NoteCard sticker={n.sticker} font={n.font} message={n.message} name={n.name} tag={n.local ? "Saved on this device · not sent" : "Waiting for approval · only you see this"} />
+              </ElasticSticker>
+            );
+          })}
 
           {mode !== "loading" && shown.length === 0 && mine.length === 0 && step === "browse" && (
             <p className={w.empty}>Nothing here yet from visitors — be the first to leave something.</p>
           )}
 
-          {draft && step !== "sent" && (
-            <div
-              ref={draftEl}
-              className={`${w.placed} ${w.draft} ${step === "place" ? w.draftActive : ""}`}
-              style={{ left: `${draft.x * 100}%`, top: `${draft.y * 100}%`, transform: `translate(-50%,-50%) rotate(${draft.rotation}deg)` }}
-              tabIndex={step === "place" ? 0 : -1}
-              role="group"
-              aria-label={`Your ${st?.label ?? "sticker"}. Arrow keys move it, [ and ] rotate it, Enter to write your note.`}
-              onPointerDown={dragDraft}
-              onKeyDown={keyDraft}
+          {draft && step === "compose" && (
+            <ElasticSticker
+              board={board}
+              x={draft.x}
+              y={draft.y}
+              z={2000}
+              rotation={draft.rotation}
+              onMove={(x, y) => setDraft((d) => (d ? { ...d, x, y } : d))}
+              label={`Your note${st ? ` with ${st.label}` : ""} — it will be posted where you leave it`}
+              className={`${w.placed} ${w.draft}`}
             >
-              <NoteCard sticker={draft.sticker} message={safeMessage} name={safeName} ghost={!message} />
-              {step === "place" && (
-                <button type="button" data-rotate className={w.rotate} onPointerDown={rotateDraft} aria-label="Rotate (drag)" tabIndex={-1}>
-                  ↻
-                </button>
-              )}
-            </div>
+              <NoteCard sticker={draft.sticker} font={draft.font} message={safeMessage} name={safeName} ghost={!message} />
+              <span className={w.draftHint} aria-hidden="true">Drag me anywhere</span>
+            </ElasticSticker>
           )}
         </div>
       </div>
 
-      {/* placing: what to do next */}
-      {step === "place" && draft && (
-        <div className={w.placeBar} role="toolbar" aria-label="Place your sticker">
-          <span className={w.placeHint}>Drag to place it · ↻ to rotate</span>
-          <button type="button" className={w.iconBtn} onClick={() => nudge(0, 0, -6)} aria-label="Rotate left">⟲</button>
-          <button type="button" className={w.iconBtn} onClick={() => nudge(0, 0, 6)} aria-label="Rotate right">⟳</button>
-          <button type="button" className={w.btnGhost} onClick={cancel}>Cancel</button>
-          <button type="button" className={w.btnPrimary} onClick={openComposer}>Write your note →</button>
-        </div>
+      {/* browsing: a quiet hint that everything moves */}
+      {step === "browse" && !embedded && (
+        <p className={w.moveHint}>Pick up any sticker and move it around — only you see your layout.</p>
       )}
 
       {step === "sent" && (
         <div className={w.sent} role="status">
-          <StickerArt id="party" size={64} />
+          <StickerArt id="gif-party" size={72} />
           <h2>Your sticker is on its way.</h2>
           <p>
             {mode === "offline"
@@ -414,67 +383,69 @@ export default function WallApp({
         </div>
       )}
 
-      {/* the sticker toolbar */}
-      <div className={`${w.toolbar} ${coach ? w.toolbarCoach : ""}`}>
-        {coach && <p className={w.coach}>Pick a sticker, then drag it where you like.</p>}
-        <div className={w.tray} role="listbox" aria-label="Stickers" aria-orientation="horizontal">
-          {STICKERS.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              role="option"
-              aria-selected={draft?.sticker === s.id}
-              className={w.trayItem}
-              title={s.label}
-              aria-label={s.label}
-              onPointerDown={(e) => dragFromBar(e, s.id)}
-              onClick={() => pick(s.id)}
-              disabled={step === "compose"}
-            >
-              <StickerArt id={s.id} size={40} />
-            </button>
-          ))}
-        </div>
-      </div>
-      <div ref={ghost} className={w.dragGhost} aria-hidden="true">
-        {STICKERS.map((s) => (
-          <span key={s.id} data-ghost={s.id}>
-            <StickerArt id={s.id} size={68} />
-          </span>
-        ))}
-      </div>
-
-      {/* the composer */}
+      {/* the composer: a minimal prompt bar — words on top, a slim row of tools below */}
       {step === "compose" && draft && (
-        <div className={w.scrim} onPointerDown={(e) => e.target === e.currentTarget && setStep("place")}>
-          <div className={w.composer} role="dialog" aria-modal="true" aria-labelledby="compose-title" onKeyDown={(e) => e.key === "Escape" && setStep("place")}>
-            <h2 id="compose-title" className={w.composeTitle}>What would you like to say?</h2>
-            <div className={w.composeGrid}>
-              <div className={w.composeFields}>
-                <SideEyeEditor value={message} onChange={setMessage} max={LIMITS.message} label="Message" placeholder="Say hi, share a thought…" autoFocus />
-                <SideEyeEditor value={name} onChange={setName} max={LIMITS.name} label="Your name" placeholder="Name or nickname" multiline={false} />
-                {/* spam trap: hidden from people, filled in by bots */}
-                <input className={w.honey} tabIndex={-1} autoComplete="off" aria-hidden="true" value={honey} onChange={(e) => setHoney(e.target.value)} name="website" />
-                {flagged && <SideEyeMonkey />}
-                {captcha && siteKey && <div className="cf-turnstile" data-sitekey={siteKey} data-callback="__wallCaptcha" data-theme="dark" />}
-                {error && <p className={w.error} role="alert">{error}</p>}
+        <div className={w.prompt} role="dialog" aria-label="Write your note">
+          {panel === "sticker" && (
+            <div className={w.pop}>
+              <div className={w.tabs} role="tablist" aria-label="Sticker type">
+                <button type="button" role="tab" aria-selected={tab === "gifs"} className={w.tab} onClick={() => setTab("gifs")}>Animated</button>
+                <button type="button" role="tab" aria-selected={tab === "emoji"} className={w.tab} onClick={() => setTab("emoji")}>Emoji</button>
               </div>
-              <div className={w.preview} aria-label="Preview">
-                <span className={w.previewLabel}>Preview</span>
-                <div style={{ transform: `rotate(${draft.rotation}deg)` }}>
-                  <NoteCard sticker={draft.sticker} message={safeMessage} name={safeName} ghost={!message} />
-                </div>
+              <div className={w.tray} role="listbox" aria-label={tab === "gifs" ? "Animated stickers" : "Emoji stickers"} aria-orientation="horizontal">
+                {tray.map((s) => (
+                  <button key={s.id} type="button" role="option" aria-selected={draft.sticker === s.id} className={w.trayItem} title={s.label} aria-label={s.label} onClick={() => setSticker(s.id)}>
+                    <StickerArt id={s.id} size={36} />
+                  </button>
+                ))}
               </div>
             </div>
-            <div className={w.composeActions}>
-              <button type="button" className={w.btnDark} onClick={() => setStep("place")}>Change sticker</button>
-              <button type="button" className={w.btnDark} onClick={() => setStep("place")}>Reposition</button>
-              <button type="button" className={w.btnDark} onClick={cancel}>Cancel</button>
-              <button type="button" className={w.btnPrimary} onClick={submit} disabled={!valid || busy}>
-                {busy ? "Sending…" : "Add your sticker"}
+          )}
+          {panel === "font" && (
+            <div className={w.pop}>
+              <div className={w.fonts} role="radiogroup" aria-label="Handwriting">
+                {FONTS.map((f) => (
+                  <button key={f.id} type="button" role="radio" aria-checked={draft.font === f.id} className={w.fontChip} onClick={() => setFont(f.id)} style={{ fontFamily: f.family, fontWeight: f.weight ?? 400, fontSize: 15 * f.scale }}>
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {(flagged || error) && (
+            <div className={w.promptNotes}>
+              {flagged && <SideEyeMonkey />}
+              {error && <p className={w.error} role="alert">{error}</p>}
+            </div>
+          )}
+          <div className={w.promptBox}>
+            <SideEyeEditor bare value={message} onChange={setMessage} max={LIMITS.message} label="Message" placeholder="Write something…" autoFocus />
+            <div className={w.promptRow}>
+              <button type="button" className={w.tool} aria-expanded={panel === "sticker"} onClick={() => setPanel((p) => (p === "sticker" ? null : "sticker"))} aria-label="Choose a sticker" title="Sticker">
+                <StickerArt id={draft.sticker} size={24} />
+              </button>
+              <button type="button" className={w.tool} aria-expanded={panel === "font"} onClick={() => setPanel((p) => (p === "font" ? null : "font"))} aria-label="Choose the handwriting" title="Font">
+                <span style={{ fontFamily: FONTS.find((f) => f.id === draft.font)?.family, fontSize: 17 }}>Aa</span>
+              </button>
+              <div className={w.promptName}>
+                <SideEyeEditor bare value={name} onChange={setName} max={LIMITS.name} label="Your name" placeholder="your name" multiline={false} />
+              </div>
+              <button type="button" className={w.toolGhost} onClick={cancel} aria-label="Cancel" title="Cancel">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+              <button type="button" className={w.send} onClick={submit} disabled={!valid || busy} aria-label={busy ? "Sending" : "Stick it on the wall"} title="Stick it on the wall">
+                {busy ? (
+                  <span className={w.spin} aria-hidden="true" />
+                ) : (
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+                )}
               </button>
             </div>
           </div>
+          {/* spam trap: hidden from people, filled in by bots */}
+          <input className={w.honey} tabIndex={-1} autoComplete="off" aria-hidden="true" value={honey} onChange={(e) => setHoney(e.target.value)} name="website" />
+          {captcha && siteKey && <div className="cf-turnstile" data-sitekey={siteKey} data-callback="__wallCaptcha" data-theme="light" />}
+          <p className={w.promptHint}>Drag your note anywhere on the wall · stickers: Noto Emoji (CC BY 4.0)</p>
         </div>
       )}
     </div>

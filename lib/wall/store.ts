@@ -25,13 +25,13 @@ const serverless = () => !!(process.env.VERCEL || process.env.NETLIFY || process
 const databaseUrl = () => process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.STORAGE_URL || "";
 export const storeMode = (): StoreMode => (databaseUrl() ? "postgres" : serverless() ? "unconfigured" : "sqlite");
 
-const COLS = "id, message, name, sticker, x, y, rotation, status, reports, created_at";
-type Row = { id: string; message: string; name: string; sticker: string; x: number; y: number; rotation: number; status: NoteStatus; reports: number | null; created_at: string | Date };
+const COLS = "id, message, name, sticker, font, x, y, rotation, status, reports, created_at";
+type Row = { id: string; message: string; name: string; sticker: string; font: string | null; x: number; y: number; rotation: number; status: NoteStatus; reports: number | null; created_at: string | Date };
 const fromRow = (r: Row): WallNote => ({
-  id: r.id, message: r.message, name: r.name, sticker: r.sticker, x: Number(r.x), y: Number(r.y), rotation: Number(r.rotation),
+  id: r.id, message: r.message, name: r.name, sticker: r.sticker, font: r.font || "scribble", x: Number(r.x), y: Number(r.y), rotation: Number(r.rotation),
   status: r.status, reports: Number(r.reports ?? 0), createdAt: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at),
 });
-const toPublic = (n: WallNote): PublicNote => ({ id: n.id, message: n.message, name: n.name, sticker: n.sticker, x: n.x, y: n.y, rotation: n.rotation, createdAt: n.createdAt });
+const toPublic = (n: WallNote): PublicNote => ({ id: n.id, message: n.message, name: n.name, sticker: n.sticker, font: n.font, x: n.x, y: n.y, rotation: n.rotation, createdAt: n.createdAt });
 
 /** The same queries for both databases; `?` placeholders are rewritten to $1, $2… for Postgres. */
 interface Db {
@@ -68,6 +68,10 @@ function openSqlite(): Db {
     );
     CREATE INDEX IF NOT EXISTS wall_notes_status ON wall_notes (status, created_at);
   `);
+  // added later: the note's handwriting (older notes get the default)
+  try {
+    db.exec(`ALTER TABLE wall_notes ADD COLUMN font TEXT NOT NULL DEFAULT 'scribble'`);
+  } catch {}
   importLegacyJson(db);
   return {
     all: async (sql, p = []) => db.prepare(sql).all(...p) as Row[],
@@ -81,8 +85,8 @@ function importLegacyJson(db: SqliteDb) {
   if (!existsSync(file)) return;
   try {
     const { notes } = JSON.parse(readFileSync(file, "utf8")) as { notes: (WallNote & { ipHash?: string })[] };
-    const ins = db.prepare(`INSERT OR IGNORE INTO wall_notes (${COLS}, ip_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-    for (const n of notes) ins.run(n.id, n.message, n.name, n.sticker, n.x, n.y, n.rotation, n.status, n.reports ?? 0, n.createdAt, n.ipHash ?? null);
+    const ins = db.prepare(`INSERT OR IGNORE INTO wall_notes (${COLS}, ip_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+    for (const n of notes) ins.run(n.id, n.message, n.name, n.sticker, n.font ?? "scribble", n.x, n.y, n.rotation, n.status, n.reports ?? 0, n.createdAt, n.ipHash ?? null);
     renameSync(file, `${file}.imported`);
   } catch {}
 }
@@ -106,6 +110,7 @@ function openPostgres(): Db {
       created_at timestamptz NOT NULL DEFAULT now()
     );
     CREATE INDEX IF NOT EXISTS wall_notes_status ON wall_notes (status, created_at);
+    ALTER TABLE wall_notes ADD COLUMN IF NOT EXISTS font text NOT NULL DEFAULT 'scribble';
   `);
   const pg = (sql: string) => {
     let i = 0;
@@ -148,8 +153,8 @@ export async function listAll(status?: NoteStatus): Promise<WallNote[]> {
 
 export async function insertPending(n: Omit<WallNote, "id" | "createdAt" | "status">, ipHash: string): Promise<WallNote> {
   const note: WallNote = { ...n, id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: "pending", reports: 0 };
-  await db().run(`INSERT INTO wall_notes (${COLS}, ip_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
-    note.id, note.message, note.name, note.sticker, note.x, note.y, note.rotation, "pending", 0, note.createdAt, ipHash,
+  await db().run(`INSERT INTO wall_notes (${COLS}, ip_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+    note.id, note.message, note.name, note.sticker, note.font, note.x, note.y, note.rotation, "pending", 0, note.createdAt, ipHash,
   ]);
   return note;
 }

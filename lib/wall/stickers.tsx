@@ -13,7 +13,40 @@
 export const ORANGE = "#FF4938";
 const PAPER = ["#FFF6E8", "#FFE58A", "#FFD3DA", "#CFE3FF", "#D6F0C9", "#E3D9FF"];
 
-export type Sticker = { id: string; label: string; group: "Faces" | "Hearts" | "Hands" | "Fun"; emoji?: string; src?: string };
+export type Sticker = { id: string; label: string; group: "Faces" | "Hearts" | "Hands" | "Fun" | "GIFs"; emoji?: string; src?: string; animated?: boolean };
+
+/**
+ * Animated stickers ("GIFs"): Noto Animated Emoji by Google (CC BY 4.0),
+ * resized and stored with the site (public/images/wall/gifs) — nothing is
+ * fetched from a third party, and only these can be posted.
+ */
+const GIF = (id: string, label: string, file: string): Sticker => ({ id: `gif-${id}`, label, group: "GIFs", src: `/images/wall/gifs/${file}.webp`, animated: true });
+export const GIFS: Sticker[] = [
+  GIF("party", "Party popper (animated)", "1f389"),
+  GIF("partying", "Partying face (animated)", "1f973"),
+  GIF("heart-eyes", "Heart eyes (animated)", "1f60d"),
+  GIF("hearts", "Smiling with hearts (animated)", "1f970"),
+  GIF("rofl", "Rolling on the floor laughing (animated)", "1f923"),
+  GIF("star-struck", "Star-struck (animated)", "1f929"),
+  GIF("mind-blown", "Mind blown (animated)", "1f92f"),
+  GIF("melting", "Melting face (animated)", "1fae0"),
+  GIF("salute", "Salute (animated)", "1fae1"),
+  GIF("cool", "Sunglasses (animated)", "1f60e"),
+  GIF("eyes", "Eyes (animated)", "1f440"),
+  GIF("wave", "Waving hand (animated)", "1f44b"),
+  GIF("clap", "Clapping (animated)", "1f44f"),
+  GIF("raised-hands", "Raised hands (animated)", "1f64c"),
+  GIF("thumbs-up", "Thumbs up (animated)", "1f44d"),
+  GIF("dancer", "Dancer (animated)", "1f483"),
+  GIF("heart", "Beating heart (animated)", "2764_fe0f"),
+  GIF("fire", "Fire (animated)", "1f525"),
+  GIF("sparkles", "Sparkles (animated)", "2728"),
+  GIF("hundred", "Hundred points (animated)", "1f4af"),
+  GIF("rocket", "Rocket (animated)", "1f680"),
+  GIF("rainbow", "Rainbow (animated)", "1f308"),
+  GIF("bulb", "Light bulb (animated)", "1f4a1"),
+  GIF("coffee", "Coffee (animated)", "2615"),
+];
 
 export const STICKERS: Sticker[] = [
   { id: "heart-eyes", label: "Heart eyes", group: "Faces", emoji: "😍" },
@@ -50,8 +83,9 @@ export const STICKERS: Sticker[] = [
   { id: "hundred", label: "Hundred points", group: "Fun", emoji: "💯" },
 ];
 
-export const stickerById = (id: string) => STICKERS.find((s) => s.id === id);
-export const STICKER_IDS = new Set(STICKERS.map((s) => s.id));
+const ALL = [...STICKERS, ...GIFS];
+export const stickerById = (id: string) => ALL.find((s) => s.id === id);
+export const STICKER_IDS = new Set(ALL.map((s) => s.id));
 
 /** A paper colour for the note that goes with a sticker (stable per sticker). */
 export function noteColor(id: string) {
@@ -71,7 +105,7 @@ export function StickerArt({ id, size = 64, title }: { id: string; size?: number
   const box = { display: "grid", placeItems: "center", width: size, height: size, filter: cut } as const;
   if (st.src)
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={st.src} alt={title ?? ""} width={size} height={size} draggable={false} style={{ ...box, objectFit: "contain" }} />;
+    return <img src={st.src} alt={title ?? ""} width={size} height={size} draggable={false} loading="lazy" decoding="async" style={{ ...box, objectFit: "contain" }} />;
   return (
     <span role={title ? "img" : undefined} aria-label={title} aria-hidden={title ? undefined : true} style={box}>
       <span style={{ fontFamily: EMOJI_FONT, fontSize: size * 0.8, lineHeight: 1, userSelect: "none" }}>{st.emoji}</span>
