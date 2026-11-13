@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useContext, useState, useSyncExternalStore } from "react";
 import Folder from "../reactbits/Folder";
 import FolderFloat from "../reactbits/FolderFloat";
 import { explorations, photography } from "@/lib/site/about";
 import { folders } from "@/lib/site/home";
 import { peekHome, rememberHome, type FolderId } from "@/lib/site/returnTo";
+import { JourneyContext } from "./journeyContext";
 import h from "./home.module.css";
 
 const noop = () => () => {};
@@ -40,8 +41,11 @@ export default function FolderShelf() {
   // the folder the visitor came back from stays open
   const back = useSyncExternalStore(noop, () => peekHome()?.folder ?? null, () => null);
   const [photoOpen, setPhotoOpen] = useState(false);
+  const journey = useContext(JourneyContext);
 
-  const enter = (id: FolderId, href: string) => {
+  // inside the homepage journey: open the folder's sheet below; elsewhere: its page
+  const enter = (id: FolderId, href: string, photo?: number) => {
+    if (journey) return journey.openBranch(id, photo);
     rememberHome(id);
     router.push(href);
   };
@@ -84,7 +88,16 @@ export default function FolderShelf() {
           <div className={h.folderText}>
             <h3 className={h.folderTitle}>{folders.beyond.title}</h3>
             <p className={h.folderDesc}>{folders.beyond.description}</p>
-            <Link className={h.folderLink} href={folders.beyond.href} onClick={() => rememberHome("beyond")}>
+            <Link
+              className={h.folderLink}
+              href={folders.beyond.href}
+              onClick={(e) => {
+                if (journey) {
+                  e.preventDefault();
+                  journey.openBranch("beyond");
+                } else rememberHome("beyond");
+              }}
+            >
               Open the journal <span aria-hidden="true">→</span>
             </Link>
           </div>
@@ -111,7 +124,7 @@ export default function FolderShelf() {
                 openOn={canHover ? "hover" : "click"}
                 defaultOpen={back === "photography"}
                 onOpenChange={setPhotoOpen}
-                onItemClick={(_, i) => enter("photography", `${folders.photography.href}?photo=${photography.folderPick[i] + 1}`)}
+                onItemClick={(_, i) => enter("photography", `${folders.photography.href}?photo=${photography.folderPick[i] + 1}`, photography.folderPick[i] + 1)}
                 variant="matte"
                 theme="light"
                 color="#FF4938"
@@ -127,7 +140,16 @@ export default function FolderShelf() {
           <div className={h.folderText}>
             <h3 className={h.folderTitle}>{folders.photography.title}</h3>
             <p className={h.folderDesc}>{folders.photography.description}</p>
-            <Link className={h.folderLink} href={folders.photography.href} onClick={() => rememberHome("photography")}>
+            <Link
+              className={h.folderLink}
+              href={folders.photography.href}
+              onClick={(e) => {
+                if (journey) {
+                  e.preventDefault();
+                  journey.openBranch("photography");
+                } else rememberHome("photography");
+              }}
+            >
               Open the gallery <span aria-hidden="true">→</span>
             </Link>
           </div>

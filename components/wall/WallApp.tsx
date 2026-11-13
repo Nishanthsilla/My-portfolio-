@@ -35,7 +35,18 @@ const PINNED = { sticker: "heart", message: "A thought, a note, or just a little
  * The Wall. On the homepage it opens as a full-screen layer over the page
  * (onClose = back to exactly where the visitor was); at /wall it is its own page.
  */
-export default function WallApp({ onClose, compose = false }: { onClose?: () => void; compose?: boolean }) {
+export default function WallApp({
+  onClose,
+  compose = false,
+  embedded = false,
+  onExpand,
+}: {
+  onClose?: () => void;
+  compose?: boolean;
+  /** inside the homepage journey (scene 4): fits its scene, doesn't lock the page */
+  embedded?: boolean;
+  onExpand?: () => void;
+}) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("loading");
   const [captcha, setCaptcha] = useState(false);
@@ -100,15 +111,16 @@ export default function WallApp({ onClose, compose = false }: { onClose?: () => 
     else saveDraft(null);
   }, [restored, draft, message, name, step]);
 
-  // no page scrolling behind the wall
+  // no page scrolling behind the full-screen wall
   useEffect(() => {
+    if (embedded) return;
     const html = document.documentElement;
     const prev = html.style.overflow;
     html.style.overflow = "hidden";
     return () => {
       html.style.overflow = prev;
     };
-  }, []);
+  }, [embedded]);
 
   const close = () => {
     if (onClose) return onClose();
@@ -297,7 +309,7 @@ export default function WallApp({ onClose, compose = false }: { onClose?: () => 
   const st = draft ? stickerById(draft.sticker) : null;
 
   return (
-    <div className={w.wall}>
+    <div className={`${w.wall} ${embedded ? w.wallEmbedded : ""}`}>
       <header className={w.bar}>
         <div>
           <h1 className={w.barTitle}>The Wall</h1>
@@ -311,9 +323,17 @@ export default function WallApp({ onClose, compose = false }: { onClose?: () => 
               Add a note
             </button>
           )}
-          <button type="button" className={w.close} onClick={close} aria-label="Close the wall">
-            ×
-          </button>
+          {embedded ? (
+            <button type="button" className={w.expand} onClick={onExpand} aria-label="Open the wall full screen">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7" />
+              </svg>
+            </button>
+          ) : (
+            <button type="button" className={w.close} onClick={close} aria-label="Close the wall">
+              ×
+            </button>
+          )}
         </div>
       </header>
 
