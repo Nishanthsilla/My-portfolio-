@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { findFlags } from "@/lib/wall/moderation";
 import { DEFAULT_FONT, FONTS, FONTS_HREF } from "@/lib/wall/fonts";
+import { COLORS, DEFAULT_COLOR, DEFAULT_SHAPE, SHAPES, paperOf } from "@/lib/wall/notes";
 import { GIFS, StickerArt, stickerById } from "@/lib/wall/stickers";
 import { LIMITS, type PublicNote } from "@/lib/wall/types";
 import { addMine, loadDraft, loadLayout, loadMine, pruneMine, saveDraft, saveLayout, type MyNote, type Spot } from "@/lib/wall/local";
@@ -15,7 +16,7 @@ import w from "./wall.module.css";
 
 type Mode = "loading" | "sqlite" | "postgres" | "unconfigured" | "offline";
 type Step = "browse" | "compose" | "sent";
-type Draft = { sticker: string; font: string; x: number; y: number; rotation: number };
+type Draft = { sticker: string; font: string; shape: string; color: string; x: number; y: number; rotation: number };
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 /** the canvas, in px — bigger than any screen, so there's always room to stick another note */
@@ -37,7 +38,7 @@ const DECOR: { id: string; x: number; y: number; r: number; s: number }[] = [
   { id: "camera", x: 0.5, y: 0.9, r: 8, s: 36 },
 ];
 /** Nishanth's own pinned note (his words from the brief), clearly labelled. */
-const PINNED = { id: "pinned", sticker: "gif-heart", font: "scribble", message: "A thought, a note, or just a little sticker. I'd love to see what you leave.", name: "Nishanth", x: 0.4, y: 0.44, rotation: -4 };
+const PINNED = { id: "pinned", sticker: "gif-heart", font: "scribble", shape: "square", color: "yellow", message: "A thought, a note, or just a little sticker. I'd love to see what you leave.", name: "Nishanth", x: 0.4, y: 0.44, rotation: -4 };
 
 /**
  * The Wall. On the homepage it lives in its own scene (embedded) and opens full
@@ -76,7 +77,7 @@ export default function WallApp({
   const [gifsOn, setGifsOn] = useState(false); // GIPHY search is available (server has a key)
   const [gifQ, setGifQ] = useState("");
   const [gifs, setGifs] = useState<{ id: string; title: string; src: string }[]>([]);
-  const [panel, setPanel] = useState<"sticker" | "font" | null>(null);
+  const [panel, setPanel] = useState<"sticker" | "font" | "note" | null>(null);
   const [startedAt, setStartedAt] = useState(0);
   const [honey, setHoney] = useState("");
   const [token, setToken] = useState("");
@@ -218,7 +219,7 @@ export default function WallApp({
     setMine(loadMine());
     setLayout(loadLayout());
     if (saved?.draft && !embedded) {
-      setDraft({ ...saved.draft, font: saved.draft.font ?? DEFAULT_FONT });
+      setDraft({ ...saved.draft, font: saved.draft.font ?? DEFAULT_FONT, shape: saved.draft.shape ?? DEFAULT_SHAPE, color: saved.draft.color ?? DEFAULT_COLOR });
       setMessage(saved.message);
       setName(saved.name);
       setStep("compose");
@@ -276,12 +277,14 @@ export default function WallApp({
   const start = () => {
     if (embedded && onCompose) return onCompose();
     setError("");
-    setDraft((d) => d ?? { sticker: "gif-wave", font: DEFAULT_FONT, rotation: Math.round((Math.random() - 0.5) * 10), ...visibleSpot() });
+    setDraft((d) => d ?? { sticker: "gif-wave", font: DEFAULT_FONT, shape: DEFAULT_SHAPE, color: DEFAULT_COLOR, rotation: Math.round((Math.random() - 0.5) * 10), ...visibleSpot() });
     setStartedAt((t) => t || Date.now());
     setStep("compose");
   };
   const setSticker = (id: string) => setDraft((d) => (d ? { ...d, sticker: id } : d));
   const setFont = (id: string) => setDraft((d) => (d ? { ...d, font: id } : d));
+  const setShape = (id: string) => setDraft((d) => (d ? { ...d, shape: id } : d));
+  const setColor = (id: string) => setDraft((d) => (d ? { ...d, color: id } : d));
 
   // arriving via "Leave a note" (or from the homepage scene): open the composer straight away
   const autoStarted = useRef(false);
@@ -419,7 +422,7 @@ export default function WallApp({
             const p = spot(PINNED.id, PINNED.x, PINNED.y);
             return (
               <ElasticSticker board={board} x={p.x} y={p.y} z={p.z} rotation={PINNED.rotation} onMove={moveTo(PINNED.id)} label="Pinned note from Nishanth" className={w.placed}>
-                <NoteCard sticker={PINNED.sticker} font={PINNED.font} message={PINNED.message} name={PINNED.name} tag="Pinned · from Nishanth" />
+                <NoteCard sticker={PINNED.sticker} font={PINNED.font} shape={PINNED.shape} color={PINNED.color} message={PINNED.message} name={PINNED.name} />
               </ElasticSticker>
             );
           })()}
@@ -428,7 +431,7 @@ export default function WallApp({
             const p = spot(n.id, n.x, n.y);
             return (
               <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Note from ${n.name}: ${n.message}`} className={w.placed}>
-                <NoteCard sticker={n.sticker} font={n.font} message={n.message} name={n.name} />
+                <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name={n.name} />
                 <button type="button" data-nodrag className={w.report} onClick={() => report(n.id)} aria-label={`Report the note from ${n.name}`}>
                   Report
                 </button>
@@ -439,8 +442,8 @@ export default function WallApp({
           {mine.map((n) => {
             const p = spot(n.id, n.x, n.y);
             return (
-              <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Your note: ${n.message}`} className={`${w.placed} ${w.mine}`}>
-                <NoteCard sticker={n.sticker} font={n.font} message={n.message} name={n.name} tag={n.local ? "Saved on this device · not sent" : "Waiting for approval · only you see this"} />
+              <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Your note: ${n.message}`} className={w.placed}>
+                <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name={n.name} />
               </ElasticSticker>
             );
           })}
@@ -460,7 +463,7 @@ export default function WallApp({
               label={`Your note${st ? ` with ${st.label}` : ""} — it will be posted where you leave it`}
               className={`${w.placed} ${w.draft}`}
             >
-              <NoteCard sticker={draft.sticker} font={draft.font} message={safeMessage} name={safeName} ghost={!message} />
+              <NoteCard sticker={draft.sticker} font={draft.font} shape={draft.shape} color={draft.color} message={safeMessage} name={safeName} ghost={!message} />
               <span className={w.draftHint} aria-hidden="true">Drag me anywhere</span>
             </ElasticSticker>
           )}
@@ -471,11 +474,11 @@ export default function WallApp({
       {step === "sent" && (
         <div className={w.sent} role="status">
           <StickerArt id="gif-party" size={72} />
-          <h2>Your sticker is on its way.</h2>
+          <h2>Stuck it on the wall!</h2>
           <p>
             {mode === "offline"
               ? "Thanks for leaving a little something! This copy of the site isn't connected, so it's saved on this device only."
-              : "Thanks for leaving a little something! It'll appear on the wall for everyone once it's approved — until then, only you can see it."}
+              : "Thanks for leaving a little something — it means a lot."}
           </p>
           <button type="button" className={w.btnPrimary} onClick={() => setStep("browse")}>Back to the wall</button>
         </div>
@@ -515,6 +518,23 @@ export default function WallApp({
               )}
             </div>
           )}
+          {panel === "note" && (
+            <div className={w.pop}>
+              <div className={w.shapes} role="radiogroup" aria-label="Note shape">
+                {SHAPES.map((sh) => (
+                  <button key={sh.id} type="button" role="radio" aria-checked={draft.shape === sh.id} className={w.shapeChip} data-shape={sh.id} onClick={() => setShape(sh.id)} style={{ ["--paper" as string]: paperOf(draft.color) }}>
+                    <i />
+                    {sh.label}
+                  </button>
+                ))}
+              </div>
+              <div className={w.swatches} role="radiogroup" aria-label="Note colour">
+                {COLORS.map((co) => (
+                  <button key={co.id} type="button" role="radio" aria-checked={draft.color === co.id} aria-label={co.label} title={co.label} className={w.swatch} onClick={() => setColor(co.id)} style={{ ["--paper" as string]: co.paper }} />
+                ))}
+              </div>
+            </div>
+          )}
           {panel === "font" && (
             <div className={w.pop}>
               <div className={w.fonts} role="radiogroup" aria-label="Handwriting">
@@ -537,6 +557,9 @@ export default function WallApp({
             <div className={w.promptRow}>
               <button type="button" className={w.tool} aria-expanded={panel === "sticker"} onClick={() => setPanel((p) => (p === "sticker" ? null : "sticker"))} aria-label="Choose a sticker" title="Sticker">
                 <StickerArt id={draft.sticker} size={24} />
+              </button>
+              <button type="button" className={w.tool} aria-expanded={panel === "note"} onClick={() => setPanel((p) => (p === "note" ? null : "note"))} aria-label="Choose the note's shape and colour" title="Note">
+                <span className={w.toolSwatch} style={{ ["--paper" as string]: paperOf(draft.color) }} />
               </button>
               <button type="button" className={w.tool} aria-expanded={panel === "font"} onClick={() => setPanel((p) => (p === "font" ? null : "font"))} aria-label="Choose the handwriting" title="Font">
                 <span style={{ fontFamily: FONTS.find((f) => f.id === draft.font)?.family, fontSize: 17 }}>Aa</span>
