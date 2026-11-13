@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import GradientASCII from "./GradientASCII";
 
 /**
- * React Bits' Gradient ASCII as a brief full-screen bridge after the camera
- * push-through. It mounts just before it is needed, so its built-in intro
+ * React Bits' Gradient ASCII as the full-screen bridge between "…ship it in
+ * code." and the product. It mounts just before it is needed, so its built-in intro
  * (characters forming) plays on cue; the story toggles it with a `film-ascii`
  * event on the film root and drives its opacity from the film clock.
  */

@@ -11,12 +11,18 @@
  *   5–6  "I design it in Figma, / then ship it in code." — the cursor hovers "Figma"
  *      (design state: selection, tools, rulers, guides) then "code" (code state:
  *      text cursor, symbols, a snippet being written); visitors can hover or tap too
- *   7  one continuous ending: Gradient ASCII → the product → hover, click → the
- *      button's orange surface grows to fill the screen (engine.ts)
+ *   7  one continuous ending: full-screen Gradient ASCII → the #FF4938 takeover
+ *      from the button's spot → the camera backs out of the button to reveal the
+ *      product → the cursor clicks Approve & send once → Zoom Through: the camera
+ *      dives into the button and the website emerges from its surface (zoom.ts)
  * Everything is a pure function of time r.
  */
 import styles from "./IntroFilm.module.css";
-import { COLORS, T, inCubic, inOutCubic, inOutQuint, inQuint, lerp, outCubic, outQuint, prog, span } from "./timeline";
+import { COLORS, T, bezier, inCubic, inOutCubic, inOutQuint, inQuint, lerp, outCubic, outQuint, prog, span } from "./timeline";
+import { ZoomThrough } from "./zoom";
+
+/** The cursor's approach: sets off briskly, then slows into the button. */
+const approach = bezier(0.33, 0, 0.12, 1);
 
 type Rect = { x: number; y: number; w: number; h: number };
 type Place = { cx: number; cy: number; s: number };
@@ -161,6 +167,7 @@ export class Story {
   private lastR = 0;
   private user: { k: WordKey; at: number; prev: WordKey | null } | null = null;
   private asciiOn = false;
+  private zoom: ZoomThrough;
 
   constructor(private root: HTMLElement) {
     const q = (s: string) => $(root, s);
@@ -174,7 +181,7 @@ export class Story {
       sel: q("[data-fsel]"),
       fxW: q("[data-fx-w]"), fxS: q("[data-fx-s]"),
       caret: q("[data-cx=caret]"), snip: q("[data-cx=snip]"), snipCaret: q("[data-snip-caret]"),
-      ascii: q("[data-ascii]"),
+      ascii: q("[data-ascii]"), wipe: q("[data-wipe]"),
       cr: q("[data-cr]"), crPill: q("[data-cr-pill]"),
       pcur: q("[data-pcur]"),
       statsWrap: q("[data-stats]"),
@@ -195,6 +202,7 @@ export class Story {
       w.addEventListener("pointerenter", pick);
       w.addEventListener("pointerdown", pick);
     });
+    this.zoom = new ZoomThrough(q("[data-zoom]"), this.el.cr);
     REGIONS.forEach((k) => {
       const t = $(this.el.cr, `[data-t="${k}"]`);
       // the intent chip reveals together with its label and details
@@ -301,6 +309,15 @@ export class Story {
     cr.style.width = `${g.crW}px`;
     cr.style.height = `${g.crH}px`;
     $$(cr, "[data-t]").forEach((t) => (this.targets[t.dataset.t!] = offsetIn(t, cr)));
+    const btnEl = $(cr, '[data-t="btn"]') as HTMLElement;
+    this.zoom.layout(
+      {
+        rest: g.cr7, crW: g.crW, crH: g.crH, bx: this.bx, by: this.by, bs: this.bs, vw, vh,
+        btn: this.targets.btn, label: this.targets.btnDone ?? null,
+        radius: parseFloat(getComputedStyle(btnEl).borderTopLeftRadius) || 11,
+      },
+      { ground: COLORS.orange, warm: COLORS.warm },
+    );
     Object.entries(this.arts).forEach(([k, a]) => {
       a.style.width = "";
       a.style.height = "";
@@ -368,32 +385,6 @@ export class Story {
     return { x: this.bx + x * this.bs, y: this.by + y * this.bs };
   }
 
-  /**
-   * The camera push-through. The whole product is one plane; the camera travels
-   * toward a point on the button's orange surface (left of its label, so we
-   * never fly into the text). Scale grows exponentially — constant forward
-   * speed — while that point drifts to the centre of the screen. The dashboard
-   * leaves the frame on its own and the orange surface overruns every edge.
-   */
-  private pushPlace(base: Place, r: number): Place {
-    const g = this.g, b = this.targets.btn;
-    if (!b || r <= T.push[0]) return base;
-    const p = prog(r, T.push[0], T.push[1]);
-    // focus point in the product's own units
-    const fx = b.x + b.w * 0.16, fy = b.y + b.h * 0.5;
-    // how far the camera must travel so the surface covers the viewport (with room for the rounded corners)
-    const need = Math.max(this.vw / (2 * b.w * 0.16), this.vh / b.h) / this.bs;
-    const sEnd = need * 1.9;
-    const travel = inOutCubic(p) * 0.85 + inCubic(p) * 0.15;
-    const sc = base.s * Math.pow(sEnd / base.s, travel);
-    // where the focus point sits on screen: from its place on the dashboard to the centre
-    const f0x = base.cx + (fx - g.crW / 2) * base.s, f0y = base.cy + (fy - g.crH / 2) * base.s;
-    const c = this.fullCenter();
-    const drift = outCubic(prog(p, 0, 0.7));
-    const sx = lerp(f0x, c.x, drift), sy = lerp(f0y, c.y, drift);
-    return { cx: sx - (fx - g.crW / 2) * sc, cy: sy - (fy - g.crH / 2) * sc, s: sc };
-  }
-
   /** The centre of the viewport, in board units. */
   private fullCenter() {
     return { x: (this.vw / 2 - this.bx) / this.bs, y: (this.vh / 2 - this.by) / this.bs };
@@ -402,12 +393,8 @@ export class Story {
   private placeCR(r: number): { p: Place; a: number } | null {
     const g = this.g;
     if (r >= T.gateIn[0] && r < T.wireOut[1]) return { p: g.cr3, a: outCubic(span(r, T.gateIn)) * (1 - span(r, T.wireOut)) };
-    if (r >= T.crIn[0] && r < T.asciiIn[1]) {
-      const inP = outQuint(span(r, T.crIn));
-      const p = g.cr7;
-      const base = { cx: p.cx, cy: p.cy + (1 - inP) * 28, s: p.s * (0.97 + 0.03 * inP) };
-      return { p: this.pushPlace(base, r), a: outCubic(span(r, T.crIn)) };
-    }
+    // chapter 7: one camera (zoom.ts) — out of the button, at rest, then through it
+    if (r >= T.crIn[0] && r < T.end + 1) return { p: this.zoom.place(r), a: 1 };
     return null;
   }
 
@@ -416,17 +403,25 @@ export class Story {
     this.lastR = r;
     if (this.user && (r < T.sent1In[0] || r >= T.sentOut[1])) this.user = null;
     // Gradient ASCII mounts shortly before it is shown, so its own intro plays on cue
-    const asciiOn = r >= T.asciiMount && r < T.handoff[1] + 0.2;
+    const asciiOn = r >= T.asciiMount && r < T.crIn[0] + 0.1;
     if (asciiOn !== this.asciiOn) {
       this.asciiOn = asciiOn;
       this.root.dispatchEvent(new CustomEvent("film-ascii", { detail: asciiOn }));
     }
-    const asciiA = outCubic(span(r, T.asciiIn)) * (1 - inOutQuint(span(r, T.handoff)));
+    const asciiA = r < T.crIn[0] ? outCubic(span(r, T.asciiIn)) : 0;
+    // the colour takes over from the button's spot, spreading past every edge
+    const tk = r >= T.takeover[0] && r < T.crIn[0] + 0.1;
+    show(e.wipe, tk);
+    if (tk) {
+      const o = this.zoom.origin();
+      const far = Math.hypot(Math.max(o.x, this.vw - o.x), Math.max(o.y, this.vh - o.y)) + 2;
+      e.wipe.style.clipPath = `circle(${(inOutCubic(span(r, T.takeover)) * far).toFixed(1)}px at ${o.x.toFixed(1)}px ${o.y.toFixed(1)}px)`;
+    }
     show(e.ascii, asciiA > 0.001);
     e.ascii.style.opacity = asciiA.toFixed(3);
-    const boardOn = r >= T.scatter[0] && r < T.asciiIn[1];
+    const boardOn = r >= T.scatter[0] && (r < T.asciiIn[1] || r >= T.crIn[0]);
     show(e.board, boardOn);
-    if (!boardOn) return;
+    if (!boardOn) return this.zoom.render(r);
 
     /* ---------- headlines (2, 3) ---------- */
     const line = (wrap: HTMLElement, u: HTMLElement, inn: readonly number[], out: readonly number[]) => {
@@ -674,9 +669,10 @@ export class Story {
 
         /* ---------- 7: the product ---------- */
     const pl = this.placeCR(r);
-    show(e.cr, !!pl);
+    show(e.cr, !!pl && !this.zoom.layered(r));
     if (pl) {
-      const place = pl.p;
+      // while the stacked layers carry the picture, park the hidden product at rest (no huge raster)
+      const place = this.zoom.layered(r) && r >= T.crIn[0] ? g.cr7 : pl.p;
       e.cr.style.opacity = pl.a.toFixed(3);
       const x0 = place.cx - (g.crW * place.s) / 2, y0 = place.cy - (g.crH * place.s) / 2;
       e.cr.style.transform = `translate3d(${x0.toFixed(2)}px,${y0.toFixed(2)}px,0) scale(${place.s.toFixed(4)})`;
@@ -715,8 +711,9 @@ export class Story {
       e.cr.style.setProperty("--hover", hover.toFixed(3));
       e.cr.style.setProperty("--press", press.toFixed(4));
       e.cr.style.setProperty("--approved", approvedP.toFixed(3));
+      e.cr.style.setProperty("--lab", this.zoom.label(r).toFixed(3));
       // the camera is moving: keep the plane on the compositor
-      const moving = r > T.push[0] && r < T.asciiIn[1];
+      const moving = (r > T.crIn[0] && r < T.crIn[1]) || r > T.push[0];
       if (e.cr.style.willChange !== (moving ? "transform" : "")) e.cr.style.willChange = moving ? "transform" : "";
     }
 
@@ -746,9 +743,10 @@ export class Story {
       } else {
         // the cursor rides with the dashboard for the moment it stays on screen
         const btn = this.crRect(this.placeCR(r)!.p, "btn");
-        const p = inOutQuint(span(r, T.cursorIn));
-        x = lerp(g.W * 0.9, btn.x + btn.w * 0.6, p);
-        y = lerp(g.H * 1.02, btn.y + btn.h * 0.62, p) - Math.sin(Math.PI * p) * 24;
+        // a natural approach: brisk start, a gentle arc, a long slow-down into the button
+        const p = approach(span(r, T.cursorIn));
+        x = lerp(g.W * 0.92, btn.x + btn.w * 0.6, p);
+        y = lerp(g.H * 1.04, btn.y + btn.h * 0.62, p) - Math.sin(Math.PI * Math.min(1, p * 1.1)) * 34;
         a = outCubic(prog(r, T.cursorIn[0], T.cursorIn[0] + 0.2)) * (1 - prog(r, T.push[0], T.push[0] + 0.25));
       }
       const press = r >= T.click && r < T.click + 0.14 ? 0.86 : 1;
@@ -756,5 +754,6 @@ export class Story {
       e.pcur.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) scale(${press})`;
     }
     if (e.pcur.dataset.mode !== mode) e.pcur.dataset.mode = mode;
+    this.zoom.render(r);
   }
 }

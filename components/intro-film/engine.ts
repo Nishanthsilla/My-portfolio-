@@ -139,7 +139,7 @@ export class FilmEngine {
     const L = this.L, m = this.m, e = this.e;
     if (!L || !m) return;
     // once the ASCII bridge is fully opaque, the stage underneath is no longer needed
-    e.stage.style.visibility = r < T.asciiIn[1] ? "" : "hidden";
+    e.stage.style.visibility = r < T.asciiIn[1] || r >= T.crIn[0] ? "" : "hidden";
 
     /* ---- Prologue: /* Hello World *\/ ---- */
     show(e.hello, r < T.collapse[1]);
@@ -273,8 +273,8 @@ export class FilmEngine {
     const s = this.story;
     this.story.render(r, { x: (L.card.cx - s.bx) / s.bs, y: (L.card.cy - s.by) / s.bs });
 
-    /* ---- Finale: the camera push-through (story.ts) and the Gradient ASCII bridge
-            (AsciiBridge) carry the ending; the old orange wipe is not used. ---- */
-    show(e.wipe, false);
+    /* ---- Finale: Gradient ASCII → colour takeover → the camera out of / through the button
+            (story.ts + zoom.ts). ---- */
+    // (the colour takeover is drawn by the story, chapter 7)
   }
 }
