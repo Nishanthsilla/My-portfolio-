@@ -363,7 +363,6 @@
 .headerRow > .logo { order: 0; }
 .headerRow > .nav { order: 1; }
 .sound { order: 2; position: relative; }
-.headerRow > .menuBtn { order: 3; }
 .soundBtn { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.1); color: #fff; cursor: pointer; transition: background 160ms; }
 .soundBtn:hover { background: rgba(255, 255, 255, 0.2); }
 .soundBtn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
@@ -390,5 +389,12 @@
 .soundRange::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 0; }
 .soundRange:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35); }
 @media (prefers-reduced-motion: reduce) { .sound[data-on] .soundBars i { animation: none; height: 9px; } }
-@media (max-width: 1120px) { .sound { margin-left: auto; } .headerRow > .menuBtn { margin-left: 6px; } }
-@media (max-width: 1120px) { .headerRow:has(> button[aria-label="Ask about Nishanth"]) .sound { margin-left: 6px; } .headerRow > button[aria-label="Ask about Nishanth"] { margin-left: auto; } }
+/* Ask · sound · menu sit together as one evenly spaced group of equal round buttons */
+.tools > .menuBtn { order: 3; }
+.tools { order: 2; display: flex; align-items: center; gap: 6px; flex: none; }
+.headerRow:has(> .nav) .tools { padding-left: 16px; border-left: 1px solid rgba(255, 255, 255, 0.12); margin-left: -6px; }
+@media (max-width: 1120px) {
+  .tools { margin-left: auto; }
+  .headerRow:has(> .nav) .tools { padding-left: 0; border-left: 0; margin-left: auto; }
+  .tools > .menuBtn { width: 36px; height: 36px; margin: 0; }
+}
