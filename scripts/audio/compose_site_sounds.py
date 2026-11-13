@@ -5,9 +5,9 @@ The website's sounds (everything except the intro film, which has its own score)
 
 1. Short effects taken from Kenney's audio packs — CC0 1.0 (public domain),
    kenney.nl — trimmed, normalised and encoded (see docs/sound-credits.md).
-2. Original sounds composed here from scratch (no samples): the cat's "mrrp?"
-   and indignant meow, the rubber duck's squeak, the bath splash, and the calm
-   ambient piece for the Photography gallery.
+2. Original sounds composed here from scratch (no samples): the note-posted
+   "pop + done", the cat's "mrrp?" and indignant meow, the rubber duck's squeak,
+   the bath splash, and the calm ambient piece for the Photography gallery.
 
 Writes public/audio/sfx/*.{ogg,mp3} and public/audio/ambient/*.{ogg,mp3}
 (Ogg Opus first; MP3 for browsers without Opus).
@@ -29,12 +29,9 @@ rng = np.random.default_rng(7)
 # Kenney CC0 files used, and what each one becomes on the site
 KENNEY = {
     "folder-1": "book_flip_2.ogg",   # a folder opens: pages slide out
-    "folder-2": "book_flip_1.ogg",
-    "folder-3": "book_flip_3.ogg",
     "pick": "book_flip_3.ogg",       # the Wall: a note is picked up
-    "drop": "book_place_3.ogg",      # the Wall: a note lands
-    "post": "book_close.ogg",        # the Wall: a note is stuck on
-    "open": "book_open.ogg",         # a case study opens
+    "drop": "handle_small_leather.ogg",  # the Wall: a note lands (soft tap)
+    "open": "book_flip_2.ogg",       # a case study opens (page flip)
     "tink": "metal_click.ogg",       # the cat: the cord's ring is pulled
     "blind": "cloth_belt.ogg",       # the cat: the blind rolls down
 }
@@ -169,6 +166,23 @@ def splash():
     return normalise(fade(body + hiss + drops, 0.002, 0.08), -6)
 
 
+# ---------------------------------------------------------------- the Wall: posting a note
+def sticky_pop():
+    """A soft 'pop' as the note sticks, then a gentle two-note 'done' (E6 → A6)."""
+    d = 0.55
+    n = int(d * SR)
+    t = np.arange(n) / SR
+    x = np.zeros(n)
+    m = int(0.05 * SR)
+    tt = t[:m]
+    x[:m] += np.sin(2 * np.pi * (420 + 900 * np.exp(-tt / 0.01)) * tt) * np.exp(-tt / 0.015)
+    for at, f in [(0.07, 1318.5), (0.16, 1760.0)]:
+        i = int(at * SR)
+        tt = t[: n - i]
+        x[i:] += 0.32 * (np.sin(2 * np.pi * f * tt) + 0.25 * np.sin(2 * np.pi * 2 * f * tt)) * np.exp(-tt / 0.12) * (1 - np.exp(-tt / 0.002))
+    return normalise(fade(x, 0.001, 0.05), -6)
+
+
 # ---------------------------------------------------------------- photography ambience
 def reverb(x, secs=3.2, mix=0.35, seed=3):
     """Convolution with a decaying-noise impulse (stereo, via FFT)."""
@@ -259,7 +273,7 @@ def main():
                                 str(wav)], check=True)
                 encode(wav, SFX / name)
                 print("kenney  ", name, "<-", file)
-        for name, fn in [("mrrp", mrrp), ("meow", meow), ("squeak", squeak), ("splash", splash)]:
+        for name, fn in [("mrrp", mrrp), ("meow", meow), ("squeak", squeak), ("splash", splash), ("post", sticky_pop)]:
             wav = tmp / f"{name}.wav"
             write_wav(wav, fn())
             encode(wav, SFX / name)
