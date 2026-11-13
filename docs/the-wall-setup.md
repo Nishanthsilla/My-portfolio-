@@ -4,50 +4,54 @@ The Wall (`/wall`) is the portfolio's guestbook: visitors place a sticker,
 write a short note and submit it. **Nothing appears publicly until you
 approve it** at `/wall/admin`.
 
-## What works with no setup
+## The database (open source)
 
-Running the site with `next start` on one machine:
+The Wall stores notes in an open-source database. Which one is used depends on
+one setting:
 
-- Notes are stored in `data/wall-notes.json` on that machine. Every visitor of
-  that server sees the same wall, and notes survive restarts.
-- **This is not enough for serverless hosting** (Vercel, Netlify and similar).
-  Their disks are temporary, so notes would vanish. Use Supabase there.
-- The offline single-file preview has no server. Its wall works as a
-  prototype only and says "posting isn't connected here".
+| | **SQLite** (default) | **PostgreSQL** |
+|---|---|---|
+| When | `DATABASE_URL` is not set | `DATABASE_URL` is set |
+| Where the data lives | `data/wall.db` on the machine running `next start` | Any Postgres server: self-hosted, or a hosted one such as Neon or Supabase (which is Postgres) |
+| Setup | None. It uses the SQLite built into Node.js (`node:sqlite`, Node ≥ 22.13) | Paste the connection string. The table is created automatically on first use |
+| Use it for | A server with a real disk: a VPS, your own machine, Railway, Render or Fly with a volume | **Serverless hosting such as Vercel or Netlify**, where the server's disk is temporary |
+
+- Both use the same table and the same checks (lengths, positions, status values).
+- Every query uses bound parameters, so visitor text is never inserted into SQL.
+- Notes from the earlier JSON-file storage (`data/wall-notes.json`) are
+  imported into SQLite automatically, once.
+- Back up SQLite by copying `data/wall.db`. Stop the server first, or use
+  `sqlite3 data/wall.db ".backup wall-backup.db"`.
+- `data/` is git-ignored, so notes are never committed.
+- The offline single-file preview has no server. Its wall works as a prototype,
+  and visitors' notes are saved on their own device only, clearly labelled.
+
+### Postgres connection strings
+
+```
+DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DBNAME          # self-hosted
+DATABASE_URL=postgresql://...neon.tech/neondb?sslmode=require   # Neon
+DATABASE_URL=postgresql://postgres.xxxx:PASSWORD@aws-0-...pooler.supabase.com:6543/postgres   # Supabase
+```
+
+For Supabase, enable row-level security on `wall_notes` once the table exists:
+
+```sql
+alter table public.wall_notes enable row level security;
+```
+
+This leaves the public API keys no access. The site connects as the database
+owner, which bypasses RLS.
 
 ## Environment variables
 
 | Variable | Required | What it does |
 |---|---|---|
 | `WALL_ADMIN_TOKEN` | **Yes, to moderate** | Your moderator password: a random string of at least 24 characters. Without it, moderation is switched off and nothing can ever be approved. Generate one with `openssl rand -base64 32`. |
-| `SUPABASE_URL` | For deployed sites | Your Supabase project URL, e.g. `https://abcd1234.supabase.co`. |
-| `SUPABASE_SERVICE_ROLE_KEY` | For deployed sites | Supabase "service_role" key. It is used only on the server and must **never** be given a `NEXT_PUBLIC_` name. |
+| `DATABASE_URL` | On serverless hosting | A Postgres connection string. When it's set, it's used instead of SQLite. Keep it secret, server side only. |
 | `TURNSTILE_SECRET_KEY` | Optional | Cloudflare Turnstile secret. When set, every post must pass the check. |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | With the secret above | Turnstile site key, shown in the composer. |
 | `WALL_IP_SALT` | Optional | Salt for hashing visitor IPs, used for rate limits. Raw IPs are never stored. |
-
-## Supabase table (run once in the SQL editor)
-
-```sql
-create table public.wall_notes (
-  id         uuid primary key default gen_random_uuid(),
-  message    text not null check (char_length(message) between 2 and 140),
-  name       text not null check (char_length(name) between 1 and 32),
-  sticker    text not null,
-  x          real not null check (x between 0 and 1),
-  y          real not null check (y between 0 and 1),
-  rotation   real not null check (rotation between -45 and 45),
-  status     text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
-  reports    int  not null default 0,
-  ip_hash    text,
-  created_at timestamptz not null default now()
-);
-create index wall_notes_status on public.wall_notes (status, created_at);
-
--- Lock the table: with RLS on and no policies, the public (anon) key can do
--- nothing. Only the server, using the service-role key, reads and writes.
-alter table public.wall_notes enable row level security;
-```
 
 ## How a note gets onto the wall
 
@@ -81,6 +85,10 @@ alter table public.wall_notes enable row level security;
    You can also remove notes there, including ones already approved.
 5. **Visitor reports:** each note has a Report button. After 3 reports, an
    approved note goes back to pending for you to review.
+6. **The visitor's own browser** remembers:
+   - their unsent draft;
+   - their posted note, shown only to them as "waiting for approval" until you
+     approve it.
 
 Notes are always rendered as text, never as HTML.
 
