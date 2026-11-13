@@ -10,6 +10,10 @@ const nextConfig: NextConfig = staticExport
   ? { output: "export" }
   : {
       pageExtensions: ["tsx", "ts", "jsx", "js", "server.ts"],
+      // a short, easy-to-remember address for The Wall's moderation page
+      async redirects() {
+        return [{ source: "/admin", destination: "/wall/admin", permanent: false }];
+      },
       cacheComponents: true,
       partialPrefetching: true,
     };
