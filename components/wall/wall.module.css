@@ -179,7 +179,7 @@
 .sceneLine { margin: 0; font-size: 17px; line-height: 1.5; color: #5f5b55; max-width: 24em; }
 .sceneWall { position: relative; min-height: 0; height: 100%; }
 @media (max-width: 899px) {
-  .scene { grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: 14px; padding: 18px 0 64px; }
+  .scene { grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: 14px; padding: 40px 0 64px; }
   .sceneHead { padding: 0 var(--gutter, 16px); gap: 6px; }
   .sceneTitle { font-size: 30px; }
   .sceneLine { font-size: 15px; }
