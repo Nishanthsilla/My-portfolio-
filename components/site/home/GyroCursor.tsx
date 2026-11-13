@@ -6,11 +6,12 @@ import h from "./home.module.css";
 
 /**
  * A pointer cursor for an area (mouse / trackpad only): a blue arrow with a
- * white outline and a matching tag beside it ("View projects"), like a
+ * white outline and a matching tag beside it ("View projects" and a one-line
+ * description of what's inside), like a
  * collaborator's cursor. It glides after the pointer and leans a little into
  * the direction of travel. Touch screens and keyboards are unaffected.
  */
-export default function GyroCursor({ label, children, className = "" }: { label: string; children: ReactNode; className?: string }) {
+export default function GyroCursor({ label, note, children, className = "" }: { label: string; note?: string; children: ReactNode; className?: string }) {
   const [on, setOn] = useState(false);
   const [at, setAt] = useState({ x: 0, y: 0 }); // where it appears (then it follows in the animation loop)
   const el = useRef<HTMLDivElement>(null);
@@ -54,7 +55,10 @@ export default function GyroCursor({ label, children, className = "" }: { label:
             <svg className={h.gyroArrow} viewBox="0 0 28 28" width="28" height="28">
               <path d="M4 3.5 L24 11 L14.6 14.6 L11 24 Z" fill="#4453FF" stroke="#fff" strokeWidth="2.6" strokeLinejoin="round" />
             </svg>
-            <span className={h.gyroLabel}>{label}</span>
+            <span className={h.gyroLabel}>
+              <b>{label}</b>
+              {note && <span>{note}</span>}
+            </span>
           </div>,
           document.body,
         )}
