@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { findFlags } from "@/lib/wall/moderation";
 import { STICKERS, StickerArt, stickerById } from "@/lib/wall/stickers";
 import { LIMITS, type PublicNote } from "@/lib/wall/types";
+import { addMine, loadDraft, loadMine, pruneMine, saveDraft, type MyNote } from "@/lib/wall/local";
 import NoteCard from "./NoteCard";
 import SideEyeEditor from "./SideEyeEditor";
 import SideEyeMonkey from "./SideEyeMonkey";
@@ -19,18 +20,22 @@ const X = [0.05, 0.95], Y = [0.04, 0.96];
 
 /** Decoration only (no messages), so the wall never looks empty. */
 const DECOR: { id: string; x: number; y: number; r: number; s: number }[] = [
-  { id: "sparkle", x: 0.08, y: 0.32, r: 0, s: 34 },
-  { id: "squiggle", x: 0.47, y: 0.07, r: -8, s: 70 },
-  { id: "burst", x: 0.92, y: 0.12, r: 12, s: 54 },
-  { id: "half-moon", x: 0.88, y: 0.82, r: -10, s: 58 },
-  { id: "arrow", x: 0.3, y: 0.9, r: 14, s: 56 },
-  { id: "sparkle", x: 0.66, y: 0.56, r: 0, s: 26 },
-  { id: "blob", x: 0.04, y: 0.78, r: 8, s: 62 },
+  { id: "sparkles", x: 0.08, y: 0.32, r: 0, s: 38 },
+  { id: "rainbow", x: 0.47, y: 0.07, r: -8, s: 56 },
+  { id: "star", x: 0.92, y: 0.12, r: 12, s: 46 },
+  { id: "blossom", x: 0.88, y: 0.82, r: -10, s: 48 },
+  { id: "wave", x: 0.3, y: 0.9, r: 14, s: 46 },
+  { id: "sparkles", x: 0.66, y: 0.56, r: 0, s: 28 },
+  { id: "coffee", x: 0.04, y: 0.78, r: 8, s: 46 },
 ];
 /** Nishanth's own pinned note (his words from the brief), clearly labelled. */
 const PINNED = { sticker: "heart", message: "A thought, a note, or just a little sticker. I'd love to see what you leave.", name: "Nishanth", x: 0.2, y: 0.16, rotation: -4 };
 
-export default function WallApp() {
+/**
+ * The Wall. On the homepage it opens as a full-screen layer over the page
+ * (onClose = back to exactly where the visitor was); at /wall it is its own page.
+ */
+export default function WallApp({ onClose, compose = false }: { onClose?: () => void; compose?: boolean }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("loading");
   const [captcha, setCaptcha] = useState(false);
@@ -46,7 +51,9 @@ export default function WallApp() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   // arriving via "Leave a note": a small hint over the sticker toolbar until a sticker is picked
-  const fromCompose = useSyncExternalStore(() => () => {}, () => !!new URLSearchParams(location.search).get("compose"), () => false);
+  const fromCompose = useSyncExternalStore(() => () => {}, () => compose || !!new URLSearchParams(location.search).get("compose"), () => compose);
+  const [mine, setMine] = useState<MyNote[]>([]);
+  const [restored, setRestored] = useState(false);
   const [coachOff, setCoachOff] = useState(false);
   const coach = fromCompose && !coachOff;
   const scroller = useRef<HTMLDivElement>(null);
@@ -64,12 +71,34 @@ export default function WallApp() {
         setMode(d.mode);
         setNotes(d.notes);
         setCaptcha(!!d.captcha);
+        setMine(pruneMine(new Set(d.notes.map((n) => n.id))));
       })
       .catch(() => alive && setMode("offline"));
     return () => {
       alive = false;
     };
   }, []);
+
+  // a refresh never loses what the visitor was doing: restore the unsent draft and their own notes
+  useEffect(() => {
+    const saved = loadDraft();
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time sync from browser storage */
+    setMine(loadMine());
+    if (saved?.draft) {
+      setDraft(saved.draft);
+      setMessage(saved.message);
+      setName(saved.name);
+      setStep(saved.step);
+      setCoachOff(true);
+    }
+    setRestored(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
+  useEffect(() => {
+    if (!restored) return;
+    if (draft && (step === "place" || step === "compose")) saveDraft({ draft, message, name, step });
+    else saveDraft(null);
+  }, [restored, draft, message, name, step]);
 
   // no page scrolling behind the wall
   useEffect(() => {
@@ -82,6 +111,7 @@ export default function WallApp() {
   }, []);
 
   const close = () => {
+    if (onClose) return onClose();
     if (document.referrer.startsWith(location.origin) && history.length > 1) router.back();
     else router.push("/");
   };
@@ -221,7 +251,14 @@ export default function WallApp() {
   const submit = async () => {
     if (!valid || !draft || busy) return;
     if (mode === "offline") {
-      setError("Posting isn't connected in this copy of the site — nothing was sent.");
+      // no server in this copy: keep the note on this device (clearly labelled), nothing is sent
+      addMine({ id: `local-${Date.now()}`, message, name, ...draft, createdAt: new Date().toISOString(), local: true });
+      setMine(loadMine());
+      setStep("sent");
+      setDraft(null);
+      setMessage("");
+      setName("");
+      setStartedAt(0);
       return;
     }
     setBusy(true);
@@ -232,8 +269,12 @@ export default function WallApp() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message, name, ...draft, website: honey, startedAt, captcha: token || undefined }),
       });
-      const d = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      const d = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; note?: PublicNote };
       if (res.ok && d.ok) {
+        if (d.note) {
+          addMine(d.note);
+          setMine(loadMine());
+        }
         setStep("sent");
         setDraft(null);
         setMessage("");
@@ -297,7 +338,13 @@ export default function WallApp() {
             </div>
           ))}
 
-          {mode !== "loading" && shown.length === 0 && step === "browse" && (
+          {mine.map((n) => (
+            <div key={n.id} className={`${w.placed} ${w.mine}`} style={{ left: `${n.x * 100}%`, top: `${n.y * 100}%`, transform: `translate(-50%,-50%) rotate(${n.rotation}deg)` }}>
+              <NoteCard sticker={n.sticker} message={n.message} name={n.name} tag={n.local ? "Saved on this device · not sent" : "Waiting for approval · only you see this"} />
+            </div>
+          ))}
+
+          {mode !== "loading" && shown.length === 0 && mine.length === 0 && step === "browse" && (
             <p className={w.empty}>Nothing here yet from visitors — be the first to leave something.</p>
           )}
 
@@ -336,9 +383,13 @@ export default function WallApp() {
 
       {step === "sent" && (
         <div className={w.sent} role="status">
-          <StickerArt id="smiley" size={64} />
+          <StickerArt id="party" size={64} />
           <h2>Your sticker is on its way.</h2>
-          <p>Thanks for leaving a little something! It&apos;ll appear on the wall once it&apos;s approved.</p>
+          <p>
+            {mode === "offline"
+              ? "Thanks for leaving a little something! This copy of the site isn't connected, so it's saved on this device only."
+              : "Thanks for leaving a little something! It'll appear on the wall for everyone once it's approved — until then, only you can see it."}
+          </p>
           <button type="button" className={w.btnPrimary} onClick={() => setStep("browse")}>Back to the wall</button>
         </div>
       )}
