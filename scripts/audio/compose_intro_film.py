@@ -286,8 +286,9 @@ for k, n in enumerate([76, 81, 84, 88]):                    # approved & sent
     place(pluck(midi(n), 0.1, 1.0, 4600), 31.45 + k * 0.06, pan=-0.3 + 0.2 * k)
 place(riser(0.7, 0.14), 31.5)                               # the camera dives into the button
 place(swoosh(0.75, 300, 4800, 0.12), 31.55)
-place(impact(0.24), 32.12)                                  # through the surface
-place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 1.4, 0.06, 0.1, 1.0, 2800), 32.2)   # the website lands
+place(impact(0.2), 31.97)                                   # inside the button
+place(swoosh(0.6, 500, 3200, 0.08), 31.98)                  # the surface opens onto the website
+place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 1.4, 0.06, 0.1, 1.0, 2800), 32.15)   # the website is revealed
 # (the level-clear jingle plays separately as the website settles)
 
 # ---------- master ----------
