@@ -177,18 +177,15 @@
   display: grid; grid-template-rows: auto auto; border-radius: 22px; background: #f3f1ec; overflow: hidden;
 }
 .folderObject {
-  position: relative; height: clamp(360px, 34vw, 460px); display: grid; place-items: end center; padding-bottom: 36px;
-  overflow: hidden;
+  /* tall enough for the folder plus two rows of notes / a row of prints above it, so nothing is cut */
+  position: relative; height: clamp(330px, 32vw, 420px); display: grid; place-items: end center; padding-bottom: clamp(24px, 4vh, 44px);
 }
-.folderText { padding: 0 32px 30px; display: grid; gap: 8px; }
+.folderText { padding: 0 32px 28px; display: grid; gap: 8px; text-align: center; justify-items: center; }
 .folderTitle { margin: 0; font-size: clamp(26px, 2.4vw, 34px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 560; }
 .folderDesc { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.5; max-width: 28em; }
-.folderLink { margin-top: 10px; width: max-content; font-weight: 500; font-size: 15px; border-bottom: 1px solid var(--line); padding-bottom: 2px; }
-.folderLink span { color: var(--accent); }
-.folderLink:hover { border-color: var(--accent); }
 @media (max-width: 860px) {
   .shelfGrid { grid-template-columns: 1fr; }
-  .folderObject { height: 340px; }
+  .folderObject { height: 300px; }
   .folderText { padding: 0 22px 24px; }
 }
 
@@ -219,7 +216,7 @@
 .sceneFolders { display: flex; align-items: center; }
 .sceneFolders .shelf { padding-top: 0; padding-bottom: 76px; }
 .sceneFolders .shelfHead { margin-bottom: 20px; }
-.sceneFolders .folderObject { height: clamp(250px, 40vh, 420px); }
+.sceneFolders .folderObject { height: clamp(300px, 44vh, 440px); }
 
 /* scene 5 — contact (the site footer) */
 .sceneContact { position: relative; overflow: hidden; isolation: isolate; }
@@ -312,3 +309,20 @@
 .sheetTitle { font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
 .sheetBody { padding-bottom: 64px; }
 @media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
+
+/* the gyroscope cursor (folders) */
+.gyroArea, .gyroArea * { cursor: none !important; }
+.gyro { position: fixed; left: 0; top: 0; z-index: 90; pointer-events: none; will-change: transform; }
+.gyroBody {
+  display: flex; align-items: center; gap: 10px; padding: 6px 16px 6px 6px; margin: -22px 0 0 -22px; border-radius: 999px;
+  background: #1d1b19; color: #fff; box-shadow: 0 14px 30px -14px rgba(0, 0, 0, 0.55); white-space: nowrap;
+  animation: gyroIn 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes gyroIn { from { opacity: 0; transform: scale(0.4); } }
+.gyroCore { position: relative; width: 32px; height: 32px; perspective: 120px; transform-style: preserve-3d; border-radius: 50%; background: radial-gradient(circle, #2c2a27 0 60%, transparent 61%); }
+.gyroRing { position: absolute; inset: 3px; border-radius: 50%; border: 1.5px solid #ff4938; transform-style: preserve-3d; }
+.gyroRing:nth-child(2) { inset: 5px; border-color: rgba(255, 255, 255, 0.85); }
+.gyroRing:nth-child(3) { inset: 1px; border-color: rgba(255, 160, 140, 0.7); }
+.gyroDot { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: #ff4938; box-shadow: 0 0 8px #ff4938; }
+.gyroLabel { font: 500 14px/1 "Hanken Grotesk", var(--font-geist-sans), Arial, sans-serif; letter-spacing: -0.01em; }
+@media (prefers-reduced-motion: reduce) { .gyroBody { animation: none; } }

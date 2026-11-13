@@ -275,3 +275,7 @@
     animation: none;
   }
 }
+
+/* [portfolio] photo items: a small print with a white border */
+.folder-float__item--photo { height: auto; padding: 4px; border-radius: 8px; background: #fff; }
+.folder-float__photo { display: block; width: 54px; max-width: none; height: 66px; flex: none; object-fit: cover; border-radius: 5px; pointer-events: none; }

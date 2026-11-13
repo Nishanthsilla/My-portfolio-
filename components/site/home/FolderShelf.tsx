@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useContext, useState, useSyncExternalStore } from "react";
-import Folder from "../reactbits/Folder";
+import { useContext, useSyncExternalStore } from "react";
 import FolderFloat from "../reactbits/FolderFloat";
 import { explorations, photography } from "@/lib/site/about";
 import { folders } from "@/lib/site/home";
 import { peekHome, rememberHome, type FolderId } from "@/lib/site/returnTo";
+import GyroCursor from "./GyroCursor";
 import { JourneyContext } from "./journeyContext";
 import h from "./home.module.css";
 
@@ -25,13 +24,13 @@ const subSmall = (cb: () => void) => {
 };
 
 /**
- * Two folders, two different experiences:
- *  · Beyond the Interface — React Bits Folder Float: the explorations spring
- *    out as notes; a note opens that exploration, the folder opens the journal.
- *  · Photography — React Bits Folder: photographs fan out; a photo or the
- *    folder opens the gallery.
- * Mouse: hover opens, click enters. Touch: first tap opens, second tap enters.
- * Keyboard: each folder has a labelled link next to it.
+ * Two folders, one component (React Bits Folder Float), two contents:
+ *  · Beyond the Interface — the explorations spring out as notes;
+ *  · Photography — a handful of photographs spring out as small prints.
+ * Mouse: hover opens, and a gyroscope cursor says what a click does
+ * ("View projects" / "View gallery"); a note or print opens that item.
+ * Touch: the first tap opens, the next enters. Keyboard: the folder is a
+ * button (Enter opens it), then each note / print is a button.
  */
 export default function FolderShelf() {
   const router = useRouter();
@@ -40,7 +39,6 @@ export default function FolderShelf() {
   const small = useSyncExternalStore(subSmall, () => matchMedia("(max-width: 640px)").matches, () => false);
   // the folder the visitor came back from stays open
   const back = useSyncExternalStore(noop, () => peekHome()?.folder ?? null, () => null);
-  const [photoOpen, setPhotoOpen] = useState(false);
   const journey = useContext(JourneyContext);
 
   // inside the homepage journey: open the folder's sheet below; elsewhere: its page
@@ -50,6 +48,20 @@ export default function FolderShelf() {
     router.push(href);
   };
 
+  // the same folder, sized for the screen
+  const size = small ? { width: 180, height: 132, spread: 150, lift: 26 } : { width: 214, height: 156, spread: 210, lift: 28 };
+  const shared = {
+    trigger: (canHover ? "hover" : "click") as "hover" | "click",
+    closeOnSelect: false,
+    drift: 0.35,
+    paperColor: "#F4F1EA",
+    itemColor: "#FFFFFF",
+    itemTextColor: "#222222",
+    labelColor: "#FAFAF7",
+    bounce: 0.2,
+    ...size,
+  };
+
   return (
     <section className={h.shelf} aria-labelledby="shelf-title">
       <div className={h.shelfHead}>
@@ -57,101 +69,47 @@ export default function FolderShelf() {
         <h2 id="shelf-title" className={h.h2}>Two folders worth opening.</h2>
       </div>
       <div className={h.shelfGrid}>
-        {/* Beyond the Interface */}
         <article className={h.folderCard}>
-          <div className={h.folderObject}>
+          <GyroCursor label="View projects" className={h.folderObject}>
             {isClient && (
               <FolderFloat
+                {...shared}
                 items={explorations.map((x) => ({ label: x.title, value: x.slug }))}
                 label={folders.beyond.title}
                 sublabel={`${explorations.length} explorations`}
-                trigger={canHover ? "hover" : "click"}
                 defaultOpen={back === "beyond"}
-                closeOnSelect={false}
-                drift={0.35}
                 folderColor="#2A2A28"
                 frontColor="#3A3936"
-                paperColor="#F4F1EA"
-                itemColor="#FFFFFF"
-                itemTextColor="#222222"
-                labelColor="#FAFAF7"
-                width={small ? 190 : 230}
-                height={small ? 140 : 168}
-                spread={small ? 150 : 200}
-                lift={30}
-                bounce={0.2}
                 onSelect={(slug) => enter("beyond", `${folders.beyond.href}#${slug}`)}
                 onFolderClick={(open, openIt) => (canHover || open ? enter("beyond", folders.beyond.href) : openIt())}
               />
             )}
-          </div>
+          </GyroCursor>
           <div className={h.folderText}>
             <h3 className={h.folderTitle}>{folders.beyond.title}</h3>
             <p className={h.folderDesc}>{folders.beyond.description}</p>
-            <Link
-              className={h.folderLink}
-              href={folders.beyond.href}
-              onClick={(e) => {
-                if (journey) {
-                  e.preventDefault();
-                  journey.openBranch("beyond");
-                } else rememberHome("beyond");
-              }}
-            >
-              Open the journal <span aria-hidden="true">→</span>
-            </Link>
           </div>
         </article>
 
-        {/* Photography */}
         <article className={h.folderCard}>
-          <div
-            className={h.folderObject}
-            // mouse: hover opens, a click enters · touch: the first tap opens, the next enters
-            onClickCapture={(e) => {
-              if ((e.target as HTMLElement).closest("[data-folder-item]")) return;
-              if (canHover || photoOpen) {
-                e.preventDefault();
-                e.stopPropagation();
-                enter("photography", folders.photography.href);
-              }
-            }}
-          >
+          <GyroCursor label="View gallery" className={h.folderObject}>
             {isClient && (
-              <Folder
-                items={photography.folderPick.map((k) => ({ image: photography.photos[k].thumb, alt: photography.photos[k].alt }))}
+              <FolderFloat
+                {...shared}
+                items={photography.folderPick.map((k) => ({ label: `Open ${photography.photos[k].alt}`, value: String(k + 1), image: photography.photos[k].thumb }))}
                 label={folders.photography.title}
-                openOn={canHover ? "hover" : "click"}
+                sublabel={`${photography.photos.length} photographs`}
                 defaultOpen={back === "photography"}
-                onOpenChange={setPhotoOpen}
-                onItemClick={(_, i) => enter("photography", `${folders.photography.href}?photo=${photography.folderPick[i] + 1}`, photography.folderPick[i] + 1)}
-                variant="matte"
-                theme="light"
-                color="#FF4938"
-                paperColor="#FFFFFF"
-                tabPosition="left"
-                layout="spread"
-                size={small ? 0.7 : 1}
-                zoomOnClick={false}
-                closeOnOutsideClick
+                folderColor="#D9301F"
+                frontColor="#FF4938"
+                onSelect={(n) => enter("photography", `${folders.photography.href}?photo=${n}`, Number(n))}
+                onFolderClick={(open, openIt) => (canHover || open ? enter("photography", folders.photography.href) : openIt())}
               />
             )}
-          </div>
+          </GyroCursor>
           <div className={h.folderText}>
             <h3 className={h.folderTitle}>{folders.photography.title}</h3>
             <p className={h.folderDesc}>{folders.photography.description}</p>
-            <Link
-              className={h.folderLink}
-              href={folders.photography.href}
-              onClick={(e) => {
-                if (journey) {
-                  e.preventDefault();
-                  journey.openBranch("photography");
-                } else rememberHome("photography");
-              }}
-            >
-              Open the gallery <span aria-hidden="true">→</span>
-            </Link>
           </div>
         </article>
       </div>

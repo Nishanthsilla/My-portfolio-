@@ -17,7 +17,8 @@ import './FolderFloat.css';
 
 const { Bodies, Body, Composite, Engine } = Matter;
 
-export type FolderFloatItem = string | { label: string; value: string };
+/** [portfolio] an item can also be a photo: `image` shows a small print instead of the label (the label becomes its accessible name) */
+export type FolderFloatItem = string | { label: string; value: string; image?: string };
 export type FolderFloatTrigger = 'hover' | 'click';
 
 export interface FolderFloatProps {
@@ -53,7 +54,7 @@ export interface FolderFloatProps {
   className?: string;
 }
 
-type Entry = { label: string; value: string };
+type Entry = { label: string; value: string; image?: string };
 type Size = { w: number; h: number };
 type Zone = { left: number; right: number; top: number; bottom: number };
 type Drag = { i: number; id: number; dx: number; dy: number; sx: number; sy: number; moved: boolean };
@@ -109,12 +110,14 @@ const layout = (list: Entry[], spread: number, lift: number, tilt: number, sizes
   });
   if (row.length) rows.push({ items: row, width });
   const pos: { x: number; y: number; r: number }[] = [];
+  // [portfolio] rows as tall as their tallest item (photos are taller than notes)
+  const rowH = Math.max(ROW, ...sizes.map(s => (s ? s.h + 14 : 0)));
   rows.forEach((r, ri) => {
     let x = -r.width / 2;
     const shift = (ri % 2 ? 1 : -1) * Math.min(16, spread * 0.1);
     r.items.forEach(({ i, pw }) => {
       const j = jitter(i);
-      pos[i] = { x: x + pw / 2 + shift + (j - 0.5) * 6, y: -lift - ri * ROW - j * 6, r: tilt * (j * 2 - 1) };
+      pos[i] = { x: x + pw / 2 + shift + (j - 0.5) * 6, y: -lift - ri * rowH - j * 6, r: tilt * (j * 2 - 1) };
       x += pw + GAP;
     });
   });
@@ -450,7 +453,8 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
                 pillRefs.current[i] = el;
               }}
               type="button"
-              className="folder-float__item"
+              className={`folder-float__item${item.image ? ' folder-float__item--photo' : ''}`}
+              aria-label={item.image ? item.label : undefined}
               tabIndex={open ? 0 : -1}
               aria-hidden={!open}
               data-pop={popped === i ? '' : undefined}
@@ -470,7 +474,12 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
                 if (!world.current.live || e.detail === 0) pick(item, i);
               }}
             >
-              <span className="folder-float__drift">{item.label}</span>
+              {item.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img className="folder-float__drift folder-float__photo" src={item.image} alt="" draggable={false} />
+              ) : (
+                <span className="folder-float__drift">{item.label}</span>
+              )}
             </button>
           );
         })}
