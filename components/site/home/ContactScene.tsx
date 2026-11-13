@@ -1,14 +1,14 @@
 import { contact, footer, socials } from "@/lib/site/content";
 import CopyEmail from "../CopyEmail";
 import SocialLinks from "../SocialLinks";
-import PeekCat from "./PeekCat";
+import CurtainCat from "./CurtainCat";
 import s from "../site.module.css";
 import c from "./contact.module.css";
 
 /**
  * Scene 5 of the homepage journey: how to reach Nishanth, on one screen.
  * (No case-study list here — the visitor has just come through the work.)
- * A cat hides in the corner.
+ * A cat in the corner pulls the curtain (CurtainCat).
  */
 export default function ContactScene() {
   return (
@@ -33,11 +33,12 @@ export default function ContactScene() {
             </div>
           </div>
           <div className={c.base}>
-            <span>{footer.copyright}</span>
-            <span>{footer.note}</span>
-            {/* the cat: bottom corner of the screen on laptops, peeking over this line on phones */}
-            <PeekCat />
+            <span>
+              {footer.copyright} · {footer.note}
+            </span>
           </div>
+          {/* the curtain cat, in the bottom-right corner */}
+          <CurtainCat />
         </div>
       </div>
     </section>

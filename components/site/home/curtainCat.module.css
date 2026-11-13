@@ -1,0 +1,64 @@
+/* The curtain cat — poses per stage (data-stage 0–3). Tune positions and timing here. */
+
+.stageBox { position: absolute; right: 0; bottom: 0; z-index: 3; width: clamp(250px, 27vw, 400px); }
+.cc { display: block; width: 100%; height: auto; overflow: hidden; }
+.hit { position: absolute; left: 6%; bottom: 0; width: 52%; height: 62%; z-index: 2; border: 0; padding: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; border-radius: 40% 40% 0 0; }
+.hit:focus-visible { outline: 2px solid #ff4938; outline-offset: 2px; }
+
+/* every moving part transforms around points in the drawing (view-box coordinates) */
+.cc g { transform-box: view-box; transition: transform 900ms cubic-bezier(0.45, 0, 0.2, 1), opacity 300ms ease; }
+
+/* ---------- the cat (head + paws together) ---------- */
+.cat { transform-origin: 150px 330px; transform: translate(0, 178px); }
+.cc[data-stage="1"] .cat { transform: translate(0, 40px); transition-duration: 1200ms; transition-timing-function: cubic-bezier(0.22, 0.8, 0.3, 1); }
+.cc[data-stage="2"] .cat { transform: translate(8px, 8px) rotate(6deg); }
+.cc[data-stage="3"] .cat { transform: translate(30px, -8px) scale(1, 1.04); transition-duration: 700ms; }
+
+/* eyes look towards the ring */
+.eyes { transform: translate(0, 0); transition-duration: 400ms !important; }
+.cc[data-stage="1"] .eyes { transform: translate(5px, -3px); transition-delay: 900ms !important; }
+.cc[data-stage="2"] .eyes { transform: translate(6px, -5px); }
+
+/* attention marks: pop in at the end of the peek, gone once it gets to work */
+.marks { opacity: 0; transform-origin: 150px 140px; transform: scale(0.6); }
+.cc[data-stage="1"] .marks { opacity: 1; transform: scale(1); transition-delay: 1000ms; }
+.cc[data-stage="2"] .marks { opacity: 1; transform: translate(-28px, 6px) rotate(-12deg); }
+
+/* resting paws on the edge — only while peeking */
+.restPaws { opacity: 0; }
+.cc[data-stage="1"] .restPaws { opacity: 1; }
+
+/* the paws reaching up (rotated around the shoulder; hidden = pointing down below the edge) */
+.armR { transform-origin: 222px 330px; transform: rotate(180deg); }
+.armL { transform-origin: 175px 330px; transform: rotate(180deg); }
+.cc[data-stage="2"] .armR { transform: rotate(12deg); transition-duration: 1000ms; transition-delay: 250ms; }
+.cc[data-stage="3"] .armR { transform: rotate(13deg) translateY(8px); }
+.cc[data-stage="3"] .armL { transform: rotate(31deg) translateY(4px); transition-duration: 650ms; }
+
+/* effort drops */
+.drops { opacity: 0; transform: translateY(6px); }
+.cc[data-stage="3"] .drops { opacity: 1; transform: none; transition-delay: 500ms; }
+
+/* ---------- the mechanism ---------- */
+/* the ring is pulled down and a little to the left; the cord stretches with it */
+.ring { transform: translate(0, 0); }
+.cord { transform-origin: 290px 44px; transform: none; }
+.cc[data-stage="3"] .ring { transform: translate(-6px, 36px); transition-delay: 300ms; transition-duration: 600ms; }
+.cc[data-stage="3"] .cord { transform: rotate(3.5deg) scaleY(1.42); transition-delay: 300ms; transition-duration: 600ms; }
+/* the curtain slides along the rod when the ring is pulled */
+.curtain { transform: none; }
+.cc[data-stage="3"] .curtain { transform: translateX(-44px); transition-delay: 450ms; transition-duration: 1100ms; transition-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1); }
+
+/* motion lines */
+.motionReach, .motionPull { opacity: 0; }
+.cc[data-stage="2"] .motionReach { opacity: 1; transition-delay: 900ms; }
+.cc[data-stage="3"] .motionPull { opacity: 1; transition-delay: 700ms; }
+
+/* reduced motion: the final pose, no movement */
+.cc[data-calm] g { transition: none !important; }
+
+/* phones: smaller, in the corner just above the scene bar, standing on a thin ledge */
+@media (max-width: 760px) {
+  .stageBox { width: 156px; bottom: 66px; }
+  .stageBox::after { content: ""; position: absolute; left: 4px; right: 0; bottom: 0; height: 3px; border-radius: 3px; background: #1d1b19; }
+}
