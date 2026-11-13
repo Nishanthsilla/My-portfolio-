@@ -185,9 +185,11 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
   const pos = stack
     ? list.map((_, i) => {
         // [portfolio] a fanned pile: overlapping, gently arched, each print turned a little
+        // loosely scattered over the folder: spread out, staggered heights, a slight tilt each
         const k = i - (n - 1) / 2;
-        const step = Math.min(46, (spread * 1.6) / Math.max(1, n - 1));
-        return { x: k * step, y: -lift - 26 + Math.abs(k) * 7, r: k * 6.5 };
+        const j = jitter(i + 3);
+        const step = Math.min(58, (spread * 1.7) / Math.max(1, n - 1));
+        return { x: k * step + (j - 0.5) * 18, y: -lift - 18 - (i % 2 ? 26 : 0) - j * 14 + Math.abs(k) * 6, r: (j * 2 - 1) * 9 };
       })
     : layout(list, spread, lift, tilt, sizes);
 
@@ -411,7 +413,7 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
 
   return (
     <div
-      className={`folder-float${className ? ` ${className}` : ''}`}
+      className={`folder-float${stack ? ' folder-float--stack' : ''}${className ? ` ${className}` : ''}`}
       data-open={open ? '' : undefined}
       data-live={live ? '' : undefined}
       data-physics={physics ? '' : undefined}

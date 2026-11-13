@@ -49,7 +49,7 @@ export default function FolderShelf() {
   };
 
   // the same folder, sized for the screen
-  const size = small ? { width: 180, height: 132, spread: 150, lift: 26 } : { width: 248, height: 180, spread: 220, lift: 30 };
+  const size = small ? { width: 180, height: 132, spread: 118, lift: 26 } : { width: 248, height: 180, spread: 220, lift: 30 };
   const shared = {
     trigger: (canHover ? "hover" : "click") as "hover" | "click",
     closeOnSelect: false,
@@ -69,7 +69,7 @@ export default function FolderShelf() {
       </div>
       <div className={h.shelfGrid}>
         <article className={h.folderCard} aria-label={folders.beyond.title}>
-          <GyroCursor label="View projects" className={h.folderObject}>
+          <GyroCursor label="View projects" note="3D printing, physical products & prototypes I'm exploring." className={h.folderObject}>
             {isClient && (
               <FolderFloat
                 {...shared}
@@ -87,7 +87,7 @@ export default function FolderShelf() {
         </article>
 
         <article className={h.folderCard} aria-label={folders.photography.title}>
-          <GyroCursor label="View gallery" className={h.folderObject}>
+          <GyroCursor label="View gallery" note="Frames, places and moments — 23 photographs." className={h.folderObject}>
             {isClient && (
               <FolderFloat
                 {...shared}

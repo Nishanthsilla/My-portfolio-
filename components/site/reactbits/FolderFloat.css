@@ -278,7 +278,7 @@
 
 /* [portfolio] photo items: a small print with a white border */
 .folder-float__item--photo { height: auto; padding: 4px; border-radius: 8px; background: #fff; }
-.folder-float__photo { display: block; width: 70px; max-width: none; height: 88px; flex: none; object-fit: cover; border-radius: 5px; pointer-events: none; }
+.folder-float__photo { display: block; width: 84px; max-width: none; height: 106px; flex: none; object-fit: cover; border-radius: 5px; pointer-events: none; }
 /* [portfolio] the stack: hovering a print brings it forward, straightens it and enlarges it */
 .folder-float__item--photo { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18); }
 .folder-float[data-open] .folder-float__item--photo { z-index: calc(1 + var(--i)); }
@@ -289,3 +289,6 @@
   }
 }
 .folder-float[data-open] .folder-float__item--photo:focus-visible { z-index: 30; --r: 0deg; scale: 1.5; outline: 2px solid #4453ff; outline-offset: 2px; }
+/* [portfolio] the photo folder: prints sit in front of the paper sheet (still tucked behind the front flap) */
+.folder-float--stack .folder-float__items { z-index: 2; }
+@media (max-width: 640px) { .folder-float__photo { width: 66px; height: 84px; } }
