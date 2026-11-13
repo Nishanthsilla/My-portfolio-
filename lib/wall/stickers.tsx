@@ -84,6 +84,13 @@ export const STICKERS: Sticker[] = [
 ];
 
 const ALL = [...STICKERS, ...GIFS];
+
+/**
+ * GIFs from GIPHY (searched through /api/wall/gifs when GIPHY_API_KEY is set).
+ * Stored as "giphy:<id>"; drawn from GIPHY's own CDN as a small framed print.
+ */
+export const isGiphy = (id: string) => /^giphy:[A-Za-z0-9]{4,64}$/.test(id);
+export const giphyUrl = (id: string) => `https://media.giphy.com/media/${id.slice(6)}/200w.webp`;
 export const stickerById = (id: string) => ALL.find((s) => s.id === id);
 export const STICKER_IDS = new Set(ALL.map((s) => s.id));
 
@@ -98,6 +105,20 @@ const EMOJI_FONT = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "
 
 /** Render a sticker at any size: the emoji with a white die-cut edge and a soft shadow. */
 export function StickerArt({ id, size = 64, title }: { id: string; size?: number; title?: string }) {
+  if (isGiphy(id))
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={giphyUrl(id)}
+        alt={title ?? ""}
+        width={size}
+        height={size}
+        draggable={false}
+        loading="lazy"
+        decoding="async"
+        style={{ display: "block", width: size, height: size, objectFit: "cover", borderRadius: Math.max(6, size / 7), border: `${Math.max(2, size / 22)}px solid #fff`, boxShadow: "0 4px 12px rgba(34,34,34,.25)", background: "#eee" }}
+      />
+    );
   const st = stickerById(id);
   if (!st) return null;
   const edge = Math.max(1.5, size / 26);

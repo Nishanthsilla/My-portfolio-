@@ -41,12 +41,13 @@
 .close { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: #fff; font: 300 26px/1 var(--font-geist-sans), Arial; cursor: pointer; color: var(--ink); }
 .close:hover { border-color: var(--ink); }
 
-.scroller { position: relative; flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+/* the viewport onto the canvas; the canvas (.board) is bigger and is moved with transform */
+.scroller { position: relative; flex: 1; min-height: 0; overflow: hidden; cursor: grab; touch-action: none; }
+.scroller[data-panning] { cursor: grabbing; }
 .board {
-  position: relative; width: 100%; height: max(100%, 900px); padding-bottom: 120px;
+  position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform;
   background-image: radial-gradient(#d9d1c4 1px, transparent 1.2px); background-size: 22px 22px;
 }
-@media (max-width: 640px) { .board { height: max(100%, 1700px); background-size: 18px 18px; } }
 .placed { position: absolute; width: max-content; transform: translate(-50%, -50%); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
 .placed > [data-sticker-art] { transform-origin: 50% 50%; will-change: transform; }
 .placed[data-lifted] { cursor: grabbing; }
@@ -164,8 +165,8 @@
 
 /* ---------------- embedded in the homepage journey (scene 4) ---------------- */
 .wallEmbedded { position: relative; inset: auto; z-index: auto; width: 100%; height: 100%; border-radius: 22px; overflow: hidden; border: 1px solid #e3ddd2; }
-.wallEmbedded .scroller { overflow: hidden; }
-.wallEmbedded .board { height: 100%; padding-bottom: 0; }
+/* embedded: the page keeps scrolling over it (no wheel capture); touch swipes the journey */
+.wallEmbedded .scroller { touch-action: pan-x pan-y; }
 .wallEmbedded .composer { max-height: calc(100% - 24px); }
 .expand { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; }
 .expand:hover { border-color: var(--ink); }
@@ -186,20 +187,20 @@
 
 /* ---------------- a note: the "HELLO" name-tag sticker ---------------- */
 .note {
-  position: relative; width: clamp(196px, 17vw, 236px); padding: 6px; border-radius: 16px; background: #fff;
+  position: relative; width: clamp(150px, 11.5vw, 172px); padding: 5px; border-radius: 13px; background: #fff;
   box-shadow: 0 1px 0 rgba(34, 34, 34, 0.06), 0 14px 26px -16px rgba(34, 34, 34, 0.42); transition: box-shadow 240ms;
 }
-.tagTop, .noteMsg, .tagBottom { border: 2px solid #1d1b19; }
-.tagTop { position: relative; display: grid; justify-items: center; padding: 8px 34px 6px; border-radius: 11px 11px 0 0; border-bottom: 0; background: #ff4938; color: #fff; }
-.tagHello { font: 800 30px/0.95 "Bricolage Grotesque", var(--font-geist-sans), Arial, sans-serif; letter-spacing: 0.02em; }
-.tagSub { margin-top: 3px; font: 700 11.5px/1.1 "Bricolage Grotesque", var(--font-geist-sans), Arial, sans-serif; white-space: nowrap; }
-.tagSticker { position: absolute; right: -20px; top: -22px; transform: rotate(10deg); z-index: 2; }
+.tagTop, .noteMsg, .tagBottom { border: 1.75px solid #1d1b19; }
+.tagTop { position: relative; display: grid; justify-items: center; padding: 6px 26px 5px; border-radius: 9px 9px 0 0; border-bottom: 0; background: #ff4938; color: #fff; }
+.tagHello { font: 800 22px/0.95 "Bricolage Grotesque", var(--font-geist-sans), Arial, sans-serif; letter-spacing: 0.02em; }
+.tagSub { margin-top: 2px; font: 700 9px/1.1 "Bricolage Grotesque", var(--font-geist-sans), Arial, sans-serif; white-space: nowrap; }
+.tagSticker { position: absolute; right: -16px; top: -18px; transform: rotate(10deg); z-index: 2; }
 .noteMsg {
-  margin: 0; min-height: 64px; padding: 10px 12px; display: grid; place-items: center; text-align: center; background: #fff; color: #1d1b19;
+  margin: 0; min-height: 48px; padding: 7px 9px; display: grid; place-items: center; text-align: center; background: #fff; color: #1d1b19;
   border-top: 0; border-bottom: 0; line-height: 1.15; overflow-wrap: anywhere; white-space: pre-wrap;
 }
-.tagBottom { margin: 0; padding: 4px 10px 5px; border-radius: 0 0 11px 11px; border-top: 0; background: #ff4938; }
-.noteName { display: block; font: 600 11px/1.2 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; overflow-wrap: anywhere; }
+.tagBottom { margin: 0; padding: 3px 8px 4px; border-radius: 0 0 9px 9px; border-top: 0; background: #ff4938; }
+.noteName { display: block; font: 600 9px/1.2 var(--font-geist-mono), ui-monospace, monospace; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; overflow-wrap: anywhere; }
 .noteTag { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); padding: 4px 9px; border-radius: 999px; background: #1d1b19; color: #fff; white-space: nowrap; font: 600 10px/1.2 var(--font-geist-mono), monospace; letter-spacing: 0.04em; text-transform: uppercase; }
 .noteGhost .noteMsg { color: rgba(29, 27, 25, 0.38); }
 .noteGhost .noteName { opacity: 0.7; }
@@ -267,9 +268,44 @@
 @media (max-width: 560px) {
   .prompt { bottom: 10px; width: calc(100% - 16px); }
   .promptHint { display: none; }
-  .note { width: 186px; }
-  .tagHello { font-size: 26px; }
+  .note { width: 150px; }
 }
 @media (prefers-reduced-motion: reduce) { .prompt, .pop, .draftHint { animation: none; } .note::after { transition: none; } }
 .promptBox :focus-visible { outline: none; }
 .tool:focus-visible, .toolGhost:focus-visible, .send:focus-visible { outline: 2px solid #ff4938 !important; outline-offset: 2px; }
+
+/* ---------------- floating controls ---------------- */
+.fabExpand, .fabBack {
+  position: absolute; z-index: 15; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(34, 34, 34, 0.08);
+  background: rgba(255, 255, 255, 0.86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #222; cursor: pointer;
+  box-shadow: 0 10px 26px -14px rgba(34, 34, 34, 0.5); transition: transform 160ms, background 160ms;
+}
+.fabExpand { right: 14px; top: 14px; width: 44px; height: 44px; border-radius: 50%; }
+.fabBack { left: 16px; top: 16px; height: 44px; padding: 0 18px 0 14px; border-radius: 999px; font: 500 15px/1 var(--font-geist-sans), Arial, sans-serif; }
+.fabExpand:hover, .fabBack:hover { background: #fff; transform: translateY(-1px); }
+.fabBack span { font-size: 17px; }
+.fabBar {
+  position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 15; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 24px);
+  padding: 6px 6px 6px 16px; border-radius: 999px; background: rgba(255, 255, 255, 0.86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(34, 34, 34, 0.08); box-shadow: 0 14px 34px -18px rgba(34, 34, 34, 0.55);
+}
+.fabHint { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fabBar .btnPrimary { height: 40px; padding: 0 18px; font-size: 14px; flex: none; }
+.fabBar .btnLink { height: 40px; flex: none; }
+.fabNote { position: absolute; right: 16px; top: 22px; z-index: 15; margin: 0; padding: 6px 12px; border-radius: 999px; background: #fff; font: 500 12px/1.2 var(--font-geist-mono), monospace; color: var(--muted); }
+@media (max-width: 560px) { .fabHint { display: none; } .fabBar { padding-left: 6px; } }
+
+/* GIF search (GIPHY) */
+.gifSearch { width: 100%; height: 38px; margin: 0 0 8px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #e3ddd2; background: #f6f2ea; font: 400 15px/1 var(--font-geist-sans), Arial, sans-serif; color: #222; outline: none; }
+.gifSearch:focus { border-color: #cfc6b8; background: #fff; }
+.pop .gifItem { width: 74px; height: 58px; padding: 0; overflow: hidden; }
+.gifItem img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gifEmpty { padding: 14px 6px; font-size: 13px; color: var(--muted); white-space: nowrap; }
+.giphyCredit { margin: 6px 2px 0; font: 600 10px/1 var(--font-geist-mono), monospace; letter-spacing: 0.04em; text-transform: uppercase; color: #8a847a; }
+
+/* the full-screen wall grows out of the homepage scene (and shrinks back into it) */
+.fullLayer { position: fixed; inset: 0; z-index: 60; will-change: clip-path; }
+.fullLayer > .wall { position: absolute; }
+.sceneActions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+@media (max-width: 899px) { .sceneActions { margin-top: 6px; } .sceneActions button { height: 42px; padding: 0 18px; font-size: 14px; } }
+.wallEmbedded .report { display: none; }

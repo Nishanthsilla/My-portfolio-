@@ -26,7 +26,7 @@ export default function NoteCard({
   const f = fontById(font);
   const text = message || "Your note goes here";
   // longer notes get smaller handwriting so the tag never overflows
-  const base = text.length <= 32 ? 22 : text.length <= 70 ? 18 : text.length <= 105 ? 15.5 : 14;
+  const base = text.length <= 32 ? 17.5 : text.length <= 70 ? 14.5 : text.length <= 105 ? 12.5 : 11.5;
   return (
     <div className={`${w.note} ${ghost ? w.noteGhost : ""}`}>
       {tag && <span className={w.noteTag}>{tag}</span>}
@@ -34,7 +34,7 @@ export default function NoteCard({
         <span className={w.tagHello}>HELLO</span>
         <span className={w.tagSub}>I stopped by to say</span>
         <span className={w.tagSticker}>
-          <StickerArt id={sticker} size={54} />
+          <StickerArt id={sticker} size={44} />
         </span>
       </div>
       <p className={w.noteMsg} style={{ fontFamily: f.family, fontWeight: f.weight ?? 400, fontSize: base * f.scale }}>
