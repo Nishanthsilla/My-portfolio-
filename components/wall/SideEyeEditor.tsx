@@ -20,6 +20,7 @@ export default function SideEyeEditor({
   multiline = true,
   autoFocus,
   bare = false,
+  signature = false,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -30,24 +31,31 @@ export default function SideEyeEditor({
   autoFocus?: boolean;
   /** prompt-bar style: no visible label or counter box (the label stays for screen readers) */
   bare?: boolean;
+  /** one line for the note and its signature: "words @name" — the @name part is drawn in grey,
+   *  and until there is one, a grey "@your name" waits at the end of what's typed */
+  signature?: boolean;
 }) {
   const id = useId();
   const mirror = useRef<HTMLDivElement>(null);
   const flags = useMemo(() => findFlags(value), [value]);
+  const sig = signature ? value.lastIndexOf("@") : -1;
+  const body = sig >= 0 ? value.slice(0, sig) : value;
 
-  // the mirror's content: plain text with <s> around each flagged range
+  // the mirror's content: plain text with <s> around each flagged range (in the words; the name is checked too)
   const parts: React.ReactNode[] = [];
   let at = 0;
-  flags.forEach((f, i) => {
-    if (f.start > at) parts.push(value.slice(at, f.start));
+  flags.filter((f) => f.end <= body.length).forEach((f, i) => {
+    if (f.start > at) parts.push(body.slice(at, f.start));
     parts.push(
       <s key={i} className={w.flag}>
-        {value.slice(f.start, f.end)}
+        {body.slice(f.start, f.end)}
       </s>,
     );
     at = f.end;
   });
-  parts.push(value.slice(at));
+  parts.push(body.slice(at));
+  if (signature && sig >= 0) parts.push(<span key="sig" className={w.sig}>{value.slice(sig)}</span>);
+  else if (signature && value.trim()) parts.push(<span key="ghost" className={w.sigGhost}>{/\s$/.test(value) ? "" : " "}@your name</span>);
   parts.push("​"); // keeps a trailing empty line measured
 
   const sync = (el: HTMLTextAreaElement | HTMLInputElement) => {
