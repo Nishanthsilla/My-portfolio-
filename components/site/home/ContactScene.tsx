@@ -2,8 +2,12 @@ import { contact, footer, socials } from "@/lib/site/content";
 import CopyEmail from "../CopyEmail";
 import SocialLinks from "../SocialLinks";
 import PeekCat from "./PeekCat";
+
 import s from "../site.module.css";
 import c from "./contact.module.css";
+
+/** The bath-scene cat in the corner — hidden for now (kept intact: set to true to bring it back). */
+const SHOW_CAT = false;
 
 /**
  * Scene 5 of the homepage journey: how to reach Nishanth, on one screen.
@@ -35,7 +39,7 @@ export default function ContactScene() {
             <span>{footer.copyright}</span>
             <span>{footer.note}</span>
             {/* the cat: bottom corner of the screen on laptops, peeking over this line on phones */}
-            <PeekCat />
+            {SHOW_CAT && <PeekCat />}
           </div>
         </div>
       </div>
