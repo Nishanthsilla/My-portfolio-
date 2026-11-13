@@ -51,6 +51,8 @@ export interface FolderFloatProps {
   openDuration?: number;
   stagger?: number;
   bounce?: number;
+  /** [portfolio] items rise as an overlapping, fanned stack (prints) instead of rows */
+  stack?: boolean;
   className?: string;
 }
 
@@ -153,6 +155,7 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
   openDuration = 520,
   stagger = 45,
   bounce = 0.3,
+  stack = false,
   className = ''
 }) => {
   const [open, setOpen] = useState(defaultOpen);
@@ -179,7 +182,14 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
   const list: Entry[] = items.map(item => (typeof item === 'string' ? { label: item, value: item } : item));
   const n = list.length;
   const sub = sublabel || `${n} ${n === 1 ? 'note' : 'notes'}`;
-  const pos = layout(list, spread, lift, tilt, sizes);
+  const pos = stack
+    ? list.map((_, i) => {
+        // [portfolio] a fanned pile: overlapping, gently arched, each print turned a little
+        const k = i - (n - 1) / 2;
+        const step = Math.min(46, (spread * 1.6) / Math.max(1, n - 1));
+        return { x: k * step, y: -lift - 26 + Math.abs(k) * 7, r: k * 6.5 };
+      })
+    : layout(list, spread, lift, tilt, sizes);
 
   const labelsKey = list.map(item => item.label).join('|');
   useLayoutEffect(() => {
