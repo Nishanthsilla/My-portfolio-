@@ -18,6 +18,12 @@
 .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .actions button:hover { border-color: #222; }
 .danger { color: #c2301f; }
-.tokRow { display: flex; gap: 8px; }
-.tokRow input { flex: 1; min-width: 0; }
-.eye { height: 46px; padding: 0 14px; border-radius: 10px; border: 1px solid #ddd8cf; background: #fff; font: 500 14px/1 var(--font-geist-sans), Arial; cursor: pointer; }
+/* password field with the show/hide eye inside it, on the right */
+.tokRow { position: relative; display: flex; }
+.tokRow input { flex: 1; min-width: 0; padding-right: 52px; }
+.eye {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px;
+  display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: #777; cursor: pointer;
+}
+.eye:hover, .eye[aria-pressed="true"] { color: #222; }
+.eye:focus-visible { outline: 2px solid #ff4938; outline-offset: 1px; }
