@@ -5,14 +5,15 @@ import { createPortal } from "react-dom";
 import c from "./contact.module.css";
 
 /**
- *  idle    peeking over the bottom corner (ears + eyes), soap bubbles drifting up
+ *  idle    peeking over the bottom corner (ears + eyes), its rubber duck bobbing beside it
+ *  startle clicked: the duck jumps, the cat startles
  *  reveal  the contact screen scrolls up: below it is a little bathroom — the cat,
  *          caught in its tub, shouts "Hey! Knock first!"
  *  pull    it yanks the cord and the blind rolls down over the bath ("Occupied")
  *  close   the screen scrolls back down into place
  *  hidden  back to normal; the cat peeks again a moment later
  */
-type State = "idle" | "reveal" | "pull" | "close" | "hidden";
+type State = "idle" | "startle" | "reveal" | "pull" | "close" | "hidden";
 
 /** The doodle cat (kawaii: thick round strokes, stripes, pink cheeks). */
 function CatArt({ caught, tub, eyeRef, shake }: { caught: boolean; tub: boolean; eyeRef?: (i: number, n: SVGGElement | null) => void; shake?: boolean }) {
@@ -43,7 +44,12 @@ function CatArt({ caught, tub, eyeRef, shake }: { caught: boolean; tub: boolean;
         )}
         {caught && (
           <>
-            <path d="M70 44 C 84 22, 150 22, 166 44 C 150 52, 86 52, 70 44 Z" fill="#FFB3A8" strokeWidth="5" />
+            {/* soap foam on its head */}
+            <g fill="#fff" strokeWidth="5">
+              <circle cx="96" cy="40" r="11" />
+              <circle cx="138" cy="40" r="10" />
+              <circle cx="117" cy="30" r="14" />
+            </g>
             <path d="M38 40 L 30 20 M50 30 L 50 10 M190 40 L 198 20 M178 30 L 178 10" stroke="#FF4938" strokeWidth="6" />
           </>
         )}
@@ -60,7 +66,6 @@ function CatArt({ caught, tub, eyeRef, shake }: { caught: boolean; tub: boolean;
               <circle cx="30" cy="144" r="11" />
               <circle cx="196" cy="146" r="12" />
               <circle cx="214" cy="152" r="10" />
-              <circle cx="110" cy="170" r="6" />
             </g>
             <g transform="translate(156 124)">
               <path d="M0 26 C 0 12, 10 6, 18 10 C 18 0, 34 -2, 36 10 C 40 10, 44 12, 44 14 C 40 16, 38 16, 36 16 C 40 24, 34 34, 18 34 C 6 34, 0 32, 0 26 Z" fill="#FFD43B" strokeWidth="4.5" />
@@ -133,14 +138,15 @@ export default function PeekCat() {
       });
       return;
     }
-    setState("reveal"); // the screen scrolls up (CSS, 900ms)
-    later(2700, () => setState("pull")); // the cord, the blind
-    later(4300, () => setState("close")); // the screen scrolls back down
-    later(5400, () => setState("hidden"));
-    later(8000, () => setState("idle"));
+    setState("startle"); // the duck jumps, the cat startles
+    later(650, () => setState("reveal")); // the screen scrolls up (CSS, 900ms)
+    later(3350, () => setState("pull")); // the cord, the blind
+    later(4950, () => setState("close")); // the screen scrolls back down
+    later(6050, () => setState("hidden"));
+    later(8600, () => setState("idle"));
   };
 
-  const peekCaught = calm && state === "reveal";
+  const peekCaught = (calm && state === "reveal") || state === "startle";
 
   return (
     <div ref={wrap} className={c.catWrap} data-state={calm ? "calm" : state}>
@@ -150,12 +156,18 @@ export default function PeekCat() {
         <i />
         <i />
       </span>
-      {peekCaught && (
+      {calm && state === "reveal" && (
         <span className={c.bubble} role="status">
           Hey! Knock first! 🫧
         </span>
       )}
       <div className={c.catBox}>
+        {/* the rubber duck, floating at the edge beside the cat */}
+        <svg className={c.duck} viewBox="-4 -6 54 46" aria-hidden="true">
+          <path d="M0 26 C 0 12, 10 6, 18 10 C 18 0, 34 -2, 36 10 C 40 10, 44 12, 44 14 C 40 16, 38 16, 36 16 C 40 24, 34 34, 18 34 C 6 34, 0 32, 0 26 Z" fill="#FFD43B" stroke="#1d1b19" strokeWidth="3.5" strokeLinejoin="round" />
+          <path d="M8 22 C 12 26, 20 26, 24 21" fill="none" stroke="#1d1b19" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="28" cy="10" r="2.4" fill="#1d1b19" />
+        </svg>
         <button type="button" className={c.cat} onClick={caught} aria-label="Something's hiding in the corner">
           <CatArt caught={peekCaught} tub={false} eyeRef={(i, n) => (eyes.current[i] = n)} />
         </button>
@@ -174,7 +186,8 @@ export default function PeekCat() {
             </span>
             <span className={c.blind}>
               <span className={c.sign}>
-                Occupied <span>🛁</span>
+                <b>Bath in progress 🛁</b>
+                <small>Your portfolio will resume shortly.</small>
               </span>
             </span>
             <span className={c.bathCat}>
