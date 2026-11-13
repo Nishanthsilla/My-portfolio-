@@ -3,20 +3,30 @@
 import { useState } from "react";
 import s from "./site.module.css";
 
-export default function CopyEmail({ email }: { email: string }) {
+/**
+ * The email address itself: clicking it copies it and says "Mail copied".
+ * (If the browser won't allow copying, it opens the mail app instead.)
+ */
+export default function CopyEmail({ email, className = "" }: { email: string; className?: string }) {
   const [copied, setCopied] = useState(false);
-  const copy = async () => {
+  const copy = async (e: React.MouseEvent<HTMLAnchorElement>) => {
     try {
       await navigator.clipboard.writeText(email);
+      e.preventDefault();
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
-      location.href = `mailto:${email}`;
+      // fall through to the mailto: link
     }
   };
   return (
-    <button type="button" className={`${s.btn} ${s.btnSecondary} ${s.btnSmall}`} onClick={copy} aria-live="polite">
-      {copied ? "Copied ✓" : "Copy email"}
-    </button>
+    <span className={s.copyMail}>
+      <a className={`${s.emailLink} ${className}`} href={`mailto:${email}`} onClick={copy} title="Click to copy">
+        {email}
+      </a>
+      <span className={`${s.copied} ${copied ? s.copiedOn : ""}`} role="status" aria-live="polite">
+        {copied ? "Mail copied ✓" : ""}
+      </span>
+    </span>
   );
 }
