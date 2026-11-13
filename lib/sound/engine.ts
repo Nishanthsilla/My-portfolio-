@@ -16,14 +16,14 @@
  */
 
 export type SfxName =
-  | "folder" | "pick" | "drop" | "post"
+  | "folder" | "pick" | "drop" | "post" | "open"
   | "mrrp" | "meow" | "squeak" | "splash" | "tink" | "blind";
 export type AmbientName = "photography";
 
 const KEY = "nishanth.sound";
 const FILES: Record<string, string> = {
   "folder-1": "sfx/folder-1", "folder-2": "sfx/folder-2", "folder-3": "sfx/folder-3",
-  pick: "sfx/pick", drop: "sfx/drop", post: "sfx/post",
+  pick: "sfx/pick", drop: "sfx/drop", post: "sfx/post", open: "sfx/open",
   mrrp: "sfx/mrrp", meow: "sfx/meow", squeak: "sfx/squeak", splash: "sfx/splash", tink: "sfx/tink", blind: "sfx/blind",
   photography: "ambient/photography",
 };
@@ -33,6 +33,7 @@ const SFX: Record<SfxName, { gain: number; gap: number; variants?: string[] }> =
   pick: { gain: 0.75, gap: 300 },
   drop: { gain: 0.55, gap: 300 },
   post: { gain: 0.7, gap: 800 },
+  open: { gain: 0.8, gap: 900 },
   mrrp: { gain: 0.32, gap: 1200 },
   meow: { gain: 0.3, gap: 1200 },
   squeak: { gain: 0.3, gap: 600 },

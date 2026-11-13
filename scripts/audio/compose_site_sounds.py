@@ -34,6 +34,7 @@ KENNEY = {
     "pick": "book_flip_3.ogg",       # the Wall: a note is picked up
     "drop": "book_place_3.ogg",      # the Wall: a note lands
     "post": "book_close.ogg",        # the Wall: a note is stuck on
+    "open": "book_open.ogg",         # a case study opens
     "tink": "metal_click.ogg",       # the cat: the cord's ring is pulled
     "blind": "cloth_belt.ogg",       # the cat: the blind rolls down
 }

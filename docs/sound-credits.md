@@ -14,6 +14,7 @@ Taken from the "RPG Audio" pack (via github.com/Boyquotes/kenney-rpg-audio-for-g
 | The Wall: picking up a note | `sfx/pick` | `book_flip_3` |
 | The Wall: a note lands | `sfx/drop` | `book_place_3` |
 | The Wall: a note is posted | `sfx/post` | `book_close` |
+| A case study opens | `sfx/open` | `book_open` |
 | The cat pulls the cord | `sfx/tink` | `metal_click` |
 | The blind rolls down | `sfx/blind` | `cloth_belt` |
 
