@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 
 SR = 48000
-DUR = 34.0
+DUR = 40.0
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "public" / "audio"
 rng = np.random.default_rng(7)
@@ -26,7 +26,26 @@ L = np.zeros(int(SR * DUR))
 R = np.zeros(int(SR * DUR))
 
 
+# The verb scene ("…do their selling. delegating. …") was slowed from 0.57 s to 1.5 s per
+# word so the project cards can be read. Cue times below are written on the original
+# clock; remap() moves them: inside the verb scene they stretch, after it they shift.
+VERB_START, OLD_STEP, NEW_STEP, OLD_THING = 4.25, 0.57, 1.5, 7.67
+SHIFT = VERB_START + 6 * NEW_STEP - OLD_THING  # 5.58 s
+
+
+def remap(t):
+    if t < VERB_START:
+        return t
+    if t < OLD_THING:
+        return VERB_START + (t - VERB_START) * (NEW_STEP / OLD_STEP)
+    return t + SHIFT
+
+
 def place(sig, t, gain=1.0, pan=0.0):
+    _place(sig, remap(t), gain, pan)
+
+
+def _place(sig, t, gain=1.0, pan=0.0):
     """Mix a mono signal at time t (s) with constant-power pan (-1..1)."""
     i = int(t * SR)
     if i >= len(L):
@@ -167,20 +186,22 @@ BEAT = 0.5
 
 
 def groove(t0, t1, kick_g=0.6, bass_g=0.28, pluck_g=0.09, hats=True, every_beat=False, bar0=0):
-    """Gentle 120 BPM groove: kick on 1 & 3 (or every beat), bass on the bar root, soft plucks."""
+    """Gentle 120 BPM groove: kick on 1 & 3 (or every beat), bass on the bar root, soft plucks.
+    Start and end follow the remapped clock; the tempo itself never stretches."""
+    t0, t1 = remap(t0), remap(t1)
     t, step = t0, 0
     while t < t1 - 1e-6:
         bar = (int((t - t0) // 2) + bar0) % 4
         chord, root = PROG[bar]
         beat = step % 4  # 8th-note steps within a 2 s bar = 8; we use quarter-beat steps of 0.25 s
         if step % 2 == 0 and (every_beat or step % 4 == 0):
-            place(kick(kick_g if step % 8 == 0 else kick_g * 0.8), t)
+            _place(kick(kick_g if step % 8 == 0 else kick_g * 0.8), t)
         if step % 8 == 0 or step % 8 == 4:
-            place(bass(midi(root), bass_g, 0.9), t)
+            _place(bass(midi(root), bass_g, 0.9), t)
         if hats and step % 2 == 1:
-            place(hat(0.06), t, pan=0.25)
+            _place(hat(0.06), t, pan=0.25)
         if step % 2 == 0:
-            place(pluck(midi(chord[(step // 2) % len(chord)]), pluck_g), t, pan=-0.3 + 0.6 * ((step // 2) % 3) / 2)
+            _place(pluck(midi(chord[(step // 2) % len(chord)]), pluck_g), t, pan=-0.3 + 0.6 * ((step // 2) % 3) / 2)
         t += 0.25
         step += 1
 
