@@ -12,14 +12,13 @@
  *    different moment inside a 180° shutter (half a frame of travel) and laid
  *    over each other at opacity 1/(j+1), which averages them into real motion
  *    blur. When the camera is slow the copies coincide (no blur).
- *  · The reveal: once the camera is inside the button (its orange fills the
- *    screen), the surface opens from the centre — a hole in the film layer
- *    (even-odd clip path) that starts in the button's own pill shape and eases
- *    out past every edge. What it reveals is the live website underneath the
- *    film, which settles from 104% to 100% as it opens (depth).
+ *  · The page transition: once the camera is inside the button, its orange
+ *    fills the whole screen for a beat; then the orange lifts away upward like
+ *    a page (a soft curved lower edge that flattens as it settles), revealing
+ *    the live website underneath the film, which rises gently into place.
  */
 import { onIntroDone } from "@/lib/introState";
-import { T, bezier, lerp, settle, span } from "./timeline";
+import { T, bezier, settle, span } from "./timeline";
 
 type Place = { cx: number; cy: number; s: number };
 type Rect = { x: number; y: number; w: number; h: number };
@@ -42,8 +41,8 @@ export type ZoomGeo = {
 const N = 8; // exposures
 const FRAME = 1 / 60; // shutter reference: one frame at 60 fps
 const SHUTTER = 0.5; // 180°
-/** The reveal: opens briskly, then eases out over the page. */
-const opening = bezier(0.32, 0, 0.16, 1);
+/** The page transition: gathers, travels, and settles softly. */
+const lift = bezier(0.62, 0, 0.3, 1);
 
 export class ZoomThrough {
   private layers: { el: HTMLDivElement; a: HTMLElement | null; inB: boolean | null }[] = [];
@@ -71,19 +70,15 @@ export class ZoomThrough {
     onIntroDone(() => this.site(null));
   }
 
-  /** The live website under the film: its depth settle during the reveal (null = rest). */
-  private site(scale: number | null) {
+  /** The live website under the film: rises into place during the reveal (null = at rest). */
+  private site(dy: number | null) {
     const el = document.querySelector<HTMLElement>("[data-site]");
     if (!el) return;
-    if (scale === null || scale <= 1.0001) {
-      if (el.style.transform) {
-        el.style.transform = "";
-        el.style.transformOrigin = "";
-      }
+    if (dy === null || dy < 0.05) {
+      if (el.style.transform) el.style.transform = "";
       return;
     }
-    el.style.transformOrigin = `50% ${(scrollY + innerHeight / 2).toFixed(0)}px`;
-    el.style.transform = `scale(${scale.toFixed(5)})`;
+    el.style.transform = `translate3d(0,${dy.toFixed(2)}px,0)`;
   }
 
   layout(g: ZoomGeo, colors: { ground: string; warm: string }) {
@@ -182,33 +177,27 @@ export class ZoomThrough {
     });
   }
 
-  /** The orange surface opens from the centre and reveals the live website underneath. */
+  /**
+   * The page transition: the full-screen orange lifts away upward. The film layer is clipped to
+   * the part still covering the page; its lower edge bows downward while it moves fastest and
+   * flattens as it settles.
+   */
   private clip(r: number) {
     const film = this.film, g = this.g;
     if (!film || !g) return;
-    const e = r < T.reveal[0] ? 0 : opening(span(r, T.reveal));
+    const e = r < T.reveal[0] ? 0 : lift(span(r, T.reveal));
     if (e <= 0.0005) {
       if (film.style.clipPath) film.style.clipPath = "";
       this.site(null);
       return;
     }
-    this.site(1 + 0.04 * (1 - e));
-    // the hole: starts as wide and round as the button, ends larger than the screen
-    const pad = 4;
-    const W1 = g.vw + pad * 2, H1 = g.vh + pad * 2;
-    const btnAspect = g.btn.w / g.btn.h, screenAspect = W1 / H1;
-    const w = W1 * e;
-    const aspect = lerp(Math.max(btnAspect, screenAspect), screenAspect, e);
-    const h = Math.min(H1 * 1.0, w / aspect);
-    const rad = (Math.min(w, h) / 2) * (1 - e);
-    const cx = g.vw / 2, cy = g.vh / 2;
-    const x0 = cx - w / 2, y0 = cy - h / 2, x1 = cx + w / 2, y1 = cy + h / 2;
+    const W = g.vw, H = g.vh;
+    const bow = Math.sin(Math.PI * e) * H * 0.12; // how far the middle of the edge trails below its sides
+    const edge = (H + bow) * (1 - e) - bow; // the sides of the lower edge (reaches -bow, so the bow clears too)
     const f = (n: number) => n.toFixed(1);
-    const hole =
-      `M${f(x0 + rad)} ${f(y0)} H${f(x1 - rad)} A${f(rad)} ${f(rad)} 0 0 1 ${f(x1)} ${f(y0 + rad)} ` +
-      `V${f(y1 - rad)} A${f(rad)} ${f(rad)} 0 0 1 ${f(x1 - rad)} ${f(y1)} H${f(x0 + rad)} ` +
-      `A${f(rad)} ${f(rad)} 0 0 1 ${f(x0)} ${f(y1 - rad)} V${f(y0 + rad)} A${f(rad)} ${f(rad)} 0 0 1 ${f(x0 + rad)} ${f(y0)} Z`;
-    film.style.clipPath = `path(evenodd, "M-2 -2 H${f(g.vw + 2)} V${f(g.vh + 2)} H-2 Z ${hole}")`;
+    film.style.clipPath = `path("M-2 -2 H${f(W + 2)} V${f(edge)} Q${f(W / 2)} ${f(edge + bow * 2)} -2 ${f(edge)} Z")`;
+    // the page rises into place underneath
+    this.site(48 * (1 - e) * (1 - e));
   }
 
   render(r: number) {
