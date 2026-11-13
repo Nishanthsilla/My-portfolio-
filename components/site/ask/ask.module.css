@@ -3,14 +3,20 @@
 .trigger:hover { transform: rotate(12deg) scale(1.05); }
 .trigger:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
-.layer { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px; background: rgba(20, 19, 17, 0.38); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); animation: fade 200ms ease; }
+/* a slider: the panel slides in from the right edge; the page stays visible behind it */
+.layer { position: fixed; inset: 0; z-index: 80; background: rgba(20, 19, 17, 0.16); animation: fade 260ms ease; }
 @keyframes fade { from { opacity: 0; } }
+.closing { animation: fadeOut 280ms ease forwards; }
+@keyframes fadeOut { to { opacity: 0; } }
 .panel {
-  position: relative; display: grid; grid-template-rows: 1fr auto; width: min(640px, 100%); height: min(760px, 100%); border-radius: 22px; overflow: hidden;
-  background: #fafaf7; color: #1d1b19; box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.5); animation: rise 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  position: absolute; right: 12px; top: 12px; bottom: 12px; display: grid; grid-template-rows: 1fr auto; width: min(440px, calc(100% - 24px)); border-radius: 20px; overflow: hidden;
+  background: #fafaf7; color: #1d1b19; box-shadow: -30px 0 60px -30px rgba(0, 0, 0, 0.45), 0 30px 60px -30px rgba(0, 0, 0, 0.35);
+  animation: slideIn 420ms cubic-bezier(0.22, 1, 0.36, 1);
   font-family: var(--font-geist-sans), "Hanken Grotesk", Arial, sans-serif;
 }
-@keyframes rise { from { opacity: 0; transform: translateY(16px) scale(0.985); } }
+@keyframes slideIn { from { transform: translateX(calc(100% + 24px)); } }
+.closing .panel { animation: slideOut 280ms cubic-bezier(0.55, 0, 0.85, 0.4) forwards; }
+@keyframes slideOut { to { transform: translateX(calc(100% + 24px)); } }
 .close { position: absolute; right: 14px; top: 14px; z-index: 2; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 0; background: #1c1b19; color: #fff; cursor: pointer; }
 .close:hover { background: #000; }
 
@@ -29,7 +35,6 @@
 .nope { align-self: flex-start; display: grid; gap: 8px; max-width: 260px; }
 .nope img { display: block; width: 100%; max-height: 200px; object-fit: cover; border-radius: 14px; background: #eee; }
 .nope p { margin: 0; font-size: 14.5px; color: #4a4640; }
-.shrug { font-size: 56px; line-height: 1; }
 .dots { align-self: flex-start; display: inline-flex; gap: 5px; padding: 8px 2px; }
 .dots i { width: 7px; height: 7px; border-radius: 50%; background: #1d1b19; animation: dot 1s ease-in-out infinite; }
 .dots i:nth-child(2) { animation-delay: 0.15s; }
@@ -47,9 +52,8 @@
 .send:disabled { background: rgba(255, 255, 255, 0.1); color: #6b6b74; cursor: default; }
 .note { margin: 0; text-align: center; font-size: 11.5px; color: #8a847a; }
 @media (max-width: 640px) {
-  .layer { padding: 0; }
-  .panel { width: 100%; height: 100%; border-radius: 0; }
+  .panel { right: 0; top: 0; bottom: 0; width: 100%; border-radius: 0; }
   .list { padding: 68px 18px 12px; }
   .bottom { padding: 0 10px 10px; }
 }
-@media (prefers-reduced-motion: reduce) { .layer, .panel, .dots i { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .layer, .panel, .dots i, .closing, .closing .panel { animation: none; } }
