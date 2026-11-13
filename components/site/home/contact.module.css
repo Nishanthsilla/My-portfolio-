@@ -38,12 +38,6 @@
 .catWrap[data-state="idle"] .cat:hover, .catWrap[data-state="idle"] .cat:focus-visible { transform: translateY(12%) rotate(-3deg); }
 .cat:focus-visible { outline: none; }
 .cat:focus-visible svg { filter: drop-shadow(0 0 4px rgba(255, 73, 56, 0.7)); }
-/* caught: up it comes, tub and all */
-.catWrap[data-state="bath"] .cat, .catWrap[data-state="curtain"] .cat { transform: translateY(-40%); transition: transform 460ms cubic-bezier(0.34, 1.7, 0.64, 1); }
-.catWrap[data-state="hidden"] .cat { transform: translateY(120%); transition: none; }
-.tub { opacity: 0; transform: translateY(40px); transition: opacity 160ms, transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-.catWrap[data-state="bath"] .tub, .catWrap[data-state="curtain"] .tub { opacity: 1; transform: none; }
-.lids { transform-box: fill-box; transform-origin: center; animation: blink 4.6s infinite; }
 @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
 .catWrap:not([data-state="idle"]) .lids { animation: none; }
 .ears { transform-box: view-box; transform-origin: 50% 40%; }
@@ -69,42 +63,65 @@
 .catWrap:not([data-state="idle"]) .soap { display: none; }
 
 /* water splashing out of the tub */
-.splash { position: absolute; left: 50%; bottom: 46%; width: 0; height: 0; z-index: 4; pointer-events: none; }
-.splash i { position: absolute; left: -4px; top: -6px; width: 8px; height: 12px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #7cc0f2; border: 1.5px solid #1d1b19;
-  --a: calc(-80deg + var(--i) * 32deg); transform: rotate(var(--a)); opacity: 0; animation: splash 720ms cubic-bezier(0.2, 0.7, 0.4, 1) calc(120ms + var(--i) * 40ms) 2; }
-@keyframes splash { 0% { opacity: 1; transform: rotate(var(--a)) translateY(0); } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-90px); } }
+.splash { position: absolute; left: 50%; top: 52%; width: 0; height: 0; z-index: 4; pointer-events: none; }
+.splash i { position: absolute; left: -4px; top: -6px; width: 9px; height: 13px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: #7cc0f2; border: 1.5px solid #1d1b19;
+  --a: calc(-80deg + var(--i) * 32deg); transform: rotate(var(--a)); opacity: 0; animation: splash 720ms cubic-bezier(0.2, 0.7, 0.4, 1) calc(900ms + var(--i) * 40ms) 2; }
+@keyframes splash { 0% { opacity: 1; transform: rotate(var(--a)) translateY(0); } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-110px); } }
 
-/* the shower curtain: slides across the whole contact screen, then opens again */
-.curtain { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
-.rod { position: absolute; left: 0; right: 0; top: 10px; height: 8px; border-radius: 8px; background: #1d1b19; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); z-index: 1; }
-.fabric {
-  position: absolute; top: 12px; right: 0; bottom: 0; width: 100%; transform-origin: 100% 0; display: grid; place-items: start center;
+/* ---------- the bathroom below the screen (the screen scrolls up to show it) ---------- */
+.screen { transition: transform 900ms cubic-bezier(0.65, 0, 0.35, 1); }
+.screen[data-bath="up"] { transform: translateY(-58%); }
+.bathroom {
+  position: absolute; left: 0; right: 0; top: 100%; height: 58%; overflow: hidden; z-index: 5;
+  background-color: #eef4f7; background-image: linear-gradient(#d9e5eb 2px, transparent 2px), linear-gradient(90deg, #d9e5eb 2px, transparent 2px); background-size: 46px 46px;
+}
+/* the curtain rail (hatched, as sketched) */
+.rail { position: absolute; left: 0; right: 0; top: 0; height: 16px; z-index: 3; border-block: 3px solid #1d1b19; background: repeating-linear-gradient(115deg, #1d1b19 0 3px, #fffaf6 3px 13px); }
+/* the pull-cord with its ring */
+.cord { position: absolute; top: 16px; right: calc(clamp(16px, 4vw, 56px) + clamp(200px, 18vw, 260px)); z-index: 4; width: 3px; height: 30%; background: #1d1b19; transform-origin: top; }
+.cord i { position: absolute; left: -8px; bottom: -17px; width: 19px; height: 19px; border-radius: 50%; border: 3.5px solid #1d1b19; background: #fff; }
+.bathroom[data-step="pull"] .cord { animation: tug 520ms cubic-bezier(0.3, 1.4, 0.5, 1); }
+@keyframes tug { 35% { transform: scaleY(1.45); } 100% { transform: scaleY(1); } }
+/* the blind: rolls down over the bath when the cord is pulled */
+.blind {
+  position: absolute; left: 0; right: 0; top: 16px; bottom: 0; z-index: 2; display: grid; place-items: start center; transform-origin: top; transform: scaleY(0);
   background:
-    repeating-linear-gradient(90deg, rgba(29, 27, 25, 0.1) 0, rgba(255, 255, 255, 0) 22px, rgba(29, 27, 25, 0.12) 44px),
+    repeating-linear-gradient(0deg, rgba(29, 27, 25, 0.06) 0 2px, transparent 2px 26px),
     repeating-linear-gradient(90deg, #fffaf6 0 52px, #ff4938 52px 64px, #fffaf6 64px 116px, #ffb3a8 116px 122px);
-  border-left: 3px solid #1d1b19; box-shadow: -12px 0 30px rgba(0, 0, 0, 0.18);
-  -webkit-mask-image: radial-gradient(14px 10px at 50% 100%, transparent 98%, #000 100%); mask-image: radial-gradient(14px 10px at 50% 100%, transparent 98%, #000 100%);
-  -webkit-mask-size: 44px 100%; mask-size: 44px 100%; -webkit-mask-position: 0 8px; mask-position: 0 8px;
+  border-bottom: 6px solid #1d1b19;
 }
-.curtain[data-curtain="closing"] .fabric { animation: curtainClose 720ms cubic-bezier(0.2, 0.9, 0.3, 1.04) both; }
-.curtain[data-curtain="opening"] .fabric { animation: curtainOpen 640ms cubic-bezier(0.6, 0, 0.8, 0.4) both; }
-@keyframes curtainClose { from { transform: scaleX(0.04); } 82% { transform: scaleX(1.01) skewX(-1deg); } to { transform: scaleX(1); } }
-@keyframes curtainOpen { from { transform: scaleX(1); } to { transform: scaleX(0.04); } }
+.bathroom[data-step="pull"] .blind, .bathroom[data-step="close"] .blind { transform: scaleY(1); transition: transform 760ms cubic-bezier(0.3, 1.25, 0.5, 1) 260ms; }
 .sign {
-  margin-top: 64px; padding: 10px 18px; border-radius: 12px; background: #fff; border: 2.5px solid #1d1b19; box-shadow: 4px 4px 0 #1d1b19;
-  font: 700 clamp(18px, 2vw, 24px)/1 var(--mono, ui-monospace, monospace); color: #1d1b19; transform-origin: 50% -40px; animation: swing 1.6s ease-in-out 360ms both;
+  position: relative; margin-top: 46px; padding: 10px 18px; border-radius: 12px; background: #fff; border: 2.5px solid #1d1b19; box-shadow: 4px 4px 0 #1d1b19;
+  font: 700 clamp(17px, 2vw, 24px)/1 var(--mono, ui-monospace, monospace); color: #1d1b19; transform-origin: 50% -30px; animation: swing 1.6s ease-in-out 700ms both;
 }
-.sign::before { content: ""; position: absolute; left: 50%; top: -42px; width: 2px; height: 40px; margin-left: -1px; background: #1d1b19; }
-.sign { position: relative; }
+.sign::before { content: ""; position: absolute; left: 50%; top: -32px; width: 2px; height: 30px; margin-left: -1px; background: #1d1b19; }
 @keyframes swing { 0% { transform: rotate(14deg); } 30% { transform: rotate(-9deg); } 55% { transform: rotate(5deg); } 78% { transform: rotate(-2deg); } 100% { transform: rotate(0deg); } }
+/* the cat in its tub, where it was peeking from */
+.bathCat { position: absolute; right: clamp(8px, 3vw, 44px); bottom: 4%; z-index: 1; width: clamp(190px, 17vw, 250px); }
+.bathCat svg { display: block; width: 100%; height: auto; overflow: visible; }
+.bathroom[data-step="reveal"] .bathCat { animation: popUp 520ms cubic-bezier(0.34, 1.7, 0.64, 1) 700ms both; }
+@keyframes popUp { from { transform: translateY(18%); } }
+.bathBubble {
+  position: absolute; right: 78%; top: 2%; z-index: 4; padding: 8px 12px; border-radius: 14px 14px 4px 14px; background: #fff; border: 2px solid #1d1b19; color: #1d1b19;
+  white-space: nowrap; font: 600 15px/1.2 var(--mono, ui-monospace, monospace); box-shadow: 3px 3px 0 #1d1b19; animation: bubble 300ms cubic-bezier(0.34, 1.56, 0.64, 1) 1000ms both;
+}
+/* the peeking cat ducks out of sight while all this happens */
+.catWrap:not([data-state="idle"]):not([data-state="calm"]) .cat { transform: translateY(120%); transition: none; }
+.catWrap[data-state="calm"] .cat { transform: translateY(2%); }
+.catWrap:not([data-state="idle"]) .soap { display: none; }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* phones: the bottom of the screen belongs to the scene bar, so the cat peeks over the © line instead */
 @media (max-width: 760px) {
   .catWrap { right: 4px; bottom: 100%; width: 88px; }
-  .bubble { font-size: 13px; }
+  .bubble, .bathBubble { font-size: 13px; }
+  .bathBubble { right: 60%; top: -14%; }
+  .cord { right: 230px; }
+  .bathCat { width: 170px; bottom: 17%; }
   .hint { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cat, .tub { transition: none; }
-  .lids, .shake, .bubble, .soap i, .splash i, .sign { animation: none; }
+  .cat,   .lids, .shake, .bubble, .soap i, .splash i, .sign, .bathBubble, .bathCat { animation: none; }
+  .screen { transition: none; }
 }
