@@ -21,7 +21,9 @@ import type { NoteStatus, PublicNote, WallNote } from "./types";
 export type StoreMode = "postgres" | "sqlite" | "unconfigured";
 /** On serverless hosting (temporary disk) SQLite would lose notes, so there the wall refuses to store anything without DATABASE_URL. */
 const serverless = () => !!(process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME);
-export const storeMode = (): StoreMode => (process.env.DATABASE_URL ? "postgres" : serverless() ? "unconfigured" : "sqlite");
+/** The Postgres connection string: DATABASE_URL, or the names Vercel's storage integrations may use. */
+const databaseUrl = () => process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.STORAGE_URL || "";
+export const storeMode = (): StoreMode => (databaseUrl() ? "postgres" : serverless() ? "unconfigured" : "sqlite");
 
 const COLS = "id, message, name, sticker, x, y, rotation, status, reports, created_at";
 type Row = { id: string; message: string; name: string; sticker: string; x: number; y: number; rotation: number; status: NoteStatus; reports: number | null; created_at: string | Date };
@@ -88,7 +90,7 @@ function importLegacyJson(db: SqliteDb) {
 /* ---------------- PostgreSQL ---------------- */
 
 function openPostgres(): Db {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5 });
+  const pool = new Pool({ connectionString: databaseUrl(), max: 5 });
   const ready = pool.query(`
     CREATE TABLE IF NOT EXISTS wall_notes (
       id         uuid PRIMARY KEY,
