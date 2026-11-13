@@ -1,25 +1,25 @@
 /**
- * Zoom Through — the camera dives into the product's Approve & send button and
- * the website emerges from inside its orange surface (adapted from the
- * vawe.dev "zoom-through" video component, supplied as reference code).
+ * Zoom Through — a page transition. After the click, the camera dives into the
+ * product's Approve & send button and the button's surface opens into a window
+ * onto the real website underneath the film; the window grows past every edge
+ * of the screen and the film is gone (adapted from the vawe.dev "zoom-through"
+ * video component, supplied as reference code).
  *
  *  · One camera: the whole dashboard is a single plane. Scale follows a log
- *    path (constant perceived speed) while the dive point drifts to the
- *    middle of the screen, so the rest of the dashboard leaves the frame on
- *    its own and the button surface overruns all four edges.
+ *    path (constant perceived speed) while the dive point drifts to the middle
+ *    of the screen, so the rest of the dashboard leaves the frame on its own.
  *  · Stacked exposure: N copies of the shot, each sampled at a slightly
  *    different moment inside a 180° shutter (half a frame of travel) and laid
  *    over each other at opacity 1/(j+1), which averages them into real motion
- *    blur. When the camera is slow the copies coincide (no blur); at full
- *    speed they streak.
- *  · Ground swap: once a copy's button fills the frame, that copy shows the
- *    button colour instead of the dashboard, so dashboard → orange is itself
- *    blurred across the shutter, never a cut.
- *  · Shot B: the website, held inside the surface at 1/R scale, fades up as the
- *    camera approaches and lands at exactly full frame.
- *
+ *    blur. When the camera is slow the copies coincide (no blur).
+ *  · The reveal: once the camera is inside the button (its orange fills the
+ *    screen), the surface opens from the centre — a hole in the film layer
+ *    (even-odd clip path) that starts in the button's own pill shape and eases
+ *    out past every edge. What it reveals is the live website underneath the
+ *    film, which settles from 104% to 100% as it opens (depth).
  */
-import { T, clamp01, settle, span } from "./timeline";
+import { onIntroDone } from "@/lib/introState";
+import { T, bezier, lerp, settle, span } from "./timeline";
 
 type Place = { cx: number; cy: number; s: number };
 type Rect = { x: number; y: number; w: number; h: number };
@@ -42,16 +42,17 @@ export type ZoomGeo = {
 const N = 8; // exposures
 const FRAME = 1 / 60; // shutter reference: one frame at 60 fps
 const SHUTTER = 0.5; // 180°
+/** The reveal: opens briskly, then eases out over the page. */
+const opening = bezier(0.32, 0, 0.16, 1);
 
 export class ZoomThrough {
   private layers: { el: HTMLDivElement; a: HTMLElement | null; inB: boolean | null }[] = [];
-  private b: HTMLDivElement;
-  private bInner: HTMLElement | null = null;
   private g: ZoomGeo | null = null;
   private dive: Spec | null = null;
   private built = false;
   private ground = "#FF4938";
   private warm = "#FAF9F6";
+  private film: HTMLElement | null;
 
   constructor(private wrap: HTMLElement, private source: HTMLElement) {
     wrap.textContent = "";
@@ -62,13 +63,27 @@ export class ZoomThrough {
       wrap.appendChild(el);
       this.layers.push({ el, a: null, inB: null });
     }
-    this.b = document.createElement("div");
-    this.b.setAttribute("data-zoom-b", "");
-    this.b.style.cssText = "position:absolute;left:0;top:0;overflow:hidden;transform-origin:50% 50%;opacity:0;will-change:transform,opacity;";
-    wrap.appendChild(this.b);
-    // display (not visibility): the copies inside carry inline visibility:visible, which would
+    // display (not visibility): the copies inside carry inline visibility, which would
     // override a hidden ancestor
     wrap.style.display = "none";
+    this.film = wrap.closest<HTMLElement>("[data-intro-film]");
+    // never leave the website scaled, whatever happens (skip, end)
+    onIntroDone(() => this.site(null));
+  }
+
+  /** The live website under the film: its depth settle during the reveal (null = rest). */
+  private site(scale: number | null) {
+    const el = document.querySelector<HTMLElement>("[data-site]");
+    if (!el) return;
+    if (scale === null || scale <= 1.0001) {
+      if (el.style.transform) {
+        el.style.transform = "";
+        el.style.transformOrigin = "";
+      }
+      return;
+    }
+    el.style.transformOrigin = `50% ${(scrollY + innerHeight / 2).toFixed(0)}px`;
+    el.style.transform = `scale(${scale.toFixed(5)})`;
   }
 
   layout(g: ZoomGeo, colors: { ground: string; warm: string }) {
@@ -78,10 +93,8 @@ export class ZoomThrough {
     const b = g.btn;
     // dive point: on the surface between the left edge and "✓ Sent", so we never fly into the type
     const lx = g.label ? g.label.x : b.x + b.w * 0.34;
-    const dive = this.solve((b.x + g.radius * 0.6 + lx) / 2, b.y + b.h / 2, 1.6);
-    this.dive = dive;
-    this.b.style.width = `${g.vw}px`;
-    this.b.style.height = `${g.vh}px`;
+    // the camera travels a little past the point where the button fills the screen
+    this.dive = this.solve((b.x + g.radius * 0.6 + lx) / 2, b.y + b.h / 2, 1.15);
     this.built = false;
   }
 
@@ -99,7 +112,7 @@ export class ZoomThrough {
   private solve(fx: number, fy: number, overshoot: number): Spec {
     const g = this.g!;
     let S = 40, fill = 20;
-    for (let it = 0; it < 5; it++) {
+    for (let it = 0; it < 6; it++) {
       const lnS = Math.log(S);
       let k = 1;
       while (k < 4000) {
@@ -134,7 +147,7 @@ export class ZoomThrough {
     return { cx: x0 + (g.crW * s) / 2, cy: y0 + (g.crH * s) / 2, s };
   }
 
-  /** Camera path position (0 = at rest, 1 = the website at full frame). */
+  /** Camera path position (0 = at rest, 1 = through the button). */
   private path(r: number) {
     return settle(span(r, T.push));
   }
@@ -169,31 +182,42 @@ export class ZoomThrough {
     });
   }
 
-  /** Shot B: a still copy of the website, made ahead of the dive (while the cursor travels) so the dive never waits on it. */
-  private ensureB() {
-    if (this.bInner) return;
-    const site = document.querySelector<HTMLElement>("[data-site]");
-    if (!site) return;
-    const c = site.cloneNode(true) as HTMLElement;
-    c.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));
-    c.removeAttribute("data-site");
-    c.setAttribute("aria-hidden", "true");
-    c.style.pointerEvents = "none";
-    this.b.style.background = getComputedStyle(site).backgroundColor || this.warm;
-    this.b.appendChild(c);
-    this.bInner = c;
+  /** The orange surface opens from the centre and reveals the live website underneath. */
+  private clip(r: number) {
+    const film = this.film, g = this.g;
+    if (!film || !g) return;
+    const e = r < T.reveal[0] ? 0 : opening(span(r, T.reveal));
+    if (e <= 0.0005) {
+      if (film.style.clipPath) film.style.clipPath = "";
+      this.site(null);
+      return;
+    }
+    this.site(1 + 0.04 * (1 - e));
+    // the hole: starts as wide and round as the button, ends larger than the screen
+    const pad = 4;
+    const W1 = g.vw + pad * 2, H1 = g.vh + pad * 2;
+    const btnAspect = g.btn.w / g.btn.h, screenAspect = W1 / H1;
+    const w = W1 * e;
+    const aspect = lerp(Math.max(btnAspect, screenAspect), screenAspect, e);
+    const h = Math.min(H1 * 1.0, w / aspect);
+    const rad = (Math.min(w, h) / 2) * (1 - e);
+    const cx = g.vw / 2, cy = g.vh / 2;
+    const x0 = cx - w / 2, y0 = cy - h / 2, x1 = cx + w / 2, y1 = cy + h / 2;
+    const f = (n: number) => n.toFixed(1);
+    const hole =
+      `M${f(x0 + rad)} ${f(y0)} H${f(x1 - rad)} A${f(rad)} ${f(rad)} 0 0 1 ${f(x1)} ${f(y0 + rad)} ` +
+      `V${f(y1 - rad)} A${f(rad)} ${f(rad)} 0 0 1 ${f(x1 - rad)} ${f(y1)} H${f(x0 + rad)} ` +
+      `A${f(rad)} ${f(rad)} 0 0 1 ${f(x0)} ${f(y1 - rad)} V${f(y0 + rad)} A${f(rad)} ${f(rad)} 0 0 1 ${f(x0 + rad)} ${f(y0)} Z`;
+    film.style.clipPath = `path(evenodd, "M-2 -2 H${f(g.vw + 2)} V${f(g.vh + 2)} H-2 Z ${hole}")`;
   }
 
   render(r: number) {
     const g = this.g;
-    if (g && r >= T.cursorIn[0] && !this.bInner) this.ensureB();
     const on = !!g && this.layered(r);
     const d = on ? "block" : "none";
     if (this.wrap.style.display !== d) this.wrap.style.display = d;
-    if (!on || !g) {
-      if (this.b.style.opacity !== "0") this.b.style.opacity = "0";
-      return;
-    }
+    this.clip(on ? r : -1);
+    if (!on || !g) return;
     if (!this.built) this.build();
 
     const sp = this.dive!;
@@ -221,17 +245,5 @@ export class ZoomThrough {
         l.a.style.transform = `translate(${c.x.toFixed(2)}px,${c.y.toFixed(2)}px) scale(${c.sc.toFixed(5)})`;
       }
     });
-
-    // shot B — the website — inside the surface
-    if (this.bInner) {
-      const k = Math.exp(sp.lnS * p);
-      const q = k / sp.S;
-      const a = clamp01((k - 0.52 * sp.fill) / (0.2 * sp.fill));
-      this.b.style.opacity = a > 0.001 ? a.toFixed(3) : "0";
-      if (a > 0.001) {
-        this.b.style.transform = q >= 0.9995 ? "none" : `scale(${q.toFixed(5)})`;
-        this.b.style.borderRadius = q >= 0.9995 ? "0" : `${((18 * (1 - q)) / Math.max(q, 0.02)).toFixed(2)}px`;
-      }
-    } else if (this.b.style.opacity !== "0") this.b.style.opacity = "0";
   }
 }
