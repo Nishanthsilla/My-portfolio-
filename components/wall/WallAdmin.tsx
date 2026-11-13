@@ -19,6 +19,7 @@ export default function WallAdmin() {
   const [notes, setNotes] = useState<WallNote[]>([]);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     try {
@@ -36,6 +37,8 @@ export default function WallAdmin() {
       const res = await fetch(`/api/wall/admin?status=${status}`, { headers: { Authorization: `Bearer ${t}` }, cache: "no-store" });
       const d = (await res.json()) as { ok: boolean; notes?: WallNote[]; error?: string; mode?: string };
       if (!d.ok) {
+        setNotes([]);
+        setFailed(true);
         setMsg(d.error || "Couldn't load.");
         if (res.status === 401) {
           setToken("");
@@ -45,9 +48,11 @@ export default function WallAdmin() {
         }
         return;
       }
+      setFailed(false);
       setNotes(d.notes ?? []);
       setMsg(d.mode === "sqlite" ? "Database: SQLite (data/wall.db on this server)." : d.mode === "postgres" ? "Database: PostgreSQL." : "");
     } catch {
+      setFailed(true);
       setMsg("Can't reach the moderation API here (the offline preview has no server).");
     } finally {
       setBusy(false);
@@ -103,7 +108,7 @@ export default function WallAdmin() {
         <a href="/wall" className={a.view}>View the wall ↗</a>
       </header>
       {msg && <p className={a.msg}>{msg}</p>}
-      {busy ? <p className={a.msg}>Loading…</p> : notes.length === 0 ? <p className={a.msg}>Nothing {tab}.</p> : null}
+      {busy ? <p className={a.msg}>Loading…</p> : failed ? <p className={a.msg}>Notes can&apos;t be shown until this is fixed — nothing has been lost.</p> : notes.length === 0 ? <p className={a.msg}>Nothing {tab}.</p> : null}
       <ul className={a.list}>
         {notes.map((n) => (
           <li key={n.id} className={a.item}>
