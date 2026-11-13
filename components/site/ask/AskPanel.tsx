@@ -21,15 +21,24 @@ const NOPE_LINES = [
 ];
 const pick = <T,>(xs: T[]) => xs[Math.floor(Math.random() * xs.length)];
 
+/** A shuffled pool of "nope" GIFs, fetched once when the panel opens so one is ready instantly. */
+let pool: string[] = [];
+async function fillPool() {
+  if (pool.length > 8) return;
+  const queries = [...NOPE_QUERIES].sort(() => Math.random() - 0.5).slice(0, 3);
+  const found = await Promise.all(
+    queries.map((q) =>
+      fetch(`/api/wall/gifs?q=${encodeURIComponent(q)}`)
+        .then((r) => (r.ok ? r.json() : { gifs: [] }))
+        .then((d: { gifs: { src: string }[] }) => (d.gifs ?? []).slice(0, 10).map((g) => g.src))
+        .catch(() => [] as string[]),
+    ),
+  );
+  pool = [...new Set([...pool, ...found.flat()])].sort(() => Math.random() - 0.5);
+}
 async function nopeGif(): Promise<string | null> {
-  try {
-    const r = await fetch(`/api/wall/gifs?q=${encodeURIComponent(pick(NOPE_QUERIES))}`);
-    if (!r.ok) return null;
-    const d = (await r.json()) as { gifs: { src: string }[] };
-    return d.gifs?.length ? pick(d.gifs.slice(0, 12)).src : null;
-  } catch {
-    return null;
-  }
+  if (!pool.length) await fillPool();
+  return pool.length ? pool.splice(Math.floor(Math.random() * pool.length), 1)[0] : null;
 }
 
 /**
@@ -40,12 +49,26 @@ async function nopeGif(): Promise<string | null> {
 export default function AskPanel() {
   const [enabled, setEnabled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const close = () => {
+    if (closing) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return setOpen(false);
+    setClosing(true);
+    window.setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+    }, 280);
+  };
   const [remaining, setRemaining] = useState(6);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const list = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(close);
+  useEffect(() => {
+    closeRef.current = close;
+  });
   const field = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -66,7 +89,8 @@ export default function AskPanel() {
     const prev = html.style.overflow;
     html.style.overflow = "hidden";
     const t = setTimeout(() => field.current?.focus(), 60);
-    const key = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    void fillPool();
+    const key = (e: KeyboardEvent) => e.key === "Escape" && closeRef.current();
     addEventListener("keydown", key);
     return () => {
       html.style.overflow = prev;
@@ -143,9 +167,9 @@ export default function AskPanel() {
       </button>
       {open &&
         createPortal(
-          <div className={a.layer} onPointerDown={(e) => e.target === e.currentTarget && setOpen(false)}>
+          <div className={`${a.layer} ${closing ? a.closing : ""}`} onPointerDown={(e) => e.target === e.currentTarget && close()}>
             <div className={a.panel} role="dialog" aria-modal="true" aria-label="Ask about Nishanth">
-              <button type="button" className={a.close} onClick={() => setOpen(false)} aria-label="Close">
+              <button type="button" className={a.close} onClick={close} aria-label="Close">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
               </button>
               <div ref={list} className={a.list} aria-live="polite">
@@ -171,7 +195,7 @@ export default function AskPanel() {
                     ) : m.off ? (
                       <div key={i} className={a.nope}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        {m.off.gif ? <img src={m.off.gif} alt="A shrugging “nope” GIF" /> : <span className={a.shrug} aria-hidden="true">🤷</span>}
+                        {m.off.gif && <img src={m.off.gif} alt="A “nope, no idea” GIF" />}
                         <p>{m.off.line}</p>
                       </div>
                     ) : (
