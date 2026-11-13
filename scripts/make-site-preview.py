@@ -40,6 +40,9 @@ PAGES = {
     "/about": "about.html",
     "/beyond": "beyond.html",
     "/beyond/modular-01": "beyond/modular-01.html",
+    "/visual-craft": "visual-craft.html",
+    "/product-strategy": "product-strategy.html",
+    "/design-engineering": "design-engineering.html",
 }
 for f in sorted((OUT / "work").rglob("*.html")):
     PAGES["/" + f.relative_to(OUT).with_suffix("").as_posix()] = f.relative_to(OUT).as_posix()
