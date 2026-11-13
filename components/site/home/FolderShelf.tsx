@@ -7,6 +7,7 @@ import { explorations, photography } from "@/lib/site/about";
 import { folders } from "@/lib/site/home";
 import { peekHome, rememberHome, type FolderId } from "@/lib/site/returnTo";
 import GyroCursor from "./GyroCursor";
+import { sfx } from "@/lib/sound/engine";
 import { JourneyContext } from "./journeyContext";
 import h from "./home.module.css";
 
@@ -59,6 +60,7 @@ export default function FolderShelf() {
     itemTextColor: "#222222",
     labelColor: "#FAFAF7",
     bounce: 0.2,
+    onOpenChange: (open: boolean) => open && sfx("folder"),
     ...size,
   };
 

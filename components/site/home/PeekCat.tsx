@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { sfx } from "@/lib/sound/engine";
 import c from "./contact.module.css";
 
 /**
@@ -139,6 +140,12 @@ export default function PeekCat() {
       return;
     }
     setState("startle"); // the duck jumps, the cat startles
+    sfx("squeak");
+    later(140, () => sfx("mrrp"));
+    later(1450, () => sfx("splash")); // the bathroom comes into view
+    later(1650, () => sfx("meow")); // "Hey! Knock first!"
+    later(3350, () => sfx("tink")); // the cord's ring
+    later(3620, () => sfx("blind")); // the blind rolls down
     later(650, () => setState("reveal")); // the screen scrolls up (CSS, 900ms)
     later(3350, () => setState("pull")); // the cord, the blind
     later(4950, () => setState("close")); // the screen scrolls back down
