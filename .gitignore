@@ -54,3 +54,6 @@ next-env.d.ts
 
 # The Wall: local note storage (when Supabase is not configured)
 /data/
+
+# Python bytecode
+__pycache__/
