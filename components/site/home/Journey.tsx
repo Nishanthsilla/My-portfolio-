@@ -81,7 +81,8 @@ export default function Journey({
         // every full-width scene is exactly the visible frame (100vw would include the scrollbar)
         sec.style.setProperty("--jw", `${fr.clientWidth}px`);
         dist = Math.max(0, tr.scrollWidth - fr.clientWidth);
-        sec.style.height = `${dist + fr.clientHeight}px`;
+        // tall enough that the very end of the page reaches the very end of the track
+        sec.style.height = `${dist + innerHeight}px`;
         top = sec.getBoundingClientRect().top + scrollY;
       };
       const pick = (x: number) => {

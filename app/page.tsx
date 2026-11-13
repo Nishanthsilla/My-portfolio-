@@ -1,14 +1,12 @@
 import SiteShell from "@/components/site/SiteShell";
-import Footer from "@/components/site/Footer";
-import EasterSticker from "@/components/site/EasterSticker";
 import Journey from "@/components/site/home/Journey";
 import StoryPanels from "@/components/site/home/StoryPanels";
 import Bento from "@/components/site/home/Bento";
 import FolderShelf from "@/components/site/home/FolderShelf";
+import ContactScene from "@/components/site/home/ContactScene";
 import WallScene from "@/components/wall/WallScene";
 import BeyondJournal from "@/components/site/beyond/BeyondJournal";
 import PhotographyBody from "@/components/site/photo/PhotographyBody";
-import s from "@/components/site/site.module.css";
 
 /**
  * Homepage (the intro film plays above it on load): one horizontal journey —
@@ -23,14 +21,7 @@ export default function HomePage() {
         work={<Bento variant="journey" />}
         folders={<FolderShelf />}
         wall={<WallScene />}
-        contact={
-          <>
-            <Footer />
-            <div className={s.container} style={{ position: "relative", marginTop: -84 }}>
-              <EasterSticker />
-            </div>
-          </>
-        }
+        contact={<ContactScene />}
         beyond={<BeyondJournal inSheet />}
         photography={<PhotographyBody inSheet />}
       />
