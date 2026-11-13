@@ -352,3 +352,9 @@
   .navOpen .navLink { font-size: 17px; border-bottom-color: rgba(255, 255, 255, 0.1); }
   .navOpen .btn { height: 44px; }
 }
+
+/* the email address copies itself on click */
+.copyMail { position: relative; display: inline-flex; align-items: center; gap: 10px; }
+.copyMail .emailLink { cursor: copy; }
+.copied { font: 500 13px/1 var(--sans); color: var(--accent); opacity: 0; transform: translateX(-4px); transition: opacity 180ms ease, transform 180ms ease; white-space: nowrap; }
+.copiedOn { opacity: 1; transform: none; }

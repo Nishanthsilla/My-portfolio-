@@ -21,8 +21,7 @@ export default function ContactScene() {
             <div className={c.col}>
               <span className={s.eyebrow}>{contact.emailLabel}</span>
               <div className={s.emailRow}>
-                <a className={`${s.emailLink} ${c.email}`} href={`mailto:${contact.email}`}>{contact.email}</a>
-                <CopyEmail email={contact.email} />
+                <CopyEmail email={contact.email} className={c.email} />
               </div>
               <span className={`${s.eyebrow} ${c.gapTop}`}>{contact.phoneLabel}</span>
               <a className={s.arrowLink} href={contact.phoneHref}>{contact.phone}</a>

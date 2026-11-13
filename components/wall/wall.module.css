@@ -327,3 +327,45 @@
 .sigGhost { color: #b8b1a6; }
 .promptSpacer { flex: 1; }
 .tagGif { right: -22px; top: -30px; transform: rotate(7deg); }
+
+/* =====================================================================
+   Prompt bar, dark (React Bits look): near-black glass, hairline border,
+   white text, grey hints, a white send button. Pop-ups match.
+   ===================================================================== */
+.promptBox, .pop {
+  background: rgba(17, 17, 19, 0.94); border: 1px solid rgba(255, 255, 255, 0.1); color: #f4f4f5;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 24px 50px -24px rgba(0, 0, 0, 0.6);
+}
+.promptBox:focus-within { border-color: rgba(255, 255, 255, 0.22); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05), 0 24px 50px -24px rgba(0, 0, 0, 0.6); }
+.editorBare .editorMirror { color: #f4f4f5; }
+.editorBare .editorField { caret-color: #fff; }
+.editorBare .editorField::placeholder { color: #71717a; -webkit-text-fill-color: #71717a; }
+.editorBare .flag { color: #ff8a7d; }
+.sig { color: #a1a1aa; }
+.sigGhost { color: #5f5f68; }
+.tool, .toolGhost { color: #d4d4d8; }
+.tool:hover, .toolGhost:hover, .tool[aria-expanded="true"] { background: rgba(255, 255, 255, 0.08); }
+.toolSwatch { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.25); }
+.send { background: #fff; color: #111113; }
+.send:hover { background: #e4e4e7; }
+.send:disabled { background: rgba(255, 255, 255, 0.1); color: #6b6b74; }
+.spin { border-color: rgba(17, 17, 19, 0.3); border-top-color: #111113; }
+.tabs { background: rgba(255, 255, 255, 0.06); }
+.tab { color: #a1a1aa; }
+.tab[aria-selected="true"] { background: rgba(255, 255, 255, 0.14); color: #fff; box-shadow: none; }
+.pop .trayItem { background: rgba(255, 255, 255, 0.05); }
+.pop .trayItem:hover { background: rgba(255, 255, 255, 0.1); }
+.pop .trayItem[aria-selected="true"] { background: rgba(255, 73, 56, 0.16); border-color: #ff4938; }
+.gifSearch { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.1); color: #f4f4f5; }
+.gifSearch::placeholder { color: #71717a; }
+.gifSearch:focus { background: rgba(255, 255, 255, 0.09); border-color: rgba(255, 255, 255, 0.22); }
+.gifEmpty, .giphyCredit { color: #8a8a93; }
+.fontChip { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: #f4f4f5; }
+.fontChip:hover { border-color: rgba(255, 255, 255, 0.28); }
+.fontChip[aria-checked="true"] { border-color: #ff4938; background: rgba(255, 73, 56, 0.14); }
+.shapeChip { background: rgba(255, 255, 255, 0.05); color: #d4d4d8; }
+.shapeChip[aria-checked="true"] { background: rgba(255, 73, 56, 0.14); }
+.swatch { border-color: #111113; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.15); }
+.promptNotes .error { background: #1b1416; border-color: #5a2a26; color: #ff9d92; }
+.prompt .monkey { background: #18181b; border-color: #3f2a28; color: #f4f4f5; }
+.promptHint { color: #8a847a; }

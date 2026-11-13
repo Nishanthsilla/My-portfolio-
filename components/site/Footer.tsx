@@ -17,7 +17,6 @@ export default function Footer() {
           <div className={s.footerCol}>
             <span className={s.eyebrow}>{contact.emailLabel}</span>
             <div className={s.emailRow}>
-              <a className={s.emailLink} href={`mailto:${contact.email}`}>{contact.email}</a>
               <CopyEmail email={contact.email} />
             </div>
             <span className={s.eyebrow} style={{ marginTop: 24 }}>{contact.phoneLabel}</span>
