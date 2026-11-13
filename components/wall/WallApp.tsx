@@ -11,7 +11,7 @@ import SideEyeEditor from "./SideEyeEditor";
 import SideEyeMonkey from "./SideEyeMonkey";
 import w from "./wall.module.css";
 
-type Mode = "loading" | "sqlite" | "postgres" | "offline";
+type Mode = "loading" | "sqlite" | "postgres" | "unconfigured" | "offline";
 type Step = "browse" | "place" | "compose" | "sent";
 type Draft = { sticker: string; x: number; y: number; rotation: number };
 
@@ -302,7 +302,7 @@ export default function WallApp({ onClose, compose = false }: { onClose?: () => 
         <div>
           <h1 className={w.barTitle}>The Wall</h1>
           <p className={w.barSub}>
-            {mode === "loading" ? "Loading…" : mode === "offline" ? "Preview copy — posting isn't connected here" : `${shown.length} ${shown.length === 1 ? "note" : "notes"} · new notes appear once approved`}
+            {mode === "loading" ? "Loading…" : mode === "offline" || mode === "unconfigured" ? "Posting isn't connected here yet" : `${shown.length} ${shown.length === 1 ? "note" : "notes"} · new notes appear once approved`}
           </p>
         </div>
         <div className={w.barActions}>

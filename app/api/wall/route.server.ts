@@ -10,7 +10,7 @@ import { isClean, normalizeText } from "@/lib/wall/moderation";
 import { STICKER_IDS } from "@/lib/wall/stickers";
 import { LIMITS, type Submission } from "@/lib/wall/types";
 import { captchaRequired, clientHash, rateLimit, recordPost, verifyCaptcha } from "@/lib/wall/guard";
-import { insertPending, listApproved, recentSameMessage, storeMode } from "@/lib/wall/store";
+import { countRecentByVisitor, insertPending, listApproved, recentSameMessage, storeMode } from "@/lib/wall/store";
 
 const json = (data: unknown, status = 200, headers: Record<string, string> = {}) =>
   Response.json(data, { status, headers: { "Cache-Control": "no-store", ...headers } });
@@ -61,6 +61,9 @@ export async function POST(req: Request) {
   }
 
   try {
+    // the same limits, checked in the database too: on serverless hosting each instance has its own memory
+    if ((await countRecentByVisitor(id, 10 * 60_000)) >= 3 || (await countRecentByVisitor(id, 24 * 3600_000)) >= 10)
+      return json({ ok: false, error: "You've left a few already — come back a little later." }, 429, { "Retry-After": "600" });
     if ((await recentSameMessage(message, 24 * 3600_000)) > 0) return json({ ok: false, error: "That note is already on its way." }, 409);
     const note = await insertPending({ message, name, sticker: body.sticker, x: body.x, y: body.y, rotation: body.rotation }, id);
     recordPost(id);
