@@ -1,0 +1,74 @@
+/* Scene 5 — contact, on one screen */
+.contact { position: relative; height: 100%; overflow: hidden; }
+.screen { position: relative; height: 100%; display: flex; }
+.inner {
+  width: 100%; max-width: var(--max, 1280px); margin: 0 auto; padding: clamp(20px, 5vh, 56px) var(--gutter, 24px) clamp(84px, 13vh, 112px);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.title { margin: 14px 0 0; max-width: 13em; font-size: clamp(38px, min(5.4vw, 8.4vh), 84px); line-height: 0.98; letter-spacing: -0.045em; font-weight: 560; }
+.grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 72px); margin-top: clamp(24px, 6vh, 56px); }
+.col { display: grid; align-content: start; gap: 8px; }
+.gapTop { margin-top: 18px; }
+.email { font-size: clamp(20px, 2.2vw, 28px); }
+/* the six links in two columns */
+.elsewhere ul { display: grid; grid-template-columns: repeat(2, max-content); column-gap: clamp(28px, 4vw, 64px); row-gap: 10px; margin: 0; padding: 0; list-style: none; }
+.elsewhere a { font-size: 17px; }
+.base { display: flex; justify-content: space-between; gap: 16px; margin-top: clamp(24px, 6vh, 64px); padding-top: 14px; border-top: 1px solid var(--line, #e8e6e1); font-size: 14px; color: var(--muted, #777); }
+@media (max-width: 760px) {
+  .contact, .screen { height: auto; min-height: 100%; }
+  .inner { justify-content: flex-start; padding-top: 12px; padding-bottom: 80px; }
+  .title { font-size: clamp(30px, 8.6vw, 40px); }
+  .grid { grid-template-columns: 1fr; gap: 18px; margin-top: 16px; }
+  .col { gap: 6px; }
+  .elsewhere ul { column-gap: 28px; row-gap: 8px; }
+  .elsewhere a { font-size: 16px; }
+  .base { position: relative; margin-top: 46px; }
+  .gapTop { margin-top: 10px; }
+}
+
+/* ---------------- the cat in the corner ---------------- */
+/* catWrap holds the speech bubble; catBox clips the cat at the "edge" it peeks over */
+.catWrap { position: absolute; right: clamp(16px, 4vw, 56px); bottom: 0; z-index: 3; width: clamp(118px, 11vw, 150px); }
+.catBox { overflow: hidden; padding: 30px 30px 0; margin: 0 -30px; }
+.cat {
+  display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; transform: translateY(36%);
+  transition: transform 520ms cubic-bezier(0.34, 1.56, 0.64, 1); -webkit-tap-highlight-color: transparent;
+}
+.cat svg { display: block; width: 100%; height: auto; overflow: visible; }
+.catWrap[data-state="idle"] .cat:hover, .catWrap[data-state="idle"] .cat:focus-visible { transform: translateY(18%) rotate(-3deg); }
+.cat:focus-visible { outline: none; }
+.cat:focus-visible svg { filter: drop-shadow(0 0 4px rgba(255, 73, 56, 0.7)); }
+.catWrap[data-state="shock"] .cat, .catWrap[data-state="bye"] .cat { transform: translateY(6%); transition-duration: 380ms; }
+.catWrap[data-state="away"] .cat { transform: translateY(110%); transition: transform 700ms cubic-bezier(0.55, 0, 0.85, 0.35); }
+.catWrap[data-state="hidden"] .cat { transform: translateY(110%); transition: none; }
+.lids { transform-box: fill-box; transform-origin: center; animation: blink 4.6s infinite; }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
+.catWrap[data-state="shock"] .lids, .catWrap[data-state="bye"] .lids { animation: none; }
+.ears { transform-box: view-box; transform-origin: 50% 40%; transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.catWrap[data-state="shock"] .ears { transform: scale(1.06) translateY(-4px); }
+.paws { transition: transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1); transform: translateY(30px); }
+.catWrap[data-state="bye"] .paws, .catWrap[data-state="away"] .paws { transform: translateY(-6px); }
+.wave { transform-box: fill-box; transform-origin: 50% 100%; }
+.catWrap[data-state="bye"] .wave { animation: wave 420ms ease-in-out 3 alternate; }
+@keyframes wave { from { transform: rotate(-14deg); } to { transform: rotate(16deg); } }
+.shake { animation: shake 360ms ease-in-out; }
+@keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+
+.bubble {
+  position: absolute; right: calc(100% - 22px); top: 4px; z-index: 2; padding: 8px 12px; border-radius: 14px 14px 4px 14px; background: #fff;
+  border: 2px solid #1d1b19; color: #1d1b19; white-space: nowrap; font: 600 14px/1.2 var(--mono, ui-monospace, monospace);
+  box-shadow: 3px 3px 0 #1d1b19; animation: bubble 300ms cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none;
+}
+@keyframes bubble { from { opacity: 0; transform: scale(0.6) translateY(8px); } }
+.hint { position: absolute; right: calc(100% + 6px); bottom: 26px; white-space: nowrap; font: 500 12px/1 var(--mono, ui-monospace, monospace); color: var(--muted, #777); opacity: 0; transition: opacity 200ms; pointer-events: none; }
+.catWrap[data-state="idle"]:hover .hint, .catWrap[data-state="idle"]:focus-within .hint { opacity: 1; }
+/* phones: the bottom of the screen belongs to the scene bar, so the cat peeks over a little ledge just above it */
+@media (max-width: 760px) {
+  .catWrap { right: 4px; bottom: 100%; width: 88px; }
+  .bubble { font-size: 13px; }
+  .hint { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cat, .ears, .paws { transition: none; }
+  .lids, .wave, .shake, .bubble { animation: none; }
+}
