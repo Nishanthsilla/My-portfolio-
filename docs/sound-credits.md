@@ -10,11 +10,10 @@ Taken from the "RPG Audio" pack (via github.com/Boyquotes/kenney-rpg-audio-for-g
 
 | On the site | File | Kenney source |
 |---|---|---|
-| A folder opens (3 variations) | `public/audio/sfx/folder-1/2/3` | `book_flip_2`, `book_flip_1`, `book_flip_3` |
+| A folder opens | `public/audio/sfx/folder-1` | `book_flip_2` |
 | The Wall: picking up a note | `sfx/pick` | `book_flip_3` |
-| The Wall: a note lands | `sfx/drop` | `book_place_3` |
-| The Wall: a note is posted | `sfx/post` | `book_close` |
-| A case study opens | `sfx/open` | `book_open` |
+| The Wall: a note lands | `sfx/drop` | `handle_small_leather` |
+| A case study opens | `sfx/open` | `book_flip_2` |
 | The cat pulls the cord | `sfx/tink` | `metal_click` |
 | The blind rolls down | `sfx/blind` | `cloth_belt` |
 
@@ -24,6 +23,7 @@ All trimmed, loudness-normalised and re-encoded (Ogg Opus + MP3).
 
 Synthesised from scratch in `scripts/audio/compose_site_sounds.py`:
 
+- `sfx/post` — a note is posted: a soft pop, then a gentle two-note "done"
 - `sfx/mrrp` — the cat's curious trill
 - `sfx/meow` — the cat's indignant meow
 - `sfx/squeak` — the rubber duck
