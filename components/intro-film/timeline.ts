@@ -33,9 +33,9 @@ export const T = {
   draftDone: [29.55, 30.05],
   cursorIn: [30.1, 30.95], hover: [30.8, 31.0], click: 31.35,
   approved: [31.43, 31.68], flowDone: [31.45, 31.95],
-  push: [31.5, 32.35], reveal: [32.15, 32.85],
-  handoff: [31.8, 32.85],
-  end: 32.9,
+  push: [31.5, 32.35], reveal: [32.15, 32.9],
+  handoff: [31.8, 32.9],
+  end: 32.95,
 } as const;
 
 /** The level-clear sound's held note lands as the website settles. */

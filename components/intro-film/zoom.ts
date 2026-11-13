@@ -13,9 +13,9 @@
  *    over each other at opacity 1/(j+1), which averages them into real motion
  *    blur. When the camera is slow the copies coincide (no blur).
  *  · The page transition: once the camera is inside the button, its orange
- *    fills the whole screen for a beat; then the orange lifts away upward like
- *    a page (a soft curved lower edge that flattens as it settles), revealing
- *    the live website underneath the film, which rises gently into place.
+ *    fills the whole screen for a beat; then the entire screen slides straight
+ *    up as one flat sheet (soft shadow at its lower edge), uncovering the live
+ *    website underneath the film, which comes forward from 96% to 100%.
  */
 import { onIntroDone } from "@/lib/introState";
 import { T, bezier, settle, span } from "./timeline";
@@ -42,7 +42,7 @@ const N = 8; // exposures
 const FRAME = 1 / 60; // shutter reference: one frame at 60 fps
 const SHUTTER = 0.5; // 180°
 /** The page transition: gathers, travels, and settles softly. */
-const lift = bezier(0.62, 0, 0.3, 1);
+const lift = bezier(0.66, 0, 0.24, 1);
 
 export class ZoomThrough {
   private layers: { el: HTMLDivElement; a: HTMLElement | null; inB: boolean | null }[] = [];
@@ -70,15 +70,19 @@ export class ZoomThrough {
     onIntroDone(() => this.site(null));
   }
 
-  /** The live website under the film: rises into place during the reveal (null = at rest). */
-  private site(dy: number | null) {
+  /** The live website under the film: comes forward while it is uncovered (null = at rest). */
+  private site(scale: number | null) {
     const el = document.querySelector<HTMLElement>("[data-site]");
     if (!el) return;
-    if (dy === null || dy < 0.05) {
-      if (el.style.transform) el.style.transform = "";
+    if (scale === null || scale >= 0.9999) {
+      if (el.style.transform) {
+        el.style.transform = "";
+        el.style.transformOrigin = "";
+      }
       return;
     }
-    el.style.transform = `translate3d(0,${dy.toFixed(2)}px,0)`;
+    el.style.transformOrigin = `50% ${(scrollY + innerHeight / 2).toFixed(0)}px`;
+    el.style.transform = `scale(${scale.toFixed(5)})`;
   }
 
   layout(g: ZoomGeo, colors: { ground: string; warm: string }) {
@@ -178,26 +182,24 @@ export class ZoomThrough {
   }
 
   /**
-   * The page transition: the full-screen orange lifts away upward. The film layer is clipped to
-   * the part still covering the page; its lower edge bows downward while it moves fastest and
-   * flattens as it settles.
+   * The page transition: the whole film layer — the full-screen orange — slides straight up as one
+   * flat sheet, uncovering the website underneath.
    */
   private clip(r: number) {
     const film = this.film, g = this.g;
     if (!film || !g) return;
     const e = r < T.reveal[0] ? 0 : lift(span(r, T.reveal));
     if (e <= 0.0005) {
-      if (film.style.clipPath) film.style.clipPath = "";
+      if (film.style.transform) {
+        film.style.transform = "";
+        film.style.boxShadow = "";
+      }
       this.site(null);
       return;
     }
-    const W = g.vw, H = g.vh;
-    const bow = Math.sin(Math.PI * e) * H * 0.12; // how far the middle of the edge trails below its sides
-    const edge = (H + bow) * (1 - e) - bow; // the sides of the lower edge (reaches -bow, so the bow clears too)
-    const f = (n: number) => n.toFixed(1);
-    film.style.clipPath = `path("M-2 -2 H${f(W + 2)} V${f(edge)} Q${f(W / 2)} ${f(edge + bow * 2)} -2 ${f(edge)} Z")`;
-    // the page rises into place underneath
-    this.site(48 * (1 - e) * (1 - e));
+    film.style.transform = `translate3d(0,${(-e * (g.vh + 40)).toFixed(2)}px,0)`;
+    film.style.boxShadow = "0 18px 48px rgba(36, 36, 36, 0.22)";
+    this.site(0.96 + 0.04 * e);
   }
 
   render(r: number) {
