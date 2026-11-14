@@ -8,8 +8,10 @@ Screenshots can be `.webp`, `.png`, `.jpg` or `.avif` (WebP preferred, about
 2400px wide). Nothing is cropped: every image keeps its own proportions and
 opens larger on click.
 
-The user flow and product architecture diagrams are drawn in code from
-`journey` and `architecture` in each study file — edit the text there.
+The user flow and product architecture are static flowchart images in
+`diagrams/` (a wide and a `_mobile` version each). They are drawn from
+`journey` and `architecture` in each study file: edit the text there, then run
+`npx tsx scripts/diagrams/render.ts` to redraw them.
 
 ## Ambient AI — `public/images/case-studies/ambient-ai/`
 

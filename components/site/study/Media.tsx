@@ -1,5 +1,5 @@
 import type { Screen as ScreenT } from "@/lib/site/studies/types";
-import { screenFile } from "./assets";
+import { diagramFiles, screenFile } from "./assets";
 import Zoomable from "./Zoomable";
 import s from "./study.module.css";
 
@@ -30,6 +30,24 @@ export function Screen({ slug, screen, priority = false }: { slug: string; scree
         </div>
       )}
       <figcaption>{screen.caption}</figcaption>
+    </figure>
+  );
+}
+
+/** A static flowchart image: the wide version on larger screens, the tall one on phones. */
+export function Flowchart({ slug, name, alt, note, fig }: { slug: string; name: "user_flow" | "architecture"; alt: string; note: string; fig: string }) {
+  const { wide, tall } = diagramFiles(slug, name);
+  if (!wide) return null;
+  return (
+    <figure className={s.dgm} data-diagram={name}>
+      <picture>
+        {tall && <source media="(max-width: 760px)" srcSet={tall.src} width={tall.width} height={tall.height} />}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className={s.dgmImg} src={wide.src} width={wide.width} height={wide.height} alt={alt} loading="lazy" decoding="async" />
+      </picture>
+      <figcaption>
+        <span className={s.figNum}>Fig. {fig}</span> {note}
+      </figcaption>
     </figure>
   );
 }

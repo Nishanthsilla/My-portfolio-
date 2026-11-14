@@ -48,3 +48,10 @@ export function screenFile(slug: string, id: string): Found | null {
   }
   return null;
 }
+
+/** a drawn diagram (scripts/diagrams/render.ts): wide + phone versions */
+export function diagramFiles(slug: string, name: "user_flow" | "architecture") {
+  const base = `${slug.replace(/-/g, "_")}_${name}`;
+  const dir = path.join("images", "case-studies", slug, "diagrams");
+  return { wide: find(path.join(dir, `${base}.webp`)), tall: find(path.join(dir, `${base}_mobile.webp`)) };
+}
