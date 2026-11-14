@@ -2,8 +2,7 @@ import Link from "next/link";
 import AnimatedContent from "@/components/site/reactbits/AnimatedContent";
 import site from "@/components/site/site.module.css";
 import type { Block, Study } from "@/lib/site/studies/types";
-import { ArchitectureMap, JourneyMap } from "./Diagrams";
-import { Screen } from "./Media";
+import { Flowchart, Screen } from "./Media";
 import s from "./study.module.css";
 
 /*
@@ -161,7 +160,7 @@ export default function CaseStudy({ study: st }: { study: Study }) {
           <h2 id="journey" className={s.h2}>{st.journey.title}</h2>
           <p className={s.p}>{st.journey.intro}</p>
         </Reveal>
-        <JourneyMap j={st.journey} fig="1" />
+        <Flowchart slug={st.slug} name="user_flow" fig="1" note={st.journey.note} alt={`${st.title} end-to-end user flow: ${st.journey.stages.map((g, i) => `${i + 1}. ${g.label} — ${g.steps.join(", ")}`).join("; ")}`} />
       </section>
 
       {/* 07 architecture */}
@@ -171,7 +170,7 @@ export default function CaseStudy({ study: st }: { study: Study }) {
           <h2 id="architecture" className={s.h2}>{st.architecture.title}</h2>
           <p className={s.p}>{st.architecture.intro}</p>
         </Reveal>
-        <ArchitectureMap a={st.architecture} fig="2" />
+        <Flowchart slug={st.slug} name="architecture" fig="2" note={st.architecture.note} alt={`${st.title} product architecture: ${st.architecture.layers.map((l) => `${l.label} — ${l.items.join(", ")}`).join("; ")}`} />
       </section>
 
       {/* 08 decisions */}
