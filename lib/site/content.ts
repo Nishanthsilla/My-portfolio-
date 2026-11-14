@@ -56,7 +56,7 @@ export const projects: Project[] = [
     category: "product-strategy",
     title: "Self-Ready",
     eyebrow: "AI / Retail Intelligence",
-    description: "Making AI-powered retail shelf intelligence easier to understand, review and act on.",
+    description: "Turning product imagery into device-ready recognition data.",
     preview: { kind: "scene", id: "self-ready" },
     featured: {
       overview: "/work/self-ready",
@@ -164,9 +164,16 @@ export const projects: Project[] = [
     slug: "ambient-ai",
     category: "product-strategy",
     title: "Ambient AI",
-    eyebrow: "Case study",
+    eyebrow: "Enterprise AI / Agent configuration",
+    role: "Lead Product Designer",
+    description: "Making AI agent and device configuration easier through one connected platform.",
     preview: { kind: "placeholder", need: "Ambient AI cover" },
-    pending: ["One-line description", "Role", "Timeline", "Company", "Cover visual"],
+    pending: ["Cover visual"],
+    featured: {
+      overview: "/work/ambient-ai",
+      caseStudy: "/work/ambient-ai/case-study",
+      tags: ["Product Design", "Enterprise AI"],
+    },
     source: "site",
   },
 
