@@ -41,9 +41,9 @@ export type TileSize = "large" | "small";
  */
 export const bento: { slug: string; size: TileSize }[] = [
   { slug: "self-ready", size: "large" }, // AI retail intelligence — the full case study
+  { slug: "ambient-ai", size: "large" }, // agent + device configuration platform — full case study
   { slug: "mao", size: "large" }, // multi-agent orchestration — current focus
   { slug: "salespulze-heat-map", size: "small" },
-  { slug: "ambient-ai", size: "small" },
   { slug: "covasant-design-system", size: "large" }, // design system at enterprise scale
   { slug: "thriving-springs-e-learning", size: "small" },
   { slug: "ryzeup", size: "small" },
