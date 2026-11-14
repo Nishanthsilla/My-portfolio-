@@ -2,10 +2,10 @@
  * A long-form case study, written as data so both projects share one layout
  * (components/site/study). Copy is Nishanth's own, used verbatim.
  *
- * Images turn on by themselves: drop a file at the path a slot names and
- * rebuild. Until then a designed placeholder holds its place.
- *   screens   /public/images/case-studies/<slug>/screens/<id>.(webp|png|jpg)
- *   diagrams  /public/images/case-studies/<slug>/diagrams/<file>
+ * Screenshots turn on by themselves: drop a file at
+ * /public/images/case-studies/<slug>/screens/<id>.(webp|png|jpg) and rebuild.
+ * Until then a designed placeholder holds its place. The user flow and the
+ * architecture are drawn in code from the data below.
  */
 
 /** a paragraph, a bullet list, or a term list */
@@ -25,7 +25,10 @@ export type ShotLayout = "wide" | "side" | "pair";
 
 export type Step = { n: string; title: string; body: Block[]; shots?: { ids: string[]; layout: ShotLayout } };
 
-export type Diagram = { file: string; title: string; intro: string; caption: string; alt: string };
+/** the end-to-end user flow: stages in order, each with its steps in order */
+export type Journey = { title: string; intro: string; subtitle: string; note: string; stages: { label: string; steps: string[] }[] };
+/** the product architecture: layers from top (people) to bottom (runtime / device) */
+export type Architecture = { title: string; intro: string; subtitle: string; note: string; layers: { label: string; items: string[] }[] };
 
 export type Study = {
   slug: string;
@@ -38,8 +41,8 @@ export type Study = {
   challenge: { title: string; body: Block[]; question?: string };
   objective: { statement: string; lead: string; items: string[] };
   approach: Step[];
-  journey: Diagram;
-  architecture: Diagram;
+  journey: Journey;
+  architecture: Architecture;
   decisions: { t: string; d: string }[];
   outcome: { lead: string; body: string[] };
   reflection: { quote: string; body: string[] };

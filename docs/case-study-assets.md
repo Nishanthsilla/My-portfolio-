@@ -5,15 +5,16 @@ path below, commit, and the next deploy shows it: no code change. Until then
 each spot shows a labelled placeholder of the same shape.
 
 Screenshots can be `.webp`, `.png`, `.jpg` or `.avif` (WebP preferred, about
-2400px wide). Diagrams use the exact file names below. Nothing is cropped:
-every image keeps its own proportions and opens larger on click.
+2400px wide). Nothing is cropped: every image keeps its own proportions and
+opens larger on click.
+
+The user flow and product architecture diagrams are drawn in code from
+`journey` and `architecture` in each study file — edit the text there.
 
 ## Ambient AI — `public/images/case-studies/ambient-ai/`
 
 | File | Shows | Where it appears |
 | --- | --- | --- |
-| `diagrams/ambient_ai_user_flow.png` | End-to-end user journey | after My approach |
-| `diagrams/ambient_ai_architecture.png` | Product architecture | after the user journey |
 | `screens/aa-platform-overview` | Management Portal | hero (overview + case study) |
 | `screens/aa-gateway-mao` | Gateway / MAO configuration | 01 Structuring the platform |
 | `screens/aa-agent-workspace` | Agent workspace, split screen | 02 Agent configuration |
@@ -26,8 +27,6 @@ every image keeps its own proportions and opens larger on click.
 
 | File | Shows | Where it appears |
 | --- | --- | --- |
-| `diagrams/self_ready_user_flow.png` | End-to-end user journey | after My approach |
-| `diagrams/self_ready_architecture.png` | Product architecture | after the user journey |
 | `screens/sr-workbench` | Self-Ready Workbench | hero (overview + case study) |
 | `screens/sr-ingestion` | Manual Bulk Ingestion and Scheduled Image Capture | 01 Image ingestion |
 | `screens/sr-ingestion-history` | Ingestion History | 01 Image ingestion |

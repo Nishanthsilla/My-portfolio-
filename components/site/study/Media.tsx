@@ -1,5 +1,5 @@
-import type { Diagram as DiagramT, Screen as ScreenT } from "@/lib/site/studies/types";
-import { diagramFile, screenFile } from "./assets";
+import type { Screen as ScreenT } from "@/lib/site/studies/types";
+import { screenFile } from "./assets";
 import Zoomable from "./Zoomable";
 import s from "./study.module.css";
 
@@ -30,34 +30,6 @@ export function Screen({ slug, screen, priority = false }: { slug: string; scree
         </div>
       )}
       <figcaption>{screen.caption}</figcaption>
-    </figure>
-  );
-}
-
-/** A supplied diagram, shown whole: never cropped or stretched, and it opens larger. */
-export function Diagram({ slug, d, n }: { slug: string; d: DiagramT; n: string }) {
-  const f = diagramFile(slug, d.file);
-  return (
-    <figure className={s.diagram} data-diagram={d.file}>
-      <div className={s.diagramPanel}>
-        {f ? (
-          <Zoomable src={f.src} alt={d.alt} width={f.width} height={f.height} label={d.title} />
-        ) : (
-          <div className={`${s.slot} ${s.diagramSlot}`} role="img" aria-label={`Diagram to come: ${d.title}`}>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="2.5" y="4" width="6" height="5" rx="1" />
-              <rect x="15.5" y="4" width="6" height="5" rx="1" />
-              <rect x="9" y="15" width="6" height="5" rx="1" />
-              <path d="M8.5 6.5h7M12 9v6" />
-            </svg>
-            <b>Diagram — {d.title}</b>
-            <code>diagrams/{d.file}</code>
-          </div>
-        )}
-      </div>
-      <figcaption>
-        <span className={s.figNum}>Fig. {n}</span> {d.caption}
-      </figcaption>
     </figure>
   );
 }
