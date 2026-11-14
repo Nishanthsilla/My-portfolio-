@@ -2,7 +2,8 @@ import Link from "next/link";
 import AnimatedContent from "@/components/site/reactbits/AnimatedContent";
 import site from "@/components/site/site.module.css";
 import type { Block, Study } from "@/lib/site/studies/types";
-import { Diagram, Screen } from "./Media";
+import { ArchitectureMap, JourneyMap } from "./Diagrams";
+import { Screen } from "./Media";
 import s from "./study.module.css";
 
 /*
@@ -153,17 +154,25 @@ export default function CaseStudy({ study: st }: { study: Study }) {
         </ol>
       </section>
 
-      {/* 06–07 diagrams, each its own section */}
-      {[st.journey, st.architecture].map((d, i) => (
-        <section key={d.file} className={`${site.container} ${s.section}`} aria-labelledby={`diagram-${i}`}>
-          <Reveal className={s.diagramHead}>
-            <Label n={i === 0 ? "05" : "06"}>{i === 0 ? "User journey" : "Architecture"}</Label>
-            <h2 id={`diagram-${i}`} className={s.h2}>{d.title}</h2>
-            <p className={s.p}>{d.intro}</p>
-          </Reveal>
-          <Diagram slug={st.slug} d={d} n={String(i + 1)} />
-        </section>
-      ))}
+      {/* 06 user journey */}
+      <section className={`${site.container} ${s.section}`} aria-labelledby="journey">
+        <Reveal className={s.diagramHead}>
+          <Label n="05">User journey</Label>
+          <h2 id="journey" className={s.h2}>{st.journey.title}</h2>
+          <p className={s.p}>{st.journey.intro}</p>
+        </Reveal>
+        <JourneyMap j={st.journey} fig="1" />
+      </section>
+
+      {/* 07 architecture */}
+      <section className={`${site.container} ${s.section}`} aria-labelledby="architecture">
+        <Reveal className={s.diagramHead}>
+          <Label n="06">Architecture</Label>
+          <h2 id="architecture" className={s.h2}>{st.architecture.title}</h2>
+          <p className={s.p}>{st.architecture.intro}</p>
+        </Reveal>
+        <ArchitectureMap a={st.architecture} fig="2" />
+      </section>
 
       {/* 08 decisions */}
       <section className={`${site.container} ${s.section}`} aria-labelledby="decisions">

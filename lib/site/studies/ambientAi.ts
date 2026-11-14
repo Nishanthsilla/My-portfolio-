@@ -109,18 +109,27 @@ export const ambientAi: Study = {
     },
   ],
   journey: {
-    file: "ambient_ai_user_flow.png",
     title: "End-to-end user journey",
     intro: "The following flow shows how a user moves from initial setup to deployment and ongoing operation.",
-    caption: "From initial setup through configuration, validation and publishing to deployment and ongoing operation.",
-    alt: "Ambient AI end-to-end user journey, from initial setup to deployment and ongoing operation",
+    subtitle: "Management Portal | Configure, validate and deploy agents and connected devices from one platform",
+    note: "Conceptual journey from documented platform workflows; exact role permissions and deployment APIs are implementation-dependent.",
+    stages: [
+      { label: "Set up", steps: ["Sign in to Management Portal", "Open Agent workspace", "Create or select an agent", "Review agent details and dependencies"] },
+      { label: "Configure", steps: ["Configure experts and skills", "Set launch parameters and trigger profiles", "Build or update workflow", "Configure orchestrator and gateway dependencies"] },
+      { label: "Validate", steps: ["Review templates and mappings", "Run pre-flight checks", "Resolve blockers and warnings", "Test configuration and inspect execution"] },
+      { label: "Deploy & operate", steps: ["Publish a versioned configuration", "Deploy to target device / environment", "Monitor execution logs and agent status", "Retry failures and maintain newer versions"] },
+    ],
   },
   architecture: {
-    file: "ambient_ai_architecture.png",
     title: "Product architecture",
     intro: "The architecture below illustrates how the main product surfaces connect configuration, validation, release and runtime operations.",
-    caption: "How the main product surfaces connect configuration, validation, release and runtime operations.",
-    alt: "Ambient AI product architecture connecting configuration, validation, release and runtime operations",
+    subtitle: "Conceptual information architecture: platform configuration is prepared centrally and delivered to devices",
+    note: "Conceptual product architecture, not a verified infrastructure topology. Gateway / MAO is represented as a platform dependency.",
+    layers: [
+      { label: "User-facing layer", items: ["Management Portal", "Agent workspace", "Skill Registry", "Workflow Builder", "Gateway / MAO"] },
+      { label: "Configuration layer", items: ["Agent identity and settings", "Experts and skills", "Trigger profiles and launch parameters", "Workflow graph and templates", "Orchestrator configuration"] },
+      { label: "Release & runtime", items: ["Versioned configuration", "Validation and pre-flight", "Publish and deployment control", "Device / environment connection", "Execution logs and runtime status"] },
+    ],
   },
   decisions: [
     { t: "Centralised configuration", d: "Bring the important configuration capabilities into one platform instead of making users manage them through disconnected experiences." },

@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 /**
- * Finds a case study's images on disk at build time, so a screenshot or a
- * diagram appears as soon as its file is added to /public (no code change).
+ * Finds a case study's images on disk at build time, so a screenshot
+ * appears as soon as its file is added to /public (no code change).
  */
 const PUBLIC = path.join(process.cwd(), "public");
 const EXT = ["webp", "png", "jpg", "jpeg", "avif"];
@@ -48,6 +48,3 @@ export function screenFile(slug: string, id: string): Found | null {
   }
   return null;
 }
-
-/** /images/case-studies/<slug>/diagrams/<exact file name> */
-export const diagramFile = (slug: string, file: string) => find(path.join("images", "case-studies", slug, "diagrams", file));
