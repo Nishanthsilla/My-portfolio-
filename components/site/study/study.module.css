@@ -84,7 +84,9 @@
 .diagramHead { display: grid; gap: 4px; margin-bottom: clamp(28px, 3vw, 40px); }
 .diagramHead .p { margin-top: 12px; }
 .dgm { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; }
-.dgmImg { display: block; width: 100%; height: auto; border-radius: 18px; border: 1px solid #e6e2dc; }
+/* a flowchart always fits on one screen */
+.dgm picture { display: flex; justify-content: center; border-radius: 18px; background: #f4f2ee; border: 1px solid #e6e2dc; overflow: hidden; }
+.dgmImg { display: block; width: auto; max-width: 100%; height: auto; max-height: calc(100svh - 140px); }
 
 .figNum { font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink); margin-right: 6px; }
 
