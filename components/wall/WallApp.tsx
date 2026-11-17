@@ -451,8 +451,13 @@ export default function WallApp({
             );
           })}
 
-          {mode !== "loading" && shown.length === 0 && mine.length === 0 && step === "browse" && (
-            <p className={w.empty}>Nothing here yet from visitors — be the first to leave something.</p>
+          {/* an empty note beside Nishanth's: the invitation to write one */}
+          {step === "browse" && mine.length === 0 && (
+            <button type="button" data-nodrag className={w.ghostNote} style={{ left: `calc(${PINNED.x * 100}% + 250px)`, top: `${PINNED.y * 100}%` }} onClick={start}>
+              <span className={w.ghostPlus} aria-hidden="true">+</span>
+              <b>Your note goes here</b>
+              <span className={w.ghostSub}>{shown.length === 0 ? "Be the first to say hi" : "Say hi, it takes a minute"}</span>
+            </button>
           )}
 
           {draft && step === "compose" && (
