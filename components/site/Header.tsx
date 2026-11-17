@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { uiSound } from "@/lib/sound/ui";
 import s from "./site.module.css";
 
 /**
@@ -43,7 +44,7 @@ export default function Header() {
   return (
     <header className={`bar ${s.header}`}>
       <div className={`wrap ${s.container} ${s.headerRow}`}>
-        <Link className={`mark ${s.logo} ${s.logoNs}`} href="/" aria-label="Nishanth Silla — home" title="Nishanth Silla">
+        <Link className={`mark ${s.logo} ${s.logoNs}`} href="/" aria-label="Nishanth Silla — home" title="Nishanth Silla" onClick={() => uiSound("logo")}>
           <i aria-hidden="true" />
           NS
         </Link>
