@@ -5,7 +5,7 @@ import { onIntroDone } from "@/lib/introState";
 import s from "./music.module.css";
 
 const KEY = "nishanth.music";
-const VOLUME = 0.28;
+const VOLUME = 0.1; // quiet background: the sticker and chat sounds (their own audio, lib/sound/ui.ts) stay clearly on top
 
 /**
  * Background music: "Serendipity" by Purrple Cat (lofi, via Pixabay),
