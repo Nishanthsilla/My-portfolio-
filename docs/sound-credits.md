@@ -31,3 +31,7 @@ Synthesised from scratch in `scripts/audio/compose_site_sounds.py`:
 - `ambient/photography` — the calm ambient piece for the Photography gallery (64 s seamless loop)
 
 The intro film's score and end chime are separate (`public/audio/intro-film.*`, `level-clear.mp3`) and are also original.
+
+## Face sticker
+
+- `swag` (glasses appear on hover) and `talk` (the chat opens) are original sounds composed for this site in `scripts/audio/compose_sticker_sounds.py`. No samples are used.
