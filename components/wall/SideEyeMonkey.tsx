@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import w from "./wall.module.css";
 
 /**
@@ -10,17 +10,34 @@ import w from "./wall.module.css";
 export const SIDE_EYE_GIF: string | null = null;
 
 /**
- * The Side-Eye Filter's reaction. Uses SIDE_EYE_GIF when it is set (and loads);
- * otherwise an original drawn monkey whose eyes slide sideways, slowly, under
+ * The Side-Eye Filter's reaction: the side-eye monkey meme (SIDE_EYE_GIF if set,
+ * else found through the GIF search) and "Bro, chill."; if no GIF is available, an original drawn monkey whose eyes slide sideways, slowly, under
  * heavy lids. Pops in with a small entrance; reduced motion keeps it still.
  */
+/** the side-eye monkey meme, found once through the site's GIF search (GIPHY) and reused */
+let found: Promise<string | null> | null = null;
+const findMeme = () =>
+  (found ??= fetch("/api/wall/gifs?q=side%20eye%20monkey")
+    .then((r) => (r.ok ? r.json() : { gifs: [] }))
+    .then((d: { gifs?: { src: string }[] }) => d.gifs?.[0]?.src ?? null)
+    .catch(() => null));
+
 export default function SideEyeMonkey() {
-  const [gif, setGif] = useState(!!SIDE_EYE_GIF);
+  const [meme, setMeme] = useState<string | null>(SIDE_EYE_GIF);
+  const [gif, setGif] = useState(true);
+  useEffect(() => {
+    if (SIDE_EYE_GIF) return;
+    let alive = true;
+    void findMeme().then((src) => alive && src && setMeme(src));
+    return () => {
+      alive = false;
+    };
+  }, []);
   return (
     <div className={w.monkey} role="status">
-      {gif ? (
+      {meme && gif ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img className={w.monkeyArt} src={SIDE_EYE_GIF!} alt="A monkey giving you the side-eye" onError={() => setGif(false)} />
+        <img className={w.monkeyArt} src={meme} alt="A monkey giving you the side-eye" onError={() => setGif(false)} />
       ) : (
         <svg className={w.monkeyArt} viewBox="0 0 120 120" role="img" aria-label="A monkey giving you the side-eye">
           <circle cx="22" cy="56" r="15" fill="#8A5A3B" />
@@ -46,7 +63,9 @@ export default function SideEyeMonkey() {
           <path d="M50 86c6 2 14 2 20-1" fill="none" stroke="#6E4630" strokeWidth="2.6" strokeLinecap="round" />
         </svg>
       )}
-      <p className={w.monkeyLine}>Hmm... let&apos;s keep it friendly 🙄</p>
+      <p className={w.monkeyLine}>
+        <b>Bro, chill.</b> Let&apos;s keep it friendly.
+      </p>
     </div>
   );
 }

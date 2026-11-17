@@ -12,12 +12,13 @@
  *     strike-through covers exactly what the visitor typed.
  *  3. Threats and targeted harassment: phrase patterns that a word list alone
  *     would miss ("hope you die", "you're worthless").
- *  4. Spam: links are not allowed on the wall.
+ *  4. Put-downs about Nishanth or his work ("your portfolio is trash", "worst designer").
+ *  5. Spam: links are not allowed on the wall.
  *  An allowlist removes known false positives (e.g. "shiitake").
  */
 import { RegExpMatcher, englishDataset, englishRecommendedTransformers } from "obscenity";
 
-export type FlagKind = "language" | "threat" | "harassment" | "link";
+export type FlagKind = "language" | "threat" | "harassment" | "rude" | "link";
 export type Flag = { start: number; end: number; kind: FlagKind };
 
 const matcher = new RegExpMatcher({ ...englishDataset.build(), ...englishRecommendedTransformers });
@@ -40,6 +41,18 @@ const HARASS: RegExp[] = [
   /\b(nobody|no\s+one)\s+(likes|loves|cares\s+about)\s+(you|u)\b/gi,
   /\b(shut\s+up|get\s+lost)\s+(you|u)\b/gi,
 ];
+/** Put-downs aimed at Nishanth or his work (the wall is about him, so "you" / "this" usually means him or the site). */
+const SUBJECT = String.raw`(this|that|the|your|ur|his|nishanth'?s?|nishant'?s?)\s+(portfolio|site|website|web\s*site|work|works|design|designs|page|ui|ux|stuff|projects?)`;
+const BAD = String.raw`(so\s+|really\s+|very\s+|kinda\s+|pretty\s+)?(bad|trash|garbage|ugly|terrible|awful|horrible|shit|shitty|crap|crappy|boring|lame|mid|cringe|cringy|useless|pathetic|worst|meh|poor|weak|amateur|amateurish|sucks|suck)`;
+const RUDE: RegExp[] = [
+  new RegExp(String.raw`\b${SUBJECT}\s+(is|are|looks?|feels?|seems?|was|r)?\s*${BAD}\b`, "gi"),
+  new RegExp(String.raw`\b(nishanth|nishant|you|u|he|ur)\s+(is|are|r|'?re|'?s)?\s*(a\s+|an\s+|the\s+)?${BAD}(\s+designer)?\b`, "gi"),
+  /\b(you|u|he|nishanth|this|it)\s+(really\s+)?(sucks?|can'?t\s+design|have\s+no\s+taste)\b/gi,
+  /\b(worst|ugliest|most\s+boring|lamest)\s+(portfolio|site|website|designer|design|work)\b/gi,
+  /\b(bad|terrible|awful|overrated|worst|fake)\s+designer\b/gi,
+  /\b(hate|hated)\s+(it|this|you|ur|your\s+\w+)\b/gi,
+];
+
 const LINKS: RegExp[] = [/\bhttps?:\/\/\S+/gi, /\bwww\.\S+/gi, /\b[a-z0-9-]+\.(com|net|org|io|xyz|ru|ly|me|co|info|biz|top|click|link|site|online|app)\b(\/\S*)?/gi];
 
 /** Invisible / formatting characters often used to slip words past filters. */
@@ -120,6 +133,7 @@ export function findFlags(src: string): Flag[] {
     ...wordFlags(src, spacedMapped),
     ...regexFlags(lower, THREATS, "threat"),
     ...regexFlags(lower, HARASS, "harassment"),
+    ...regexFlags(lower, RUDE, "rude"),
     ...regexFlags(lower, LINKS, "link"),
   ].map((f) => toWord(src, f));
   flags.sort((a, b) => a.start - b.start || b.end - a.end);

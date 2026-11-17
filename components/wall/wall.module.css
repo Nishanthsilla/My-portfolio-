@@ -403,3 +403,7 @@
 @keyframes catHop { from { bottom: 6%; } to { bottom: 16%; } }
 .toast { z-index: 31; }
 @media (prefers-reduced-motion: reduce) { .happyCat { animation: none; left: 50%; transform: translateX(-50%); } }
+
+/* the real meme, when the GIF search finds it */
+img.monkeyArt { width: 96px; height: 96px; object-fit: cover; border-radius: 12px; }
+.monkeyLine b { display: block; font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }

@@ -10,6 +10,7 @@ import { LIMITS, type PublicNote } from "@/lib/wall/types";
 import { addMine, loadDraft, loadLayout, loadMine, pruneMine, saveDraft, saveLayout, type MyNote, type Spot } from "@/lib/wall/local";
 import ElasticSticker from "./ElasticSticker";
 import { sfx } from "@/lib/sound/engine";
+import { uiSound } from "@/lib/sound/ui";
 import NoteCard from "./NoteCard";
 import SideEyeEditor from "./SideEyeEditor";
 import SideEyeMonkey from "./SideEyeMonkey";
@@ -312,6 +313,12 @@ export default function WallApp({
   const msgFlags = useMemo(() => findFlags(message), [message]);
   const nameFlags = useMemo(() => findFlags(name), [name]);
   const flagged = msgFlags.length + nameFlags.length > 0;
+  // the moment a note turns rude: the same "huh?" / Dexter sound the chat uses for silly questions
+  const wasFlagged = useRef(false);
+  useEffect(() => {
+    if (flagged && !wasFlagged.current) uiSound(Math.random() < 0.5 ? "dexter" : "huh", true);
+    wasFlagged.current = flagged;
+  }, [flagged]);
   // the preview never shows blocked words — they are masked there (the editor strikes them through privately)
   const mask = (v: string, flags: typeof msgFlags) => flags.reduceRight((t, f) => t.slice(0, f.start) + "•".repeat(Math.min(6, f.end - f.start)) + t.slice(f.end), v);
   const safeMessage = mask(message, msgFlags), safeName = mask(name, nameFlags);
