@@ -44,7 +44,20 @@ export default function Header() {
   return (
     <header className={`bar ${s.header}`}>
       <div className={`wrap ${s.container} ${s.headerRow}`}>
-        <Link className={`mark ${s.logo} ${s.logoNs}`} href="/" aria-label="Nishanth Silla — home" title="Nishanth Silla" onClick={() => uiSound("logo")}>
+        <Link
+          className={`mark ${s.logo} ${s.logoNs}`}
+          href="/#about"
+          aria-label="Nishanth Silla — home"
+          title="Nishanth Silla"
+          onClick={() => {
+            uiSound("logo");
+            setMenu(false);
+            // always the start of the homepage, not wherever the journey was left
+            try {
+              sessionStorage.removeItem("nishanth.home.journey");
+            } catch {}
+          }}
+        >
           <i aria-hidden="true" />
           NS
         </Link>
