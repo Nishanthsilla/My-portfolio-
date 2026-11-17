@@ -31,7 +31,7 @@ export const story = {
       "I don't like products that throw everything at you. I want it to be obvious what to do next. The best thing people say about my work is that it was easy to get through: nothing to confuse them, they just did what they came to do.",
     ],
     life: "When I'm not designing, I'm behind a [[camera|camera]]. When I get time, I help my dad with his photography, shooting and editing alongside him, and now and then I'm [[model|in front of one]] too, modelling. I [[cook|cook]] a lot, because I love cooking for my favourite people. I'm a bit of a [[gym|gym freak]], and enough of an anime geek to have [[naruto|Naruto tattooed]] on my forearm. And I love [[adventure|adventures that test my limits]].",
-    instagram: { label: "More on my Instagram", href: "https://www.instagram.com/thisisnishanthsilla/" },
+    instagram: { label: "More on my Instagram", href: "https://www.instagram.com/yaa.its_nishanth/" },
     howIWork: "No fixed recipe. Every project has its own workflow, so I shape my process around the problem and keep the answer as simple as it can be.",
     /** what the placeholder asks for, until a word has photos */
     words: {
