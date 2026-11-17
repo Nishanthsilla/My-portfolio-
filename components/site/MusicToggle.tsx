@@ -5,11 +5,11 @@ import { onIntroDone } from "@/lib/introState";
 import s from "./music.module.css";
 
 const KEY = "nishanth.music";
-const VOLUME = 0.32;
+const VOLUME = 0.28;
 
 /**
- * Background music: a calm, game-style loop with birdsong
- * (/audio/ambient/garden, composed for the site). On by default, but browsers
+ * Background music: "Serendipity" by Purrple Cat (lofi, via Pixabay),
+ * looped seamlessly (/audio/ambient/serendipity). On by default, but browsers
  * only allow it after the visitor's first click or key press, and it waits
  * for the intro film to finish. The button turns it off (remembered).
  */
@@ -29,7 +29,7 @@ export default function MusicToggle() {
       gain.gain.value = 0;
       gain.connect(ctx.destination);
       const ext = document.createElement("audio").canPlayType('audio/ogg; codecs="opus"') ? "ogg" : "mp3";
-      const buf = fetch(`/audio/ambient/garden.${ext}`).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).catch(() => null);
+      const buf = fetch(`/audio/ambient/serendipity.${ext}`).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).catch(() => null);
       audio.current = { ctx, gain, src: null, buf };
     }
     const a = audio.current;
