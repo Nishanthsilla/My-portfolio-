@@ -14,7 +14,7 @@ type Msg = { role: "user" | "assistant"; content: string; off?: { gif: string | 
 
 const SUGGESTIONS = SUGGESTED.map((id) => topicById(id)!.q);
 /** off-topic answers: a "nope" GIF (shuffled) and a line (shuffled) */
-const NOPE_QUERIES = ["nope", "i don't know", "no idea", "shrug", "not my department", "nope nope nope", "confused"];
+const NOPE_QUERIES = ["sus", "suspicious", "angry", "nope", "nope nope nope", "side eye", "really"];
 const NOPE_LINES = [
   "Nope — I only know about Nishanth.",
   "That's outside my brain. Ask me about Nishanth!",
@@ -128,6 +128,7 @@ export default function AskPanel({ face }: { face: string | null }) {
     const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reply.kind === "off") {
       const [gif] = await Promise.all([nopeGif(), wait(calm ? 0 : 650)]);
+      uiSound(Math.random() < 0.5 ? "dexter" : "huh", true); // a meme sound for a silly question
       setMsgs((m) => [...m, { role: "assistant", content: "", off: { gif, line: pick(NOPE_LINES) }, next: reply.next }]);
       setBusy(false);
       return;
