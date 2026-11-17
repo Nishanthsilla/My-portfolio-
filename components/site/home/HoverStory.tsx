@@ -53,6 +53,8 @@ function Live({ label, word, seed }: { label: string; word: Word; seed: number }
   const shown = photos.length
     ? SPOTS.map((_, k) => photos[(pick * 2 + k + seed) % photos.length]).slice(0, Math.min(SPOTS.length, photos.length))
     : [null, null];
+  // a single photo lands just above and to the right of the word, slightly bigger
+  const spots = shown.length === 1 ? [{ x: 150, y: -175, r: 5 }] : SPOTS;
 
   return (
     <span
@@ -86,7 +88,7 @@ function Live({ label, word, seed }: { label: string; word: Word; seed: number }
           <span
             key={`${pick}-${k}`}
             className={m.print}
-            style={{ ["--x" as string]: `${SPOTS[k].x}px`, ["--y" as string]: `${SPOTS[k].y}px`, ["--r" as string]: `${SPOTS[k].r}deg`, ["--d" as string]: `${k * 55}ms` }}
+            style={{ ["--x" as string]: `${spots[k].x}px`, ["--y" as string]: `${spots[k].y}px`, ["--r" as string]: `${spots[k].r}deg`, ["--d" as string]: `${k * 55}ms`, ...(shown.length === 1 ? { width: 170 } : {}) }}
           >
             {src ? (
               // eslint-disable-next-line @next/next/no-img-element
