@@ -419,4 +419,4 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 
 /* a tall panel on a phone scrolls from its top instead of being cut off above */
 .journey[data-mode="touch"] .panel { align-items: safe center; }
-.journey[data-mode="touch"] .panel .panelInner { padding-top: 14px; padding-bottom: 28px; }
+.journey[data-mode="touch"] .panel .panelInner { padding-top: 40px; padding-bottom: 72px; }

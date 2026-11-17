@@ -39,3 +39,7 @@ The intro film's score and end chime are separate (`public/audio/intro-film.*`, 
 ## Oneko
 
 The pixel cat that follows the mouse is adapted from [oneko.js](https://github.com/adryd325/oneko.js) by adryd (MIT licence), including its sprite sheet (`public/cursors/oneko.gif`).
+
+## Background music
+
+- `ambient/garden` (calm game-style loop with birdsong) is original, composed for this site in `scripts/audio/compose_garden.py`.
