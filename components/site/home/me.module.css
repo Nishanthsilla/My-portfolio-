@@ -47,3 +47,12 @@
   .print, .liveOn .print { transition: opacity 120ms ease; }
   .liveOn .print { transform: translate(calc(-50% + var(--x)), var(--y)) rotate(var(--r)); }
 }
+
+/* the way to more: Instagram */
+.insta { display: inline-flex; align-items: center; gap: 8px; margin-top: 26px; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  font-size: 15px; font-weight: 500; color: var(--ink); transition: border-color 160ms, transform 160ms; }
+.insta span { color: var(--accent); transition: transform 200ms ease; }
+.insta:hover { border-color: var(--ink); }
+.insta:hover span { transform: translate(2px, -2px); }
+.insta:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.insta + .hint { margin-top: 16px; }

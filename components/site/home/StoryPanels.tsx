@@ -72,6 +72,9 @@ export default function StoryPanels() {
     <div className={h.panel} data-snap aria-roledescription="slide" aria-label="4 of 5">
       <div className={h.panelInner}>
         <HoverStory text={st.me.life} words={words} className={m.big} />
+        <a className={m.insta} href={st.me.instagram.href} target="_blank" rel="noopener noreferrer">
+          {st.me.instagram.label} <span aria-hidden="true">↗</span>
+        </a>
         <p className={m.hint}>
           <span className={m.hintHover}>Hover</span>
           <span className={m.hintTap}>Tap</span> the coloured words
