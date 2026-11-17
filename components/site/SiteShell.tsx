@@ -5,6 +5,7 @@ import Footer from "./Footer";
 import Header from "./Header";
 import AskPanel from "./ask/AskPanel";
 import Oneko from "./Oneko";
+import MusicToggle from "./MusicToggle";
 import s from "./site.module.css";
 
 /** your face for the chat sticker: shown once the file exists, initials until then */
@@ -23,6 +24,7 @@ export default function SiteShell({ children, footer = true }: { children: React
       <main className={s.page}>{children}</main>
       {footer && <Footer />}
       <Oneko />
+      <MusicToggle />
       <AskPanel face={FACE_FILE ? FACE : null} />
     </div>
   );
