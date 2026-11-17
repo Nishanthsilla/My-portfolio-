@@ -2,7 +2,14 @@ import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
+import fs from "node:fs";
+import path from "node:path";
 import Intro from "@/components/Intro";
+import GlobalWidgets from "@/components/site/GlobalWidgets";
+
+/** the face for the chat sticker: shown once the file exists, initials until then */
+const FACE = "/images/about/face-sticker.webp";
+const FACE_FILE = fs.existsSync(path.join(process.cwd(), "public", FACE));
 
 export const metadata: Metadata = {
   title: "Nishanth in Motion",
@@ -39,6 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body data-tone="paper">
         {/* The real site is always rendered; the intro sits above it. */}
         <div id="site-root">{children}</div>
+        <GlobalWidgets face={FACE_FILE ? FACE : null} />
         <Intro />
         <noscript>
           <style>{`[data-intro-loader],[data-intro-film]{display:none!important}`}</style>
