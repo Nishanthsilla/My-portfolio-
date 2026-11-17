@@ -45,7 +45,7 @@ export default function IntroFilm() {
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let seen = false;
     try {
-      seen = FILM_REPLAY === "once-per-session" && sessionStorage.getItem(SESSION_KEY) === "1";
+      seen = FILM_REPLAY === "once-per-session" && sessionStorage.getItem(SESSION_KEY) === "1" && !/[?&]intro=replay/.test(location.search);
     } catch {}
     if (reduce || seen || html.hasAttribute("data-embed")) {
       announceDone();

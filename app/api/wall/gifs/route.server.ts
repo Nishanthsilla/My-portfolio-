@@ -11,7 +11,8 @@ type Giphy = { data?: { id: string; title?: string; images?: Record<string, { ur
 export async function GET(req: Request) {
   await connection();
   const key = process.env.GIPHY_API_KEY;
-  if (!key) return Response.json({ ok: false, gifs: [] }, { status: 404 });
+  // GIFs not set up here: an empty list (not an error), so pages stay quiet
+  if (!key) return Response.json({ ok: false, gifs: [] });
   const url = new URL(req.url);
   const q = (url.searchParams.get("q") ?? "").trim().slice(0, 50);
   const offset = Math.max(0, Math.min(200, Number(url.searchParams.get("offset")) || 0));

@@ -84,7 +84,7 @@ export default function WorkScene() {
         </div>
       </CursorScope>
       {drawer && (
-        <ProjectDrawer project={drawer.p} mode={drawer.mode} onMode={(mode) => setDrawer({ ...drawer, mode })} onClose={() => setDrawer(null)} />
+        <ProjectDrawer project={drawer.p} mode={drawer.mode} onMode={(mode) => setDrawer({ ...drawer, mode })} onProject={(p, mode) => setDrawer({ p, mode })} onClose={() => setDrawer(null)} />
       )}
     </section>
   );
