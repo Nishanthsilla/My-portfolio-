@@ -77,7 +77,7 @@ export default function AskPanel({ face }: { face: string | null }) {
   const [closing, setClosing] = useState(false);
   const close = () => {
     if (closing) return;
-    uiSound("talk", true); // the same screen sound as opening
+    uiSound("chat-close", true);
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return setOpen(false);
     setClosing(true);
     window.setTimeout(() => {
@@ -171,11 +171,11 @@ export default function AskPanel({ face }: { face: string | null }) {
               setSwag(true);
               window.setTimeout(() => {
                 setSwag(false);
-                uiSound("talk");
+                uiSound("chat-open");
                 setOpen(true);
               }, 650);
             } else {
-              uiSound("talk");
+              uiSound("chat-open");
               setOpen(true);
             }
           }}

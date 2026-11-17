@@ -1,10 +1,10 @@
 """
 Two original sounds for the face sticker (composed here, no samples):
   swag  — two quick rising pops, "pop-pop" (hover)
-  talk  — a screen sliding open: an airy upward whoosh and a soft landing (the chat opens and closes)
+  chat-open / chat-close — a crisp swipe that lands on a tiny click (and the same in reverse)
 
   python3 scripts/audio/compose_sticker_sounds.py
-Writes public/audio/sfx/{swag,talk}.{ogg,mp3}.
+Writes public/audio/sfx/{swag,chat-open,chat-close}.{ogg,mp3}.
 """
 import subprocess, tempfile, wave
 from pathlib import Path
@@ -45,17 +45,28 @@ def swag():
         i = int(at * SR); out[i:i + len(x)] += g * x[: len(out) - i]
     return out
 
-def talk():
-    """a screen sliding open: an airy whoosh that sweeps up, settling with a soft low thud"""
-    n = int(SR * 0.52); t = np.arange(n) / SR
-    w = sweep_noise(n, 500, 3600, q=0.9, curve=0.8)
-    shape = np.clip(t / 0.22, 0, 1) ** 1.5 * np.exp(-np.clip(t - 0.24, 0, None) / 0.09)
-    out = 0.8 * w / np.max(np.abs(w)) * shape
-    # the panel lands
-    i = int(0.25 * SR); m = int(SR * 0.12); tt = np.arange(m) / SR
-    thud = np.sin(2 * np.pi * (95 + 40 * np.exp(-tt / 0.02)) * tt) * np.exp(-tt / 0.035)
-    out[i:i + m] += 0.45 * thud
+def _swish(dur, f0, f1, q=2.0):
+    n = int(SR * dur)
+    w = sweep_noise(n, f0, f1, q=q)
+    return w / np.max(np.abs(w)) * np.sin(np.pi * np.linspace(0, 1, n)) ** 2
+
+def _click(f):
+    n = int(SR * 0.02); t = np.arange(n) / SR
+    return np.sin(2 * np.pi * f * t) * np.exp(-t / 0.003)
+
+def _mix(parts, dur):
+    out = np.zeros(int(SR * dur))
+    for at, x, g in parts:
+        i = int(at * SR); out[i:i + len(x)] += g * x[: len(out) - i]
     return out
+
+def chat_open():
+    """the chat slides in: a crisp, short swipe that lands on a tiny click"""
+    return _mix([(0, _swish(0.10, 1200, 4200), 0.55), (0.085, _click(2400), 0.6)], 0.14)
+
+def chat_close():
+    """the chat slides away: the same swipe in reverse, a slightly lower click"""
+    return _mix([(0, _swish(0.10, 4200, 1200), 0.55), (0.085, _click(1900), 0.5)], 0.14)
 
 def write(name, x, peak=0.8):
     x = x / np.max(np.abs(x)) * peak
@@ -70,4 +81,5 @@ def write(name, x, peak=0.8):
 
 if __name__ == "__main__":
     write("swag", swag(), 0.6)
-    write("talk", talk(), 0.7)
+    write("chat-open", chat_open(), 0.6)
+    write("chat-close", chat_close(), 0.6)

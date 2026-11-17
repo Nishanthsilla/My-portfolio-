@@ -34,4 +34,4 @@ The intro film's score and end chime are separate (`public/audio/intro-film.*`, 
 
 ## Face sticker
 
-- `swag` (a soft pop on hover) and `talk` (the chat panel slides open or closes) are original sounds composed for this site in `scripts/audio/compose_sticker_sounds.py`. No samples are used.
+- `swag` (a "pop-pop" on hover), `chat-open` and `chat-close` (a crisp swipe as the chat slides in and out) are original sounds composed for this site in `scripts/audio/compose_sticker_sounds.py`. No samples are used.
