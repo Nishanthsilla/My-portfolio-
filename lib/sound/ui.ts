@@ -1,11 +1,11 @@
 /**
- * The face sticker's two sounds (swag on hover; talk when the chat opens and closes). These play even
+ * The face sticker's two sounds (swag on hover; a swipe when the chat opens and closes). These play even
  * though the site-wide sound is off. Browsers allow audio only after the
  * visitor has clicked, tapped or pressed a key once, so until then hovering
  * is silent; a click or tap always counts.
  */
-type Name = "swag" | "talk";
-const GAIN: Record<Name, number> = { swag: 0.4, talk: 0.55 };
+type Name = "swag" | "chat-open" | "chat-close";
+const GAIN: Record<Name, number> = { swag: 0.4, "chat-open": 0.5, "chat-close": 0.45 };
 
 let ctx: AudioContext | null = null;
 const buffers = new Map<Name, Promise<AudioBuffer | null>>();
@@ -27,7 +27,7 @@ export function preloadUiSounds() {
   const c = context();
   if (!c) return;
   const ext = document.createElement("audio").canPlayType('audio/ogg; codecs="opus"') ? "ogg" : "mp3";
-  (["swag", "talk"] as Name[]).forEach((n) => {
+  (["swag", "chat-open", "chat-close"] as Name[]).forEach((n) => {
     if (!buffers.has(n))
       buffers.set(n, fetch(`/audio/sfx/${n}.${ext}`).then((r) => r.arrayBuffer()).then((b) => c.decodeAudioData(b)).catch(() => null));
   });
