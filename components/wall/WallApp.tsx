@@ -42,6 +42,13 @@ const DECOR: { id: string; x: number; y: number; r: number; s: number }[] = [
 ];
 /** Nishanth's own pinned note (his words from the brief), clearly labelled. */
 const PINNED = { id: "pinned", sticker: "gif-heart", font: "scribble", shape: "square", color: "yellow", message: "A thought, a note, or just a little sticker. I'd love to see what you leave.", name: "Nishanth", x: 0.4, y: 0.44, rotation: -4 };
+/** A few more notes from Nishanth himself (signed by him), so the wall never feels empty. */
+const HOST_NOTES = [
+  { id: "host-drag", sticker: "gif-sparkles", font: "scribble", shape: "rounded", color: "pink", message: "psst, every sticker here is draggable", x: 0.2, y: 0.44, rotation: 5 },
+  { id: "host-gifs", sticker: "gif-party", font: "marker", shape: "square", color: "blue", message: "try the GIF search. best part", x: 0.78, y: 0.47, rotation: -6 },
+  { id: "host-read", sticker: "gif-heart", font: "bubbly", shape: "torn", color: "green", message: "I read every single one :)", x: 0.6, y: 0.7, rotation: 3 },
+  { id: "host-2am", sticker: "coffee", font: "typewriter", shape: "square", color: "peach", message: "built this wall at 2am. no regrets", x: 0.3, y: 0.27, rotation: -3 },
+];
 
 /**
  * The Wall. On the homepage it lives in its own scene (embedded) and opens full
@@ -429,6 +436,15 @@ export default function WallApp({
             return (
               <ElasticSticker key={id} board={board} x={p.x} y={p.y} z={p.z} rotation={d.r} onMove={moveTo(id)} label={stickerById(d.id)?.label ?? "Sticker"} className={`${w.placed} ${w.decor}`}>
                 <StickerArt id={d.id} size={d.s} />
+              </ElasticSticker>
+            );
+          })}
+
+          {HOST_NOTES.map((n) => {
+            const p = spot(n.id, n.x, n.y);
+            return (
+              <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Note from Nishanth: ${n.message}`} className={w.placed}>
+                <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name="Nishanth" />
               </ElasticSticker>
             );
           })}
