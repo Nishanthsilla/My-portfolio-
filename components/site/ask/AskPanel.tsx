@@ -165,16 +165,19 @@ export default function AskPanel({ face }: { face: string | null }) {
           onPointerEnter={(e) => e.pointerType === "mouse" && uiSound("swag")}
           onFocus={preloadUiSounds}
           onClick={() => {
-            uiSound("talk");
-            // phones have no hover: the glasses show for a moment, then the chat opens
+            // phones have no hover: the tap plays the pop-pop with the glasses, then (one sound at a time) the chat opens
             if (matchMedia("(hover: none)").matches && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
               uiSound("swag");
               setSwag(true);
               window.setTimeout(() => {
                 setSwag(false);
+                uiSound("talk");
                 setOpen(true);
               }, 650);
-            } else setOpen(true);
+            } else {
+              uiSound("talk");
+              setOpen(true);
+            }
           }}
           aria-label="Talk to me: ask about Nishanth"
         >
