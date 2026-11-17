@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useSyncExternalStore } from "react";
 import AskPanel from "./ask/AskPanel";
 import MusicToggle from "./MusicToggle";
 import Oneko from "./Oneko";
@@ -10,18 +11,28 @@ import s from "./site.module.css";
  * Site-wide widgets (the chat sticker, the music button, the pixel cat),
  * mounted once in the root layout. Inside a page they were duplicated: the
  * router keeps the previous page alive in the background, which meant two
- * stickers, two cats and potentially two music players. The full-screen
- * wall pages have their own controls, so they're left out there.
+ * stickers, two cats and potentially two music players. The wall, full
+ * screen, has its own controls, so they're left out there.
  */
 export default function GlobalWidgets({ face }: { face: string | null }) {
   const path = usePathname() ?? "/";
-  if (path.startsWith("/wall")) return null;
+  // the wall full screen (#the-wall) has its own bottom bar: keep these out of its way
+  const onWall = useSyncExternalStore(
+    (cb) => {
+      addEventListener("hashchange", cb);
+      return () => removeEventListener("hashchange", cb);
+    },
+    () => location.hash.startsWith("#the-wall"),
+    () => false,
+  );
+  const hide = path.startsWith("/wall") || onWall;
   return (
     // display: contents keeps the site's colour and type tokens without adding a box
     <div className={s.site} style={{ display: "contents" }}>
-      <Oneko />
-      <MusicToggle />
-      <AskPanel face={face} />
+      {!hide && <Oneko />}
+      {/* the music keeps playing; only its button steps aside (unmounting would start a second player) */}
+      <MusicToggle hidden={hide} />
+      {!hide && <AskPanel face={face} />}
     </div>
   );
 }

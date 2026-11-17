@@ -13,6 +13,7 @@ import { sfx } from "@/lib/sound/engine";
 import NoteCard from "./NoteCard";
 import SideEyeEditor from "./SideEyeEditor";
 import SideEyeMonkey from "./SideEyeMonkey";
+import Celebration from "./Celebration";
 import w from "./wall.module.css";
 
 type Mode = "loading" | "sqlite" | "postgres" | "unconfigured" | "offline";
@@ -71,6 +72,8 @@ export default function WallApp({
   const [notes, setNotes] = useState<PublicNote[]>([]);
   const [hidden, setHidden] = useState<string[]>([]);
   const [step, setStep] = useState<Step>("browse");
+  /** where the note just posted sits (fractions of the wall), for "See your note" */
+  const [postedAt, setPostedAt] = useState<{ x: number; y: number } | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   // one line: the note, then "@name" to sign it
   const [line, setLine] = useState("");
@@ -334,6 +337,7 @@ export default function WallApp({
       // no server in this copy: keep the note on this device (clearly labelled), nothing is sent
       addMine({ id: `local-${Date.now()}`, message, name, ...draft, createdAt: new Date().toISOString(), local: true });
       setMine(loadMine());
+      setPostedAt({ x: draft.x, y: draft.y });
       setStep("sent");
         setPanel(null);
       setDraft(null);
@@ -356,6 +360,7 @@ export default function WallApp({
           addMine(d.note);
           setMine(loadMine());
         }
+        setPostedAt({ x: draft.x, y: draft.y });
         setStep("sent");
         setPanel(null);
         setDraft(null);
@@ -480,16 +485,26 @@ export default function WallApp({
 
 
       {step === "sent" && (
-        <div className={w.sent} role="status">
-          <StickerArt id="gif-party" size={72} />
-          <h2>Stuck it on the wall!</h2>
-          <p>
-            {mode === "offline"
-              ? "Thanks for leaving a little something! This copy of the site isn't connected, so it's saved on this device only."
-              : "Thanks for leaving a little something — it means a lot."}
-          </p>
-          <button type="button" className={w.btnPrimary} onClick={() => setStep("browse")}>Back to the wall</button>
-        </div>
+        <Celebration
+          offline={mode === "offline"}
+          onSee={() => {
+            setStep("browse");
+            // glide the canvas to the note just posted
+            const v = scroller.current;
+            if (!v || !postedAt) return;
+            const z = zoom.current;
+            const from = { ...pan.current };
+            const to = { x: v.clientWidth / 2 - postedAt.x * WORLD.w * z, y: v.clientHeight / 2 - postedAt.y * WORLD.h * z };
+            const t0 = performance.now();
+            const step = (now: number) => {
+              const k = Math.min(1, (now - t0) / 700), e = 1 - Math.pow(1 - k, 3);
+              pan.current = { x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e };
+              applyPan();
+              if (k < 1) requestAnimationFrame(step);
+            };
+            requestAnimationFrame(step);
+          }}
+        />
       )}
 
       {/* the composer: a minimal prompt bar — words on top, a slim row of tools below */}

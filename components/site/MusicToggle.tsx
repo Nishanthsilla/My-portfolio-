@@ -13,7 +13,7 @@ const VOLUME = 0.24; // background level: the sticker and chat sounds (their own
  * only allow it after the visitor's first click or key press, and it waits
  * for the intro film to finish. The button turns it off (remembered).
  */
-export default function MusicToggle() {
+export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
   const [on, setOn] = useState(true);
   const [playing, setPlaying] = useState(false);
   const audio = useRef<{ ctx: AudioContext; gain: GainNode; src: AudioBufferSourceNode | null; buf: Promise<AudioBuffer | null> } | null>(null);
@@ -100,6 +100,7 @@ export default function MusicToggle() {
     else stop();
   };
 
+  if (hidden) return null;
   return (
     <button type="button" className={s.btn} data-on={on && playing ? "" : undefined} onClick={toggle} aria-pressed={on} aria-label={on ? "Music on: turn off" : "Music off: turn on"} title={on ? "Turn music off" : "Turn music on"}>
       <svg className={s.note} viewBox="0 0 24 24" aria-hidden="true">
