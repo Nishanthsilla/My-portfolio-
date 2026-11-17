@@ -20,6 +20,9 @@ export type SfxName =
   | "mrrp" | "meow" | "squeak" | "splash" | "tink" | "blind";
 export type AmbientName = "photography";
 
+/** Website sound is switched off for now (the navbar toggle is removed). Set to true to bring it back. */
+export const SOUND_ENABLED = false;
+
 const KEY = "nishanth.sound";
 const FILES: Record<string, string> = {
   "folder-1": "sfx/folder-1",
@@ -69,7 +72,7 @@ class SoundEngine {
   private armed = false;
 
   init() {
-    if (typeof window === "undefined" || this.armed) return;
+    if (typeof window === "undefined" || this.armed || !SOUND_ENABLED) return;
     this.armed = true;
     this.prefs = read();
     // remembered "on": wait for the first gesture of this visit before any audio

@@ -6,6 +6,7 @@ import { respond } from "@/lib/ask/match";
 import { SUGGESTED, topicById, type Topic } from "@/lib/ask/faq";
 import a from "./ask.module.css";
 
+
 type Msg = { role: "user" | "assistant"; content: string; off?: { gif: string | null; line: string }; links?: Topic["links"]; next?: string[]; topic?: string };
 
 const SUGGESTIONS = SUGGESTED.map((id) => topicById(id)!.q);
@@ -46,7 +47,24 @@ async function nopeGif(): Promise<string | null> {
  * answers are instant, free and always the same. Every answer offers follow-up
  * questions; anything unrelated gets a "nope" GIF.
  */
-export default function AskPanel() {
+export default function AskPanel({ face }: { face: string | null }) {
+  // say hello once, a few seconds after the page settles, so people notice it
+  const [hello, setHello] = useState(false);
+  useEffect(() => {
+    let t2 = 0;
+    const t1 = window.setTimeout(() => {
+      try {
+        if (sessionStorage.getItem("nishanth.ask.hello")) return;
+        sessionStorage.setItem("nishanth.ask.hello", "1");
+      } catch {}
+      setHello(true);
+      t2 = window.setTimeout(() => setHello(false), 4200);
+    }, 6000);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, []);
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const close = () => {
@@ -127,12 +145,17 @@ export default function AskPanel() {
 
   return (
     <>
-      <button type="button" className={a.trigger} onClick={() => setOpen(true)} aria-label="Ask about Nishanth" title="Ask about Nishanth">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-          <path d="M12 2.5c.5 4.6 2.9 7 7.5 7.5-4.6.5-7 2.9-7.5 7.5-.5-4.6-2.9-7-7.5-7.5 4.6-.5 7-2.9 7.5-7.5Z" />
-          <path d="M19 15.5c.2 1.8 1 2.6 2.8 2.8-1.8.2-2.6 1-2.8 2.8-.2-1.8-1-2.6-2.8-2.8 1.8-.2 2.6-1 2.8-2.8Z" />
-        </svg>
-      </button>
+      <div className={`${a.sticker} ${open ? a.stickerHidden : ""} ${hello ? a.hello : ""}`}>
+        <span className={a.bubble} aria-hidden="true">Talk to me</span>
+        <button type="button" className={a.face} onClick={() => setOpen(true)} aria-label="Talk to me: ask about Nishanth">
+          {face ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={face} alt="" width={72} height={72} />
+          ) : (
+            <span className={a.initials} aria-hidden="true">NS</span>
+          )}
+        </button>
+      </div>
       {open &&
         createPortal(
           <div className={`${a.layer} ${closing ? a.closing : ""}`} onPointerDown={(e) => e.target === e.currentTarget && close()}>
