@@ -5,6 +5,12 @@ import { createPortal } from "react-dom";
 import { respond } from "@/lib/ask/match";
 import { SUGGESTED, topicById, type Topic } from "@/lib/ask/faq";
 import SwagGlasses from "./SwagGlasses";
+
+const Sparkle = ({ className }: { className: string }) => (
+  <svg className={className} viewBox="0 0 16 16" aria-hidden="true">
+    <path fill="currentColor" d="M8 0c.5 4.2 2.8 6.6 8 8-5.2 1.4-7.5 3.8-8 8-.5-4.2-2.8-6.6-8-8 5.2-1.4 7.5-3.8 8-8Z" />
+  </svg>
+);
 import a from "./ask.module.css";
 
 
@@ -147,8 +153,11 @@ export default function AskPanel({ face }: { face: string | null }) {
 
   return (
     <>
-      <div className={`${a.sticker} ${open ? a.stickerHidden : ""} ${hello ? a.hello : ""} ${swag ? a.swag : ""}`}>
-        <span className={a.bubble} aria-hidden="true">Talk to me</span>
+      <div className={`${a.sticker} ${open ? a.stickerHidden : ""} ${hello ? a.hello : ""} ${swag ? a.on : ""}`}>
+        <span className={a.bubble} aria-hidden="true">
+          <b><span className={a.dotLive} />Talk to me</b>
+          <small>Ask anything about my work</small>
+        </span>
         <button
           type="button"
           className={`${a.face} ${face ? "" : a.faceRound}`}
@@ -169,6 +178,8 @@ export default function AskPanel({ face }: { face: string | null }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={face} alt="" width={260} height={394} />
               <SwagGlasses className={a.glasses} />
+              <Sparkle className={`${a.spark} ${a.spark1}`} />
+              <Sparkle className={`${a.spark} ${a.spark2}`} />
             </>
           ) : (
             <span className={a.initials} aria-hidden="true">NS</span>

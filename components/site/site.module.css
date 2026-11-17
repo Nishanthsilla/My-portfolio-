@@ -338,16 +338,19 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 .headerRow .btnPrimary:hover { background: rgba(255, 255, 255, 0.22); }
-.nav { gap: 26px; }
-.navLink { font-size: 14px; letter-spacing: -0.005em; }
-.headerRow { padding-right: 22px !important; }
+/* floating: clear of the screen's top edge, with room between the items */
+.header { padding-top: 16px; } /* padding, not margin: the header is sticky, so a margin would collapse away once the page scrolls */
+.headerRow { height: 52px !important; margin-top: 0 !important; padding-right: 30px !important; gap: 30px !important;
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.42), 0 2px 6px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.08) !important; }
+.nav { gap: 36px; }
+.navLink { font-size: 14.5px; letter-spacing: -0.005em; }
 @media (max-width: 640px) {
   .headerRow { width: calc(100% - 24px) !important; padding: 0 5px 0 16px !important; justify-content: space-between; }
   .menuBtn { width: 38px; height: 38px; border: 0; background: rgba(255, 255, 255, 0.12); }
   .menuBtn span, .menuBtn span::before, .menuBtn span::after { background: #fff; }
   .menuBtn[aria-expanded="true"] span { background: transparent; }
   .navOpen {
-    top: 56px; left: 0; right: 0; padding: 8px 18px 16px; border: 0; border-radius: 22px;
+    top: 60px; left: 0; right: 0; padding: 8px 18px 16px; border: 0; border-radius: 22px;
     background: #1c1b19;
     box-shadow: 0 20px 40px -18px rgba(0, 0, 0, 0.55);
   }
@@ -397,11 +400,11 @@
 html[data-embed] .back { display: none; }
 
 /* the logo is Nishanth's face sticker; the orange dot (the intro film lands on it) sits on its corner */
-.logoFace { position: relative; flex: none; height: 40px; width: auto; aspect-ratio: 260 / 394; margin: 0 2px 0 -8px; filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35)); transform: rotate(-6deg); transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.logoFace { position: relative; flex: none; height: 42px; width: auto; aspect-ratio: 260 / 394; margin: 0 6px 0 -6px; filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35)); transform: rotate(-6deg); transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 240ms ease; }
 .logoFace img { display: block; width: 100%; height: 100%; }
 .logoFace i { position: absolute; right: -3px; bottom: 2px; width: 9px !important; height: 9px !important; border: 2px solid #1c1b19; box-sizing: content-box; }
-.logoGlasses { position: absolute; left: 9%; width: 82%; top: 45.5%; height: auto; opacity: 0; transform: scale(0.3) rotate(-14deg); transition: opacity 120ms ease, transform 320ms cubic-bezier(0.34, 1.7, 0.64, 1); pointer-events: none; }
-@media (hover: hover) { .logoFace:hover { transform: rotate(4deg) scale(1.1); } .logoFace:hover .logoGlasses { opacity: 1; transform: none; } }
+.logoGlasses { position: absolute; left: 9%; width: 82%; top: 45.5%; height: auto; visibility: hidden; pointer-events: none; }
+@media (hover: hover) { .logoFace:hover { transform: rotate(4deg) scale(1.1); filter: drop-shadow(0 0 6px rgba(255, 196, 61, 0.95)) drop-shadow(0 0 2px rgba(255, 214, 102, 0.9)); } .logoFace:hover .logoGlasses { visibility: visible; } }
 .logoFace:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 40%; }
-@media (prefers-reduced-motion: reduce) { .logoFace, .logoGlasses { transition: none; } }
-.headerRow { padding-left: 16px !important; }
+@media (prefers-reduced-motion: reduce) { .logoFace { transition: none; } }
+.headerRow { padding-left: 18px !important; }
