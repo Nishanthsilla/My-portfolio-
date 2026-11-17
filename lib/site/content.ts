@@ -270,21 +270,21 @@ export const intro = {
   headline: ["Design for agents.", "…and the humans who run them."],
   lede: "I design the interfaces where people set intent, watch AI agents work, and step in at the right moment.",
   facts: [
-    { k: "Focus", v: "Multi-agent orchestration, human–AI handoff" },
-    { k: "Background", v: "5+ years · Enterprise AI, FinTech, EdTech" },
+    { k: "Right now", v: "AI tools that people can understand, steer and trust" },
+    { k: "Before that", v: "5+ years across enterprise AI, fintech and edtech" },
   ],
 };
 
 /** Selected work intro line, verbatim. */
 export const workIntro = {
   label: "Selected work",
-  title: "Things I've shipped",
-  line: "Enterprise AI, FinTech and learning platforms, from first flows to design-system handoff.",
+  title: "Things I've worked on",
+  line: "AI platforms, fintech and learning apps. Pick one and I'll walk you through it.",
 };
 
 export const contact = {
   label: "Contact",
-  title: "Let's build what agents & people trust.",
+  title: "Got a project, a role, or just want to say hi?",
   emailLabel: "Drop me a line",
   email: "nishanthsilla2000@gmail.com",
   phoneLabel: "Call or WhatsApp",
