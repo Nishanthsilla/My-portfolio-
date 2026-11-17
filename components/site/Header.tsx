@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import SwagGlasses from "./ask/SwagGlasses";
 import s from "./site.module.css";
 
 /**
@@ -44,11 +43,9 @@ export default function Header() {
   return (
     <header className={`bar ${s.header}`}>
       <div className={`wrap ${s.container} ${s.headerRow}`}>
-        <Link className={`mark ${s.logo} ${s.logoFace}`} href="/" aria-label="Nishanth Silla — home" title="Nishanth Silla">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/about/face-sticker.webp" alt="" width={260} height={394} />
-          <SwagGlasses className={s.logoGlasses} />
+        <Link className={`mark ${s.logo} ${s.logoNs}`} href="/" aria-label="Nishanth Silla — home" title="Nishanth Silla">
           <i aria-hidden="true" />
+          NS
         </Link>
         <button
           type="button"

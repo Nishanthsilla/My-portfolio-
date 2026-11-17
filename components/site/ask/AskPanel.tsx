@@ -5,12 +5,8 @@ import { createPortal } from "react-dom";
 import { respond } from "@/lib/ask/match";
 import { SUGGESTED, topicById, type Topic } from "@/lib/ask/faq";
 import SwagGlasses from "./SwagGlasses";
+import { preloadUiSounds, uiSound } from "@/lib/sound/ui";
 
-const Sparkle = ({ className }: { className: string }) => (
-  <svg className={className} viewBox="0 0 16 16" aria-hidden="true">
-    <path fill="currentColor" d="M8 0c.5 4.2 2.8 6.6 8 8-5.2 1.4-7.5 3.8-8 8-.5-4.2-2.8-6.6-8-8 5.2-1.4 7.5-3.8 8-8Z" />
-  </svg>
-);
 import a from "./ask.module.css";
 
 
@@ -48,7 +44,7 @@ async function nopeGif(): Promise<string | null> {
 }
 
 /**
- * "Ask Nishanth": a sparkle button in the navbar slides in a panel where
+ * "Ask Nishanth": the face sticker in the bottom-right corner slides in a panel where
  * visitors ask about Nishanth. No AI and no server: questions are matched to
  * the topics in lib/ask/faq.ts (written from the site's own content), so the
  * answers are instant, free and always the same. Every answer offers follow-up
@@ -58,6 +54,10 @@ export default function AskPanel({ face }: { face: string | null }) {
   // say hello once, a few seconds after the page settles, so people notice it
   const [hello, setHello] = useState(false);
   const [swag, setSwag] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(preloadUiSounds, 2500);
+    return () => window.clearTimeout(t);
+  }, []);
   useEffect(() => {
     let t2 = 0;
     const t1 = window.setTimeout(() => {
@@ -161,9 +161,13 @@ export default function AskPanel({ face }: { face: string | null }) {
         <button
           type="button"
           className={`${a.face} ${face ? "" : a.faceRound}`}
+          onPointerEnter={(e) => e.pointerType === "mouse" && uiSound("swag")}
+          onFocus={preloadUiSounds}
           onClick={() => {
-            // phones have no hover: the glasses pop on for a moment, then the chat opens
+            uiSound("talk");
+            // phones have no hover: the glasses show for a moment, then the chat opens
             if (matchMedia("(hover: none)").matches && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+              uiSound("swag");
               setSwag(true);
               window.setTimeout(() => {
                 setSwag(false);
@@ -178,8 +182,6 @@ export default function AskPanel({ face }: { face: string | null }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={face} alt="" width={260} height={394} />
               <SwagGlasses className={a.glasses} />
-              <Sparkle className={`${a.spark} ${a.spark1}`} />
-              <Sparkle className={`${a.spark} ${a.spark2}`} />
             </>
           ) : (
             <span className={a.initials} aria-hidden="true">NS</span>
