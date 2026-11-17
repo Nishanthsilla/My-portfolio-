@@ -5,7 +5,7 @@
  * is silent; a click or tap always counts.
  */
 type Name = "swag" | "talk";
-const GAIN: Record<Name, number> = { swag: 0.35, talk: 0.45 };
+const GAIN: Record<Name, number> = { swag: 0.4, talk: 0.55 };
 
 let ctx: AudioContext | null = null;
 const buffers = new Map<Name, Promise<AudioBuffer | null>>();

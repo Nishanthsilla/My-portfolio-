@@ -1,7 +1,7 @@
 """
 Two original sounds for the face sticker (composed here, no samples):
-  swag  — a quick bright two-note "bling" when the pixel glasses appear (hover)
-  talk  — a soft bubble pop when the chat opens (click / tap)
+  swag  — glasses slid on: a short downward swoosh and a small plastic click (hover)
+  talk  — a screen sliding open: an airy upward whoosh and a soft landing (click / tap)
 
   python3 scripts/audio/compose_sticker_sounds.py
 Writes public/audio/sfx/{swag,talk}.{ogg,mp3}.
@@ -13,36 +13,51 @@ import numpy as np
 SR = 48000
 OUT = Path(__file__).resolve().parents[2] / "public" / "audio" / "sfx"
 
+rng = np.random.default_rng(11)
+
 def env(n, attack, decay):
     t = np.arange(n) / SR
-    a = np.minimum(1, t / attack)
-    return a * np.exp(-t / decay)
+    return np.minimum(1, t / attack) * np.exp(-t / decay)
 
-def bell(freq, dur, decay):
-    n = int(SR * dur); t = np.arange(n) / SR
-    # a soft bell: fundamental + gentle inharmonic partials
-    s = np.sin(2 * np.pi * freq * t) + 0.35 * np.sin(2 * np.pi * freq * 2.76 * t) * np.exp(-t / (decay * 0.4)) + 0.18 * np.sin(2 * np.pi * freq * 5.4 * t) * np.exp(-t / (decay * 0.2))
-    return s * env(n, 0.002, decay)
+def sweep_noise(n, f0, f1, q=1.2, curve=1.0):
+    """white noise through a band-pass whose centre glides from f0 to f1 (a state-variable filter)"""
+    x = rng.standard_normal(n)
+    out = np.zeros(n); low = band = 0.0
+    for i in range(n):
+        k = (i / max(1, n - 1)) ** curve
+        f = f0 * (f1 / f0) ** k
+        g = 2 * np.sin(np.pi * f / SR)
+        high = x[i] - low - band / q
+        band += g * high
+        low += g * band
+        out[i] = band
+    return out
 
 def swag():
-    n = int(SR * 0.42); out = np.zeros(n)
-    for start, f, g in ((0.0, 1318.5, 0.55), (0.075, 1975.5, 0.7)):  # E6 then B6
-        b = bell(f, 0.42 - start, 0.11) * g
-        i = int(start * SR); out[i:i + len(b)] += b[: n - i]
-    # a whisper of shimmer
-    t = np.arange(n) / SR
-    noise = np.random.default_rng(3).standard_normal(n)
-    hp = noise - np.convolve(noise, np.ones(6) / 6, "same")
-    out += 0.05 * hp * np.exp(-t / 0.05) * (t > 0.07)
+    """glasses slid on: a short downward swoosh, then a small plastic click"""
+    n = int(SR * 0.24); t = np.arange(n) / SR
+    whoosh_n = int(SR * 0.13)
+    w = sweep_noise(whoosh_n, 5200, 1400, q=1.6)
+    w *= np.sin(np.pi * np.linspace(0, 1, whoosh_n)) ** 1.6
+    out = np.zeros(n); out[:whoosh_n] += 0.55 * w / np.max(np.abs(w))
+    # the click: two tiny bright transients a few ms apart
+    for at, amp in ((0.118, 1.0), (0.126, 0.45)):
+        m = int(SR * 0.025); tt = np.arange(m) / SR
+        c = (np.sin(2 * np.pi * 3100 * tt) + 0.6 * np.sin(2 * np.pi * 5300 * tt)) * np.exp(-tt / 0.0035)
+        i = int(at * SR); out[i:i + m] += amp * 0.9 * c[: n - i]
     return out
 
 def talk():
-    n = int(SR * 0.16); t = np.arange(n) / SR
-    f = 260 + 900 * (1 - np.exp(-t / 0.018))  # quick upward sweep: a bubble
-    ph = 2 * np.pi * np.cumsum(f) / SR
-    s = np.sin(ph) * env(n, 0.0015, 0.045)
-    click = np.zeros(n); click[:80] = np.hanning(160)[80:] * 0.35
-    return s + click
+    """a screen sliding open: an airy whoosh that sweeps up, settling with a soft low thud"""
+    n = int(SR * 0.52); t = np.arange(n) / SR
+    w = sweep_noise(n, 500, 3600, q=0.9, curve=0.8)
+    shape = np.clip(t / 0.22, 0, 1) ** 1.5 * np.exp(-np.clip(t - 0.24, 0, None) / 0.09)
+    out = 0.8 * w / np.max(np.abs(w)) * shape
+    # the panel lands
+    i = int(0.25 * SR); m = int(SR * 0.12); tt = np.arange(m) / SR
+    thud = np.sin(2 * np.pi * (95 + 40 * np.exp(-tt / 0.02)) * tt) * np.exp(-tt / 0.035)
+    out[i:i + m] += 0.45 * thud
+    return out
 
 def write(name, x, peak=0.8):
     x = x / np.max(np.abs(x)) * peak
@@ -56,5 +71,5 @@ def write(name, x, peak=0.8):
     print(name, f"{len(x) / SR:.2f}s")
 
 if __name__ == "__main__":
-    write("swag", swag(), 0.7)
-    write("talk", talk(), 0.75)
+    write("swag", swag(), 0.6)
+    write("talk", talk(), 0.7)
