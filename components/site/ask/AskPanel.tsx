@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { respond } from "@/lib/ask/match";
 import { SUGGESTED, topicById, type Topic } from "@/lib/ask/faq";
+import SwagGlasses from "./SwagGlasses";
 import a from "./ask.module.css";
 
 
@@ -50,6 +51,7 @@ async function nopeGif(): Promise<string | null> {
 export default function AskPanel({ face }: { face: string | null }) {
   // say hello once, a few seconds after the page settles, so people notice it
   const [hello, setHello] = useState(false);
+  const [swag, setSwag] = useState(false);
   useEffect(() => {
     let t2 = 0;
     const t1 = window.setTimeout(() => {
@@ -145,12 +147,29 @@ export default function AskPanel({ face }: { face: string | null }) {
 
   return (
     <>
-      <div className={`${a.sticker} ${open ? a.stickerHidden : ""} ${hello ? a.hello : ""}`}>
+      <div className={`${a.sticker} ${open ? a.stickerHidden : ""} ${hello ? a.hello : ""} ${swag ? a.swag : ""}`}>
         <span className={a.bubble} aria-hidden="true">Talk to me</span>
-        <button type="button" className={a.face} onClick={() => setOpen(true)} aria-label="Talk to me: ask about Nishanth">
+        <button
+          type="button"
+          className={`${a.face} ${face ? "" : a.faceRound}`}
+          onClick={() => {
+            // phones have no hover: the glasses pop on for a moment, then the chat opens
+            if (matchMedia("(hover: none)").matches && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+              setSwag(true);
+              window.setTimeout(() => {
+                setSwag(false);
+                setOpen(true);
+              }, 650);
+            } else setOpen(true);
+          }}
+          aria-label="Talk to me: ask about Nishanth"
+        >
           {face ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={face} alt="" width={72} height={72} />
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={face} alt="" width={260} height={394} />
+              <SwagGlasses className={a.glasses} />
+            </>
           ) : (
             <span className={a.initials} aria-hidden="true">NS</span>
           )}
