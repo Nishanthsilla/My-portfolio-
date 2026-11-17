@@ -42,13 +42,29 @@ const DECOR: { id: string; x: number; y: number; r: number; s: number }[] = [
 ];
 /** Nishanth's own pinned note (his words from the brief), clearly labelled. */
 const PINNED = { id: "pinned", sticker: "gif-heart", font: "scribble", shape: "square", color: "yellow", message: "A thought, a note, or just a little sticker. I'd love to see what you leave.", name: "Nishanth", x: 0.4, y: 0.44, rotation: -4 };
-/** A few more notes from Nishanth himself (signed by him), so the wall never feels empty. */
-const HOST_NOTES = [
-  { id: "host-drag", sticker: "gif-sparkles", font: "scribble", shape: "rounded", color: "pink", message: "psst, every sticker here is draggable", x: 0.2, y: 0.44, rotation: 5 },
-  { id: "host-gifs", sticker: "gif-party", font: "marker", shape: "square", color: "blue", message: "try the GIF search. best part", x: 0.78, y: 0.47, rotation: -6 },
-  { id: "host-read", sticker: "gif-heart", font: "bubbly", shape: "torn", color: "green", message: "I read every single one :)", x: 0.6, y: 0.7, rotation: 3 },
-  { id: "host-2am", sticker: "coffee", font: "typewriter", shape: "square", color: "peach", message: "built this wall at 2am. no regrets", x: 0.3, y: 0.27, rotation: -3 },
-];
+/** A few lines Nishanth has scribbled straight onto the wall (not sticky notes), each in its own pen with a little doodle. */
+const SCRIBBLES = [
+  { id: "drag", text: "psst… every sticker here is draggable", x: 0.27, y: 0.35, r: -5, color: "#2b2925", font: '"Caveat", cursive', size: 38, weight: 600, doodle: "arrow" },
+  { id: "gifs", text: "try the GIF search. best part", x: 0.71, y: 0.4, r: 5, color: "#ff4938", font: '"Permanent Marker", cursive', size: 25, weight: 400, doodle: "squiggle" },
+  { id: "read", text: "I read every single one :)", x: 0.62, y: 0.77, r: -3, color: "#2f6bff", font: '"Caveat", cursive', size: 40, weight: 600, doodle: "heart" },
+  { id: "2am", text: "built this wall at 2am. no regrets", x: 0.29, y: 0.24, r: 3, color: "#1f7a4a", font: '"Caveat", cursive', size: 34, weight: 600, doodle: "coffee" },
+] as const;
+
+function Doodle({ kind }: { kind: (typeof SCRIBBLES)[number]["doodle"] }) {
+  const common = { fill: "none", stroke: "currentColor", strokeWidth: 3, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  if (kind === "arrow")
+    return <svg className={w.scribbleArrow} viewBox="0 0 120 90" aria-hidden="true"><path {...common} d="M8 8 C 40 6, 84 20, 100 70 M86 58 L101 74 L110 54" /></svg>;
+  if (kind === "squiggle")
+    return <svg className={w.scribbleLine} viewBox="0 0 260 20" preserveAspectRatio="none" aria-hidden="true"><path {...common} d="M4 12 C 30 2, 50 20, 76 10 S 124 2, 150 12 S 200 20, 256 8" /></svg>;
+  if (kind === "heart")
+    return <svg className={w.scribbleMark} viewBox="0 0 40 40" aria-hidden="true"><path {...common} d="M20 34 C 6 24, 4 14, 10 9 C 15 5, 19 9, 20 13 C 21 9, 25 5, 30 9 C 36 14, 34 24, 20 34 Z" /></svg>;
+  return (
+    <svg className={w.scribbleMark} viewBox="0 0 44 44" aria-hidden="true">
+      <path {...common} d="M8 18 H32 V28 C32 35, 27 38, 20 38 C13 38, 8 35, 8 28 Z M32 21 C38 21, 39 29, 32 29 M14 8 C12 11, 16 12, 14 15 M21 6 C19 9, 23 10, 21 13" />
+    </svg>
+  );
+}
+
 
 /**
  * The Wall. On the homepage it lives in its own scene (embedded) and opens full
@@ -440,14 +456,17 @@ export default function WallApp({
             );
           })}
 
-          {HOST_NOTES.map((n) => {
-            const p = spot(n.id, n.x, n.y);
-            return (
-              <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Note from Nishanth: ${n.message}`} className={w.placed}>
-                <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name="Nishanth" />
-              </ElasticSticker>
-            );
-          })}
+          {SCRIBBLES.map((n) => (
+            <div
+              key={n.id}
+              className={w.scribble}
+              aria-label={`Written on the wall by Nishanth: ${n.text}`}
+              style={{ left: `${n.x * 100}%`, top: `${n.y * 100}%`, transform: `translate(-50%, -50%) rotate(${n.r}deg)`, color: n.color, fontFamily: n.font, fontSize: n.size, fontWeight: n.weight }}
+            >
+              <span>{n.text}</span>
+              <Doodle kind={n.doodle} />
+            </div>
+          ))}
 
           {(() => {
             const p = spot(PINNED.id, PINNED.x, PINNED.y);
