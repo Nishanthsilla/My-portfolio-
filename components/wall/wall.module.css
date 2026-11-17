@@ -389,20 +389,10 @@
 @keyframes nudge { 0%, 88%, 100% { transform: none; } 91% { transform: rotate(-3deg) scale(1.04); } 94% { transform: rotate(3deg) scale(1.04); } 97% { transform: rotate(-1deg); } }
 @media (prefers-reduced-motion: reduce) { .ghostNote, .nudge { animation: none; } }
 
-/* after posting: the happy cat hops back and forth across the screen */
-.catStage { position: absolute; inset: 0; z-index: 30; pointer-events: none; overflow: hidden; }
-.happyCat { position: absolute; left: 0; bottom: 6%; width: clamp(120px, 18vw, 220px); height: auto;
-  animation: catRoam 6s linear infinite, catHop 0.5s cubic-bezier(0.3, 0, 0.7, 1) infinite alternate; }
-@keyframes catRoam {
-  0% { left: -5%; transform: scaleX(1); }
-  48% { left: 82%; transform: scaleX(1); }
-  50% { left: 82%; transform: scaleX(-1); }
-  98% { left: -5%; transform: scaleX(-1); }
-  100% { left: -5%; transform: scaleX(1); }
-}
-@keyframes catHop { from { bottom: 6%; } to { bottom: 16%; } }
+/* after posting: the happy cat dances inside the card */
+.happyCat { display: block; height: 150px; width: auto; margin: -4px auto 0; }
+.sent .sentLine { margin: 0 0 6px; font-size: 18px; font-weight: 600; line-height: 1.35; letter-spacing: -0.01em; color: #222; text-wrap: balance; }
 .toast { z-index: 31; }
-@media (prefers-reduced-motion: reduce) { .happyCat { animation: none; left: 50%; transform: translateX(-50%); } }
 
 /* the real meme, when the GIF search finds it */
 img.monkeyArt { width: 96px; height: 96px; object-fit: cover; border-radius: 12px; }
