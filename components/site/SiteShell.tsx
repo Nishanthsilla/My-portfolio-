@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Footer from "./Footer";
 import Header from "./Header";
 import AskPanel from "./ask/AskPanel";
+import Oneko from "./Oneko";
 import s from "./site.module.css";
 
 /** your face for the chat sticker: shown once the file exists, initials until then */
@@ -21,6 +22,7 @@ export default function SiteShell({ children, footer = true }: { children: React
       <Header />
       <main className={s.page}>{children}</main>
       {footer && <Footer />}
+      <Oneko />
       <AskPanel face={FACE_FILE ? FACE : null} />
     </div>
   );

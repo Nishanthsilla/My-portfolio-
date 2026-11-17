@@ -17,11 +17,3 @@ html { scrollbar-gutter: stable; }
 html[data-embed] header.bar, html[data-embed] footer, html[data-embed] [data-intro-film], html[data-embed] [data-intro-loader] { display: none !important; }
 html[data-embed] main { padding-top: 8px; }
 
-/* a cartoon glove for a cursor (mouse only); a "tap" glove over anything clickable */
-@media (hover: hover) and (pointer: fine) {
-  html { cursor: url("/cursors/glove.svg") 5 5, auto; }
-  a, button, [role="button"], [role="tab"], summary, label, select, input[type="range"], input[type="checkbox"], input[type="radio"] {
-    cursor: url("/cursors/glove-tap.svg") 5 5, pointer !important;
-  }
-  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]), textarea, [contenteditable] { cursor: text; }
-}
