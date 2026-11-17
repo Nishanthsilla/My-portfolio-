@@ -19,30 +19,28 @@ export const story = {
   /** Panel 2 — focus and background. [site] */
   facts: intro.facts,
   now: { k: "Day job", v: "Lead Product Designer at Covasant" }, // [site] experience
-  /** Panel 3 — what makes me, me: Nishanth's own answers, in his words. Photos: /public/images/about/me-<n>.webp */
+  /**
+   * Panels 3–5 — what makes me, me. Nishanth's own answers, in his words.
+   * [[key|words]] marks a word that throws photos on hover:
+   * /public/images/about/<key>-1.webp, <key>-2.webp, … (shown once they exist).
+   */
   me: {
-    slides: [
-      {
-        title: "What makes me, me?",
-        parts: [
-          { text: "I'm a tinkerer who builds. As a kid I'd take apart a remote-control car and use its motors to make a remote-control plane. I still work like that: pull things apart, play around, and find a better way." },
-          { text: "I don't like products that throw everything at you. I want it to be obvious what to do next. The best thing people say about my work is that it was easy to get through: nothing to confuse them, they just did what they came to do." },
-        ],
-        photo: "me-1",
-        need: "You building or tinkering: cardboard, a prototype, anything hands-on",
-        sticker: "#1f9d55",
-      },
-      {
-        parts: [
-          { text: "When I'm not designing, I'm behind a camera. I shoot and edit photos for my dad's photography and events business. I cook a lot, mostly for my girlfriend, because taking care of people makes me happy. And I'm enough of an anime geek to have Naruto tattooed on my forearm." },
-          { label: "How I work", text: "No fixed recipe. Every project has its own workflow, so I shape my process around the problem and keep the answer as simple as it can be." },
-        ],
-        photo: "me-2",
-        need: "You at an event with your dad, cooking, or at work with your team",
-        sticker: "#2f6bff",
-      },
+    title: "What makes me, me?",
+    story: [
+      "I'm a tinkerer who builds. As a kid I'd take apart a remote-control car and use its motors to make a [[plane|remote-control plane]]. I still work like that: pull things apart, play around, and find a better way.",
+      "I don't like products that throw everything at you. I want it to be obvious what to do next. The best thing people say about my work is that it was easy to get through: nothing to confuse them, they just did what they came to do.",
     ],
+    life: "When I'm not designing, I'm behind a [[camera|camera]]. I shoot and edit photos for my dad's photography and events business. I [[cook|cook]] a lot, mostly for my girlfriend, because taking care of people makes me happy. And I'm enough of an anime geek to have [[naruto|Naruto]] tattooed on my forearm.",
+    howIWork: "No fixed recipe. Every project has its own workflow, so I shape my process around the problem and keep the answer as simple as it can be.",
+    /** what the placeholder asks for, until a word has photos */
+    words: {
+      plane: { color: "#1f9d55", need: "The plane you built, or any tinkering" },
+      camera: { color: "#2f6bff", need: "You with your cameras, or your edits" },
+      cook: { color: "#ff4938", need: "Your cooking" },
+      naruto: { color: "#f08a00", need: "Your Naruto tattoo" },
+    } as Record<string, { color: string; need: string }>,
   },
+
 
 };
 
