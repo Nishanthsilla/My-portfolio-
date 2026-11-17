@@ -1,26 +1,29 @@
 import fs from "node:fs";
 import path from "node:path";
 import AboutFace from "./AboutFace";
-import MeSlides from "./MeSlides";
+import HoverStory, { type Word } from "./HoverStory";
+import m from "./me.module.css";
 import { story } from "@/lib/site/home";
 import h from "./home.module.css";
 
-/** a photo for the "me" slides, once its file exists: /public/images/about/<name>.(webp|jpg|png) */
-const photo = (name: string) => {
-  for (const ext of ["webp", "jpg", "jpeg", "png"]) {
-    const rel = `/images/about/${name}.${ext}`;
-    if (fs.existsSync(path.join(process.cwd(), "public", rel))) return rel;
+/** photos for a living word, once their files exist: /public/images/about/<key>-1.webp, -2, … */
+const photosFor = (key: string) => {
+  const out: string[] = [];
+  for (let n = 1; n <= 12; n++) {
+    const ext = ["webp", "jpg", "jpeg", "png"].find((e) => fs.existsSync(path.join(process.cwd(), "public", `images/about/${key}-${n}.${e}`)));
+    if (ext) out.push(`/images/about/${key}-${n}.${ext}`);
   }
-  return null;
+  return out;
 };
+const words: Record<string, Word> = Object.fromEntries(Object.entries(story.me.words).map(([k, w]) => [k, { ...w, photos: photosFor(k) }]));
 
-/** Scene 1 of the homepage journey: the three introduction panels. */
+/** Scene 1 of the homepage journey: the five introduction panels. */
 export default function StoryPanels() {
   const st = story;
   return (
     <>
     {/* 1 — introduction */}
-    <div className={h.panel} data-snap aria-roledescription="slide" aria-label="1 of 3">
+    <div className={h.panel} data-snap aria-roledescription="slide" aria-label="1 of 5">
       <div className={h.panelInner}>
         <h1 className={h.headline}>
           {st.hello.headline.before}
@@ -34,7 +37,7 @@ export default function StoryPanels() {
     </div>
 
     {/* 2 — focus and background */}
-    <div className={h.panel} data-snap aria-roledescription="slide" aria-label="2 of 3">
+    <div className={h.panel} data-snap aria-roledescription="slide" aria-label="2 of 5">
       <div className={`${h.panelInner} ${h.factsPanel}`}>
         <dl className={h.facts}>
           {st.facts.map((f) => (
@@ -56,11 +59,31 @@ export default function StoryPanels() {
     </div>
 
     {/* 3 — what makes me, me */}
-    <div className={h.panel} data-snap aria-roledescription="slide" aria-label="3 of 3">
+    <div className={h.panel} data-snap aria-roledescription="slide" aria-label="3 of 5">
       <div className={h.panelInner}>
-        <MeSlides
-          slides={st.me.slides.map((x) => ({ ...x, photo: photo(x.photo) }))}
-        />
+        <div className={m.story}>
+          <h2 className={m.title}>{st.me.title}</h2>
+          {st.me.story.map((t, i) => <HoverStory key={i} text={t} words={words} className={m.para} />)}
+        </div>
+      </div>
+    </div>
+
+    {/* 4 — life outside work */}
+    <div className={h.panel} data-snap aria-roledescription="slide" aria-label="4 of 5">
+      <div className={h.panelInner}>
+        <HoverStory text={st.me.life} words={words} className={m.big} />
+        <p className={m.hint}>
+          <span className={m.hintHover}>Hover</span>
+          <span className={m.hintTap}>Tap</span> the coloured words
+        </p>
+      </div>
+    </div>
+
+    {/* 5 — how I work */}
+    <div className={h.panel} data-snap aria-roledescription="slide" aria-label="5 of 5">
+      <div className={h.panelInner}>
+        <p className={m.eyebrow}>How I work</p>
+        <p className={m.big}>{st.me.howIWork}</p>
       </div>
     </div>
     </>
