@@ -8,12 +8,12 @@ import w from "./wall.module.css";
  * After a note is posted: the "happy happy happy" cat hops around the screen
  * to its song, with a small card and a "See your note" button.
  *
- * The cat and its song are supplied by Nishanth. Put them at
- *   /public/images/wall/happy-cat.webp   (animated, background removed)
- *   /public/audio/sfx/happy-cat.mp3
- * and set HAPPY_CAT to true. Until then the card shows on its own, silently.
+ * The cat (cut out of a green-screen clip, an animated WebP with a see-through
+ * background: /public/images/wall/happy-cat.webp) and its song
+ * (/public/audio/sfx/happy-cat.mp3) were supplied by Nishanth. The song loops
+ * while the card is open and fades out when it closes.
  */
-const HAPPY_CAT = false;
+const HAPPY_CAT = true;
 
 export default function Celebration({ offline, onSee }: { offline: boolean; onSee: () => void }) {
   const song = useRef<HTMLAudioElement | null>(null);
@@ -24,6 +24,7 @@ export default function Celebration({ offline, onSee }: { offline: boolean; onSe
     if (!HAPPY_CAT || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const a = new Audio("/audio/sfx/happy-cat.mp3");
     a.volume = 0.7;
+    a.loop = true;
     void a.play().catch(() => {}); // posting was a click, so the browser allows it
     song.current = a;
     return () => {

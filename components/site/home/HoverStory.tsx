@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import PhotoViewer from "../PhotoViewer";
 import m from "./me.module.css";
 
 export type Word = { color: string; need: string; photos: string[] };
@@ -73,7 +74,17 @@ function Live({ label, word }: { label: string; word: Word }) {
   const [round, setRound] = useState(0); // a different set of photos each time
   const [place, setPlace] = useState<{ w: number; spots: Spot[] } | null>(null);
   const ref = useRef<HTMLButtonElement>(null);
+  const layer = useRef<HTMLDivElement>(null);
   const touch = useRef(false);
+  // a photo opened full size (index into word.photos)
+  const [viewer, setViewer] = useState<number | null>(null);
+  // the mouse can travel from the word onto the photos without them disappearing
+  const leaveTimer = useRef(0);
+  const leaveSoon = () => {
+    window.clearTimeout(leaveTimer.current);
+    leaveTimer.current = window.setTimeout(() => setOpen(false), 220);
+  };
+  const stay = () => window.clearTimeout(leaveTimer.current);
 
   const n = Math.min(MAX, Math.max(1, word.photos.length || 2));
   const pick = word.photos.length
@@ -94,7 +105,11 @@ function Live({ label, word }: { label: string; word: Word }) {
   useEffect(() => {
     if (!open) return;
     const hide = () => setOpen(false);
-    const off = (e: PointerEvent) => e.target !== ref.current && hide();
+    const off = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (t === ref.current || layer.current?.contains(t)) return;
+      hide();
+    };
     addEventListener("scroll", hide, { capture: true, passive: true });
     addEventListener("resize", hide);
     addEventListener("pointerdown", off);
@@ -113,8 +128,12 @@ function Live({ label, word }: { label: string; word: Word }) {
         className={`${m.liveWord} ${open ? m.liveOn : ""}`}
         style={{ ["--c" as string]: word.color, backgroundImage: wave(word.color) }}
         aria-expanded={open}
-        onPointerEnter={(e) => e.pointerType === "mouse" && show()}
-        onPointerLeave={(e) => e.pointerType === "mouse" && setOpen(false)}
+        onPointerEnter={(e) => {
+          if (e.pointerType !== "mouse") return;
+          stay();
+          if (!open) show();
+        }}
+        onPointerLeave={(e) => e.pointerType === "mouse" && leaveSoon()}
         onPointerDown={(e) => (touch.current = e.pointerType !== "mouse")}
         onClick={() => {
           if (!touch.current) return;
@@ -122,17 +141,26 @@ function Live({ label, word }: { label: string; word: Word }) {
           else show();
         }}
         onFocus={() => !touch.current && show()}
-        onBlur={() => setOpen(false)}
+        onBlur={(e) => !layer.current?.contains(e.relatedTarget as Node) && setOpen(false)}
       >
         {label}
       </button>
       {place &&
         createPortal(
-          <div className={`${m.throw} ${open ? m.throwOn : ""}`} aria-hidden="true">
+          <div ref={layer} className={`${m.throw} ${open ? m.throwOn : ""}`} onPointerEnter={stay} onPointerLeave={(e) => e.pointerType === "mouse" && leaveSoon()}>
             {place.spots.map((s, k) => {
               const src = pick[k];
               return (
-                <span
+                <button
+                  type="button"
+                  tabIndex={open && src ? 0 : -1}
+                  aria-label={src ? `Open photo ${((round * n + k) % word.photos.length) + 1} of ${word.photos.length}` : undefined}
+                  disabled={!src}
+                  onClick={() => {
+                    if (!src) return;
+                    setViewer((round * n + k) % word.photos.length);
+                    setOpen(false);
+                  }}
                   key={`${round}-${k}`}
                   className={m.print}
                   style={{
@@ -149,12 +177,19 @@ function Live({ label, word }: { label: string; word: Word }) {
                       {word.need}
                     </span>
                   )}
-                </span>
+                </button>
               );
             })}
           </div>,
           document.body,
         )}
+      {viewer !== null && (
+        <PhotoViewer
+          photos={word.photos.map((src, i) => ({ src, thumb: src, alt: `${label}: photo ${i + 1}` }))}
+          index={viewer}
+          onClose={() => setViewer(null)}
+        />
+      )}
     </>
   );
 }
