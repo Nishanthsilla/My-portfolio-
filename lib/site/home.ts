@@ -19,18 +19,31 @@ export const story = {
   /** Panel 2 — focus and background. [site] */
   facts: intro.facts,
   now: { k: "Day job", v: "Lead Product Designer at Covasant" }, // [site] experience
-  /** Panel 3 — how I work: a designer's process, built only from the skills on the site (lib/site/about.ts). */
-  approach: {
-    eyebrow: "How I work",
-    line: "Talk to people, sketch it rough, test it early, then sweat the details.",
-    steps: [
-      { n: "01", t: "Understand", d: "I start with the people who'll use it: workshops, conversations, and their real workflows, before I open a design tool." },
-      { n: "02", t: "Sketch and map", d: "User flows and rough wireframes in FigJam first. Quick to change, easy to throw away." },
-      { n: "03", t: "Prototype and test", d: "Clickable prototypes in Figma, in front of real users. Usability tests and A/B tests decide, not my opinion." },
-      { n: "04", t: "Ship it together", d: "Design-system components, clear specs, and close work with developers, so what ships matches what we designed." },
+  /** Panel 3 — what makes me, me: Nishanth's own answers, in his words. Photos: /public/images/about/me-<n>.webp */
+  me: {
+    slides: [
+      {
+        title: "What makes me, me?",
+        parts: [
+          { text: "I'm a tinkerer who builds. As a kid I'd take apart a remote-control car and use its motors to make a remote-control plane. I still work like that: pull things apart, play around, and find a better way." },
+          { text: "I don't like products that throw everything at you. I want it to be obvious what to do next. The best thing people say about my work is that it was easy to get through: nothing to confuse them, they just did what they came to do." },
+        ],
+        photo: "me-1",
+        need: "You building or tinkering: cardboard, a prototype, anything hands-on",
+        sticker: "#1f9d55",
+      },
+      {
+        parts: [
+          { text: "When I'm not designing, I'm behind a camera. I shoot and edit photos for my dad's photography and events business. I cook a lot, mostly for my girlfriend, because taking care of people makes me happy. And I'm enough of an anime geek to have Naruto tattooed on my forearm." },
+          { label: "How I work", text: "No fixed recipe. Every project has its own workflow, so I shape my process around the problem and keep the answer as simple as it can be." },
+        ],
+        photo: "me-2",
+        need: "You at an event with your dad, cooking, or at work with your team",
+        sticker: "#2f6bff",
+      },
     ],
-    craft: "Figma · FigJam · Maze · Hotjar",
   },
+
 };
 
 /* ---------------- Bento: project hierarchy ---------------- */

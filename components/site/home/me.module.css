@@ -1,0 +1,35 @@
+/* "What makes me, me?" — homepage panel 3 */
+.me { width: 100%; display: grid; gap: clamp(28px, 4vh, 48px); }
+.stage { position: relative; display: grid; }
+.slide { grid-area: 1 / 1; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(32px, 6vw, 120px); align-items: center;
+  opacity: 0; visibility: hidden; transform: translateY(10px); transition: opacity 500ms ease, transform 600ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s 500ms; }
+.on { opacity: 1; visibility: visible; transform: none; transition: opacity 500ms ease 80ms, transform 600ms cubic-bezier(0.22, 1, 0.36, 1) 80ms, visibility 0s; }
+.words { display: grid; gap: clamp(16px, 2.4vh, 26px); max-width: 34em; }
+.title { margin: 0; font-size: clamp(26px, 2.6vw, 38px); line-height: 1.1; letter-spacing: -0.025em; font-weight: 560; color: var(--ink); }
+.part, .partLabelled { margin: 0; font-size: clamp(18px, 1.55vw, 23px); line-height: 1.4; letter-spacing: -0.012em; font-weight: 450; color: var(--ink); text-wrap: pretty; }
+.part + .part { padding-top: clamp(16px, 2.4vh, 26px); border-top: 1px solid var(--line); }
+.partLabelled { padding-top: clamp(16px, 2.4vh, 26px); border-top: 1px solid var(--line); color: #4a4640; }
+.label { display: block; margin-bottom: 8px; font: 500 12px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); }
+.photo { position: relative; margin: 0; aspect-ratio: 4 / 3; max-height: 52svh; width: 100%; justify-self: end; }
+.photo img { display: block; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.05); }
+.slot { width: 100%; height: 100%; display: grid; place-content: center; justify-items: center; gap: 8px; padding: 24px; text-align: center;
+  background: repeating-linear-gradient(135deg, #eeece8 0 14px, #e9e6e1 14px 28px); border: 1.5px dashed #cfc9c0; color: #6b665f; }
+.slot b { font: 600 12px/1.4 var(--mono); letter-spacing: 0.04em; text-transform: uppercase; color: #3c3833; }
+.slot span { font-size: 14px; line-height: 1.45; max-width: 24em; }
+.flower { position: absolute; right: -18px; top: -18px; width: 42px; height: 42px; animation: spin 14s linear infinite; filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.15)); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.dots { display: flex; gap: 6px; align-items: center; }
+.dots button { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 999px; background: #d3cfc8; cursor: pointer; transition: width 300ms cubic-bezier(0.22, 1, 0.36, 1), background-color 200ms; }
+.dots button.dotOn { width: 22px; background: var(--ink); }
+.dots button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@media (max-width: 860px) {
+  .slide { grid-template-columns: 1fr; gap: 22px; align-content: start; }
+  .photo { order: -1; justify-self: start; max-height: none; width: min(100%, 420px); }
+  .title { font-size: 24px; }
+  .part, .partLabelled { font-size: 16.5px; line-height: 1.45; }
+  .photo { width: min(100%, 320px); aspect-ratio: 16 / 10; }
+  .flower { right: -10px; top: -12px; width: 34px; height: 34px; }
+}
+@media (prefers-reduced-motion: reduce) { .slide, .on { transition: none; } .flower { animation: none; } }

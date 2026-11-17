@@ -1,6 +1,18 @@
+import fs from "node:fs";
+import path from "node:path";
 import AboutFace from "./AboutFace";
+import MeSlides from "./MeSlides";
 import { story } from "@/lib/site/home";
 import h from "./home.module.css";
+
+/** a photo for the "me" slides, once its file exists: /public/images/about/<name>.(webp|jpg|png) */
+const photo = (name: string) => {
+  for (const ext of ["webp", "jpg", "jpeg", "png"]) {
+    const rel = `/images/about/${name}.${ext}`;
+    if (fs.existsSync(path.join(process.cwd(), "public", rel))) return rel;
+  }
+  return null;
+};
 
 /** Scene 1 of the homepage journey: the three introduction panels. */
 export default function StoryPanels() {
@@ -43,21 +55,12 @@ export default function StoryPanels() {
       </div>
     </div>
 
-    {/* 3 — how I work */}
+    {/* 3 — what makes me, me */}
     <div className={h.panel} data-snap aria-roledescription="slide" aria-label="3 of 3">
-      <div className={`${h.panelInner} ${h.approach}`}>
-        <p className={h.eyebrow}>{st.approach.eyebrow}</p>
-        <p className={h.approachLine}>{st.approach.line}</p>
-        <ol className={h.steps}>
-          {st.approach.steps.map((x) => (
-            <li key={x.n}>
-              <span className={h.stepN}>{x.n}</span>
-              <b>{x.t}</b>
-              <span>{x.d}</span>
-            </li>
-          ))}
-        </ol>
-        <p className={h.craft}>{st.approach.craft}</p>
+      <div className={h.panelInner}>
+        <MeSlides
+          slides={st.me.slides.map((x) => ({ ...x, photo: photo(x.photo) }))}
+        />
       </div>
     </div>
     </>
