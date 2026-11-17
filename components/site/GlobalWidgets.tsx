@@ -4,14 +4,13 @@ import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import AskPanel from "./ask/AskPanel";
 import MusicToggle from "./MusicToggle";
-import Oneko from "./Oneko";
 import s from "./site.module.css";
 
 /**
- * Site-wide widgets (the chat sticker, the music button, the pixel cat),
+ * Site-wide widgets (the chat sticker, the music button),
  * mounted once in the root layout. Inside a page they were duplicated: the
  * router keeps the previous page alive in the background, which meant two
- * stickers, two cats and potentially two music players. The wall, full
+ * stickers and potentially two music players. The wall, full
  * screen, has its own controls, so they're left out there.
  */
 export default function GlobalWidgets({ face }: { face: string | null }) {
@@ -29,7 +28,6 @@ export default function GlobalWidgets({ face }: { face: string | null }) {
   return (
     // display: contents keeps the site's colour and type tokens without adding a box
     <div className={s.site} style={{ display: "contents" }}>
-      {!hide && <Oneko />}
       {/* the music keeps playing; only its button steps aside (unmounting would start a second player) */}
       <MusicToggle hidden={hide} />
       {!hide && <AskPanel face={face} />}
