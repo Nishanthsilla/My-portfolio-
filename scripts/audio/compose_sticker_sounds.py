@@ -1,7 +1,7 @@
 """
 Two original sounds for the face sticker (composed here, no samples):
-  swag  — glasses slid on: a short downward swoosh and a small plastic click (hover)
-  talk  — a screen sliding open: an airy upward whoosh and a soft landing (click / tap)
+  swag  — a soft, round bubble pop (hover)
+  talk  — a screen sliding open: an airy upward whoosh and a soft landing (the chat opens and closes)
 
   python3 scripts/audio/compose_sticker_sounds.py
 Writes public/audio/sfx/{swag,talk}.{ogg,mp3}.
@@ -34,18 +34,10 @@ def sweep_noise(n, f0, f1, q=1.2, curve=1.0):
     return out
 
 def swag():
-    """glasses slid on: a short downward swoosh, then a small plastic click"""
-    n = int(SR * 0.24); t = np.arange(n) / SR
-    whoosh_n = int(SR * 0.13)
-    w = sweep_noise(whoosh_n, 5200, 1400, q=1.6)
-    w *= np.sin(np.pi * np.linspace(0, 1, whoosh_n)) ** 1.6
-    out = np.zeros(n); out[:whoosh_n] += 0.55 * w / np.max(np.abs(w))
-    # the click: two tiny bright transients a few ms apart
-    for at, amp in ((0.118, 1.0), (0.126, 0.45)):
-        m = int(SR * 0.025); tt = np.arange(m) / SR
-        c = (np.sin(2 * np.pi * 3100 * tt) + 0.6 * np.sin(2 * np.pi * 5300 * tt)) * np.exp(-tt / 0.0035)
-        i = int(at * SR); out[i:i + m] += amp * 0.9 * c[: n - i]
-    return out
+    """hover: a soft, round bubble pop"""
+    n = int(SR * 0.11); t = np.arange(n) / SR
+    f = 520 + 380 * (1 - np.exp(-t / 0.012))
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * env(n, 0.001, 0.028)
 
 def talk():
     """a screen sliding open: an airy whoosh that sweeps up, settling with a soft low thud"""

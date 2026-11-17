@@ -77,6 +77,7 @@ export default function AskPanel({ face }: { face: string | null }) {
   const [closing, setClosing] = useState(false);
   const close = () => {
     if (closing) return;
+    uiSound("talk", true); // the same screen sound as opening
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return setOpen(false);
     setClosing(true);
     window.setTimeout(() => {
