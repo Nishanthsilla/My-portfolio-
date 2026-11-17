@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { onIntroDone } from "@/lib/introState";
+import { SCENE_EVENT } from "../Header";
 import GlyphEmbers from "./GlyphEmbers";
 import { JourneyContext, type BranchId } from "./journeyContext";
 import { useHashLayer } from "./useHashLayer";
@@ -190,17 +191,24 @@ export default function Journey({
 
   const go = useCallback((i: number) => goRef.current(Math.max(0, Math.min(SCENES.length - 1, i))), []);
 
-  /* ---------- "Get in touch" / #contact and #work jump to their scene ---------- */
+  /* ---------- the navbar highlights the scene in view ---------- */
+  useEffect(() => {
+    dispatchEvent(new CustomEvent(SCENE_EVENT, { detail: SCENES[active].id }));
+  }, [active]);
+
+  /* ---------- navbar links (/#about, /#work, /#beyond, /#wall, /#contact) jump to their scene ---------- */
   useEffect(() => {
     const target = (href: string | null) => {
-      const m = href?.match(/^\/?#(contact|work)$/);
-      return m ? SCENES.findIndex((s) => s.id === m[1]) : -1;
+      const m = href?.match(/^\/?#(about|intro|work|beyond|wall|contact)$/);
+      if (!m) return -1;
+      return SCENES.findIndex((s) => s.id === (m[1] === "about" ? "intro" : m[1]));
     };
     const onClick = (e: MouseEvent) => {
       const a = (e.target as HTMLElement).closest?.("a[href]");
       const i = target(a?.getAttribute("href") ?? null);
       if (i < 0) return;
       e.preventDefault();
+      history.replaceState(history.state, "", location.pathname + location.search);
       go(i);
     };
     document.addEventListener("click", onClick, true);
@@ -305,25 +313,6 @@ export default function Journey({
               <div className={h.contactBody}>{contact}</div>
             </div>
           </div>
-          {mode !== "stack" && (
-            <nav className={h.journeyNav} aria-label="Scenes">
-              <button type="button" className={h.arrowBtn} onClick={() => go(active - 1)} disabled={active === 0} aria-label="Previous scene">
-                ←
-              </button>
-              <ol className={h.journeyDots}>
-                {SCENES.map((s, i) => (
-                  <li key={s.id}>
-                    <button type="button" onClick={() => go(i)} aria-current={i === active ? "step" : undefined}>
-                      <span className={h.dotNum}>{String(i + 1).padStart(2, "0")}</span> {s.label}
-                    </button>
-                  </li>
-                ))}
-              </ol>
-              <button type="button" className={h.arrowBtn} onClick={() => go(active + 1)} disabled={active === SCENES.length - 1} aria-label="Next scene">
-                →
-              </button>
-            </nav>
-          )}
         </div>
       </section>
 
