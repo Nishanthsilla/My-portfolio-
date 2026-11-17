@@ -7,7 +7,7 @@ import AskPanel from "./ask/AskPanel";
 import s from "./site.module.css";
 
 /** your face for the chat sticker: shown once the file exists, initials until then */
-const FACE = "/images/about/face.webp";
+const FACE = "/images/about/face-sticker.webp";
 const FACE_FILE = fs.existsSync(path.join(process.cwd(), "public", FACE));
 
 /** The website frame (header, page, contact footer). The intro film is mounted separately in app/layout.tsx. */
