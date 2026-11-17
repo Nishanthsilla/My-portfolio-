@@ -4,7 +4,7 @@ import { useState } from "react";
 import ProjectMedia from "../ProjectMedia";
 import CursorScope from "../CursorScope";
 import ProjectDrawer, { type DrawerMode } from "./ProjectDrawer";
-import { categories, projects, type CategoryId, type Project } from "@/lib/site/content";
+import { categories, projects, workIntro, type CategoryId, type Project } from "@/lib/site/content";
 import { bento, recent, type TileSize } from "@/lib/site/home";
 import { categoryLabel } from "@/lib/site/routes";
 import h from "./home.module.css";
@@ -48,8 +48,8 @@ export default function WorkScene() {
     <section id="work" className={h.workScene} aria-labelledby="work-title">
       <div className={h.workSceneHead}>
         <p className={h.eyebrow}>Selected work</p>
-        <h2 id="work-title" className={h.h2}>Things I&apos;ve shipped</h2>
-        <p className={h.workLine}>Enterprise AI, FinTech and learning platforms, from first flows to design-system handoff.</p>
+        <h2 id="work-title" className={h.h2}>{workIntro.title}</h2>
+        <p className={h.workLine}>{workIntro.line}</p>
         <div className={h.workTabs} role="tablist" aria-label="Filter work">
           {tabs.map((t) => (
             <button

@@ -5,7 +5,6 @@
  * Copy sources: [site] the current portfolio · [film] the approved intro film ·
  * [brief] Nishanth's brief. Nothing here is a new claim about his work.
  */
-import { about } from "./about";
 import { intro } from "./content";
 
 /* ---------------- Horizontal introduction (three panels) ---------------- */
@@ -14,18 +13,23 @@ export const story = {
   /** Panel 1 — the introduction. Headline refined from the direction in the brief. */
   hello: {
     eyebrow: intro.now, // [site]
-    headline: { before: "I design products for ", em: "complex systems", after: " — and the people who run them." },
-    kicker: intro.headline[0], // [site] "Design for agents."
+    headline: { before: "Hi, I'm Nishanth. I make ", em: "complicated software", after: " feel simple to use." },
+    kicker: "Product designer in Hyderabad, 5+ years in.",
   },
   /** Panel 2 — focus and background. [site] */
   facts: intro.facts,
-  now: { k: "Now", v: "Lead Product Designer at Covasant, Hyderabad" }, // [site] experience
-  /** Panel 3 — how I work. [site] lede + the human–agent loop · [film] Figma → code */
+  now: { k: "Day job", v: "Lead Product Designer at Covasant" }, // [site] experience
+  /** Panel 3 — how I work: a designer's process, built only from the skills on the site (lib/site/about.ts). */
   approach: {
     eyebrow: "How I work",
-    line: intro.lede,
-    steps: about.loop.steps.map((st) => ({ n: st.n, t: st.t, d: st.d })),
-    craft: "I design it in Figma, then ship it in code.",
+    line: "Talk to people, sketch it rough, test it early, then sweat the details.",
+    steps: [
+      { n: "01", t: "Understand", d: "I start with the people who'll use it: workshops, conversations, and their real workflows, before I open a design tool." },
+      { n: "02", t: "Sketch and map", d: "User flows and rough wireframes in FigJam first. Quick to change, easy to throw away." },
+      { n: "03", t: "Prototype and test", d: "Clickable prototypes in Figma, in front of real users. Usability tests and A/B tests decide, not my opinion." },
+      { n: "04", t: "Ship it together", d: "Design-system components, clear specs, and close work with developers, so what ships matches what we designed." },
+    ],
+    craft: "Figma · FigJam · Maze · Hotjar",
   },
 };
 
@@ -67,12 +71,12 @@ export const recent = ["self-ready", "ambient-ai", "salespulze-heat-map", "mao",
 export const folders = {
   beyond: {
     title: "Beyond the Interface",
-    description: "Experiments beyond the screen — physical products, prototypes and ideas I'm exploring.", // [brief]
+    description: "What I make away from the screen: 3D prints, product ideas and prototypes.",
     href: "/beyond",
   },
   photography: {
     title: "Photography",
-    description: "Frames, places and moments.", // [brief]
+    description: "Photos I take for fun. My dad is my favourite model.",
     href: "/photography",
   },
 };
