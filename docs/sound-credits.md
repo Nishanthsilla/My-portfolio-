@@ -42,4 +42,4 @@ The pixel cat that follows the mouse is adapted from [oneko.js](https://github.c
 
 ## Background music
 
-- `ambient/garden` (calm game-style loop with birdsong) is original, composed for this site in `scripts/audio/compose_garden.py`.
+- `ambient/serendipity`: "Serendipity" by Purrple Cat, from Pixabay (https://pixabay.com/music/ambient-serendipity-635081/), used under the Pixabay Content License. Trimmed and crossfaded into a seamless loop.
