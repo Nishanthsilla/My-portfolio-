@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import { respond } from "@/lib/ask/match";
 import { SUGGESTED, topicById, type Topic } from "@/lib/ask/faq";
 import SwagGlasses from "./SwagGlasses";
-import GooglyEyes from "./GooglyEyes";
 import { preloadUiSounds, uiSound } from "@/lib/sound/ui";
 
 import a from "./ask.module.css";
@@ -55,25 +54,6 @@ export default function AskPanel({ face }: { face: string | null }) {
   // say hello once, a few seconds after the page settles, so people notice it
   const [hello, setHello] = useState(false);
   const [swag, setSwag] = useState(false);
-  // now and then, while nobody is hovering, googly eyes pop on for a few seconds
-  const [googly, setGoogly] = useState(false);
-  const hovering = useRef(false);
-  useEffect(() => {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let t = 0;
-    const next = (ms: number) => (t = window.setTimeout(run, ms));
-    const run = () => {
-      if (!hovering.current && !document.hidden && !document.querySelector('[aria-label="Ask about Nishanth"][role="dialog"]')) {
-        setGoogly(true);
-        t = window.setTimeout(() => {
-          setGoogly(false);
-          next(7000 + Math.random() * 6000);
-        }, 4200);
-      } else next(4000);
-    };
-    next(9000);
-    return () => window.clearTimeout(t);
-  }, []);
   useEffect(() => {
     const t = window.setTimeout(preloadUiSounds, 2500);
     return () => window.clearTimeout(t);
@@ -174,7 +154,7 @@ export default function AskPanel({ face }: { face: string | null }) {
 
   return (
     <>
-      <div className={`${a.sticker} ${open ? a.stickerHidden : ""} ${hello ? a.hello : ""} ${swag ? a.on : ""}`} onPointerEnter={() => { hovering.current = true; setGoogly(false); }} onPointerLeave={() => (hovering.current = false)}>
+      <div className={`${a.sticker} ${open ? a.stickerHidden : ""} ${hello ? a.hello : ""} ${swag ? a.on : ""}`}>
         <span className={a.bubble} aria-hidden="true">
           <b><span className={a.dotLive} />Talk to me</b>
           <small>Ask anything about my work</small>
@@ -206,7 +186,6 @@ export default function AskPanel({ face }: { face: string | null }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={face} alt="" width={260} height={394} />
               <SwagGlasses className={a.glasses} />
-              {googly && !swag && <GooglyEyes />}
             </>
           ) : (
             <span className={a.initials} aria-hidden="true">NS</span>
