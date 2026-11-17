@@ -23,7 +23,6 @@ export default function AboutPage() {
               <div key={st.label} className={s.stat}>
                 <b>{st.value}</b>
                 <span>{st.label}</span>
-                {st.confirm && <span className={s.confirm}>Site says 3 · film says 04 — confirm</span>}
               </div>
             ))}
           </div>

@@ -51,27 +51,51 @@ async function nopeGif(): Promise<string | null> {
  * questions; anything unrelated gets a "nope" GIF.
  */
 export default function AskPanel({ face }: { face: string | null }) {
-  // say hello once, a few seconds after the page settles, so people notice it
-  const [hello, setHello] = useState(false);
   const [swag, setSwag] = useState(false);
   useEffect(() => {
     const t = window.setTimeout(preloadUiSounds, 2500);
     return () => window.clearTimeout(t);
   }, []);
+  /*
+   * The tooltip, as chat messages:
+   *  · hover (or keyboard focus): "Nishanth is typing…" for a moment, then "Hey! 👋" and
+   *    "Curious about a project? Ask me anything." pop in one after the other
+   *  · now and then, when nobody is near the sticker: a quick "psst… got a question?"
+   */
+  const [talk, setTalk] = useState<"off" | "typing" | "msgs">("off");
+  const [nudge, setNudge] = useState(false);
+  const [wave, setWave] = useState(false);
+  const near = useRef(false);
+  const talkTimer = useRef(0);
+  const startTalk = () => {
+    near.current = true;
+    setNudge(false);
+    window.clearTimeout(talkTimer.current);
+    setTalk("typing");
+    talkTimer.current = window.setTimeout(() => setTalk("msgs"), 900);
+  };
+  const stopTalk = () => {
+    near.current = false;
+    window.clearTimeout(talkTimer.current);
+    setTalk("off");
+  };
   useEffect(() => {
-    let t2 = 0;
-    const t1 = window.setTimeout(() => {
-      try {
-        if (sessionStorage.getItem("nishanth.ask.hello")) return;
-        sessionStorage.setItem("nishanth.ask.hello", "1");
-      } catch {}
-      setHello(true);
-      t2 = window.setTimeout(() => setHello(false), 4200);
-    }, 6000);
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
+    let t = 0, first = true;
+    const run = () => {
+      const chatOpen = !!document.querySelector('[role="dialog"][aria-label="Ask about Nishanth"]');
+      if (!near.current && !chatOpen && !document.hidden) {
+        setNudge(true);
+        if (first) setWave(true);
+        first = false;
+        t = window.setTimeout(() => {
+          setNudge(false);
+          setWave(false);
+          t = window.setTimeout(run, 28000 + Math.random() * 14000);
+        }, 4500);
+      } else t = window.setTimeout(run, 10000);
     };
+    t = window.setTimeout(run, 7000);
+    return () => window.clearTimeout(t);
   }, []);
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -155,16 +179,44 @@ export default function AskPanel({ face }: { face: string | null }) {
 
   return (
     <>
-      <div className={`${a.sticker} ${open ? a.stickerHidden : ""} ${hello ? a.hello : ""} ${swag ? a.on : ""}`}>
-        <span className={a.bubble} aria-hidden="true">
-          <b><span className={a.dotLive} />Talk to me</b>
-          <small>Ask anything about my work</small>
+      <div className={`${a.sticker} ${open ? a.stickerHidden : ""} ${wave ? a.waving : ""} ${swag ? a.on : ""}`}>
+        <span className={a.chatTip} aria-hidden="true">
+          {talk !== "off" ? (
+            <>
+              <span className={a.who}>
+                <i className={a.dotLive} />
+                {talk === "typing" ? "Nishanth is typing…" : "Nishanth"}
+              </span>
+              {talk === "typing" ? (
+                <span className={`${a.msg} ${a.typing}`}><i /><i /><i /></span>
+              ) : (
+                <>
+                  <span className={`${a.msg} ${a.msgTop}`}>Hey! 👋</span>
+                  <span className={`${a.msg} ${a.msgNext}`}>Curious about a project? Ask me anything.</span>
+                </>
+              )}
+            </>
+          ) : nudge ? (
+            <>
+              <span className={a.who}><i className={a.dotLive} />online</span>
+              <span className={a.msg}>psst… got a question?</span>
+            </>
+          ) : null}
         </span>
         <button
           type="button"
           className={`${a.face} ${face ? "" : a.faceRound}`}
-          onPointerEnter={(e) => e.pointerType === "mouse" && uiSound("swag")}
-          onFocus={preloadUiSounds}
+          onPointerEnter={(e) => {
+            if (e.pointerType !== "mouse") return;
+            uiSound("swag");
+            startTalk();
+          }}
+          onPointerLeave={(e) => e.pointerType === "mouse" && stopTalk()}
+          onFocus={() => {
+            preloadUiSounds();
+            startTalk();
+          }}
+          onBlur={stopTalk}
           onClick={() => {
             // phones have no hover: the tap plays the pop-pop with the glasses, then (one sound at a time) the chat opens
             if (matchMedia("(hover: none)").matches && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
