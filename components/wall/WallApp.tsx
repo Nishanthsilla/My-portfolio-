@@ -42,6 +42,9 @@ const DECOR: { id: string; x: number; y: number; r: number; s: number }[] = [
 ];
 /** Nishanth's own pinned note (his words from the brief), clearly labelled. */
 const PINNED = { id: "pinned", sticker: "gif-heart", font: "scribble", shape: "square", color: "yellow", message: "A thought, a note, or just a little sticker. I'd love to see what you leave.", name: "Nishanth", x: 0.4, y: 0.44, rotation: -4 };
+/** above any other note, however many times those are moved */
+const MINE_Z = 50000;
+
 /** A few lines Nishanth has scribbled straight onto the wall (not sticky notes), each in its own pen with a little doodle. */
 const SCRIBBLES = [
   { id: "drag", text: "psst… every sticker here is draggable", x: 0.27, y: 0.35, r: -5, color: "#2b2925", font: '"Caveat", cursive', size: 38, weight: 600, doodle: "arrow" },
@@ -492,7 +495,8 @@ export default function WallApp({
           {mine.map((n) => {
             const p = spot(n.id, n.x, n.y);
             return (
-              <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Your note: ${n.message}`} className={w.placed}>
+              // the visitor's own notes always sit above everyone else's
+              <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={MINE_Z + p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Your note: ${n.message}`} className={w.placed}>
                 <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name={n.name} />
               </ElasticSticker>
             );
