@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { onIntroDone } from "@/lib/introState";
 import s from "./music.module.css";
 
-const KEY = "nishanth.music";
-const VOLUME = 0.1; // quiet background: the sticker and chat sounds (their own audio, lib/sound/ui.ts) stay clearly on top
+const KEY = "nishanth.music.v2"; // (a new key: everyone starts with music on again)
+const VOLUME = 0.24; // background level: the sticker and chat sounds (their own audio, lib/sound/ui.ts) stay on top
 
 /**
  * Background music: "Serendipity" by Purrple Cat (lofi, via Pixabay),
@@ -102,9 +102,12 @@ export default function MusicToggle() {
 
   return (
     <button type="button" className={s.btn} data-on={on && playing ? "" : undefined} onClick={toggle} aria-pressed={on} aria-label={on ? "Music on: turn off" : "Music off: turn on"} title={on ? "Turn music off" : "Turn music on"}>
-      <span className={s.bars} aria-hidden="true">
-        <i /><i /><i /><i />
-      </span>
+      <svg className={s.note} viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9 18V5l11-2v13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+        <circle cx="6.5" cy="18" r="2.6" fill="currentColor" />
+        <circle cx="17.5" cy="16" r="2.6" fill="currentColor" />
+        {!on && <path d="M3 3l18 18" stroke="#ff4938" strokeWidth="2.4" strokeLinecap="round" />}
+      </svg>
       <span className={s.label}>{on ? "Music on" : "Music off"}</span>
     </button>
   );
