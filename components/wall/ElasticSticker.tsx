@@ -67,7 +67,7 @@ export default function ElasticSticker({
         moved = true;
         dragging.current = true;
         el.dataset.lifted = "";
-        el.style.zIndex = "1000";
+        el.style.zIndex = "1000000"; // above everything while held, own notes included
         sfx("pick");
         // pick it up: a quick stretch
         if (!calm) gsap.to(art, { scale: 1.08, duration: 0.35, ease: "back.out(3)" });
