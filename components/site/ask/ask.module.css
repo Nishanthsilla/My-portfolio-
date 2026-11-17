@@ -18,18 +18,26 @@
   .sticker:hover .glasses, .face:focus-visible .glasses { visibility: visible; }
 }
 .initials { display: grid; place-items: center; width: 100%; height: 100%; font: 700 19px/1 var(--sans, sans-serif); letter-spacing: -0.02em; color: #fff; }
-/* "Talk to me": a little sticker-style speech bubble above the face */
-.bubble { position: absolute; right: calc(100% - 6px); bottom: calc(100% - 22px); display: grid; gap: 3px; padding: 11px 15px 12px; border-radius: 16px 16px 4px 16px;
-  background: #fff; color: #1c1b19; border: 1.5px solid #1c1b19; box-shadow: 3px 3px 0 #1c1b19; white-space: nowrap; transform-origin: bottom right;
-  opacity: 0; transform: translate(6px, 6px) scale(0.9) rotate(-3deg); pointer-events: none; transition: opacity 160ms ease, transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-.bubble b { font: 650 15px/1.1 var(--sans, sans-serif); letter-spacing: -0.01em; }
-.bubble small { font: 500 12.5px/1.2 var(--sans, sans-serif); color: #6b665f; }
-.dotLive { display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: #2fb463; box-shadow: 0 0 0 3px rgba(47, 180, 99, 0.18); vertical-align: 1px; }
-.sticker:hover .bubble, .sticker:focus-within .bubble, .hello .bubble { opacity: 1; transform: rotate(-3deg); }
-.hello .face { animation: wave 900ms cubic-bezier(0.34, 1.56, 0.64, 1) 2; }
+/* the tooltip, as chat messages above the face */
+.chatTip { position: absolute; right: calc(100% - 10px); bottom: calc(100% - 26px); display: grid; justify-items: end; gap: 5px; pointer-events: none; }
+.who { display: inline-flex; align-items: center; gap: 6px; margin-right: 4px; font: 500 11px/1 var(--mono, monospace); letter-spacing: 0.04em; text-transform: uppercase; color: #6b665f;
+  padding: 4px 8px; border-radius: 999px; background: rgba(250, 250, 247, 0.92); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04); white-space: nowrap; animation: tipIn 220ms ease both; }
+.msg { display: block; max-width: 250px; width: max-content; padding: 10px 14px; border-radius: 16px 16px 4px 16px; background: #fff; border: 1px solid #e3dfd8; color: #222;
+  font: 500 15px/1.35 var(--sans, sans-serif); box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.35); transform-origin: bottom right; animation: pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.msgTop { border-radius: 16px 16px 4px 16px; }
+.msgNext { animation-delay: 380ms; }
+.typing { display: inline-flex; gap: 5px; padding: 12px 14px; }
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: #b9b3aa; animation: typing 1s ease-in-out infinite; }
+.typing i:nth-child(2) { animation-delay: 0.15s; }
+.typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typing { 0%, 60%, 100% { transform: none; opacity: 0.45; } 30% { transform: translateY(-3px); opacity: 1; } }
+@keyframes pop { from { opacity: 0; transform: translate(8px, 8px) scale(0.6); } }
+@keyframes tipIn { from { opacity: 0; } }
+.dotLive { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #2fb463; box-shadow: 0 0 0 3px rgba(47, 180, 99, 0.18); }
+.waving .face { animation: wave 900ms cubic-bezier(0.34, 1.56, 0.64, 1) 2; }
 @keyframes wave { 0%, 100% { transform: rotate(-7deg); } 30% { transform: rotate(8deg) scale(1.06); } 60% { transform: rotate(-12deg); } }
-@media (max-width: 640px) { .face { height: 76px; } .faceRound { height: 56px; border-width: 3px; } }
-@media (prefers-reduced-motion: reduce) { .face, .bubble, .sticker { transition: none; } .hello .face { animation: none; } }
+@media (max-width: 640px) { .face { height: 76px; } .faceRound { height: 56px; border-width: 3px; } .msg { max-width: 200px; font-size: 14px; } }
+@media (prefers-reduced-motion: reduce) { .face, .sticker { transition: none; } .waving .face, .msg, .who, .typing i { animation: none; } }
 html[data-embed] .sticker { display: none; }
 
 /* now and then a small head tilt, so the sticker feels alive */
