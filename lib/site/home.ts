@@ -56,6 +56,12 @@ export const bento: { slug: string; size: TileSize }[] = [
   { slug: "food-engineers-logo", size: "small" },
 ];
 
+/**
+ * The six most recent case studies — shown first on the homepage. Everything
+ * else waits behind "Explore more of my work".
+ */
+export const recent = ["self-ready", "ambient-ai", "salespulze-heat-map", "mao", "covasant-design-system", "thriving-springs-e-learning"];
+
 /* ---------------- The two folders ---------------- */
 
 export const folders = {

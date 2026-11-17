@@ -12,3 +12,7 @@ html.intro-lock body {
 /* keep the scrollbar's space even when a full-screen layer locks the page (the wall, a folder sheet):
    otherwise the page gets wider for a moment and the homepage journey shifts sideways */
 html { scrollbar-gutter: stable; }
+
+/* a page shown inside the homepage's project panel */
+html[data-embed] header.bar, html[data-embed] footer, html[data-embed] [data-intro-film], html[data-embed] [data-intro-loader] { display: none !important; }
+html[data-embed] main { padding-top: 8px; }

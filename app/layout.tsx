@@ -29,6 +29,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300;12..96,75..100,500;12..96,75..100,700;12..96,75..100,800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
         />
+        {/* Inside the project panel (an iframe on the homepage): no navbar, footer or intro, and links report back to the panel. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if(window.self!==window.top){var d=document.documentElement;d.setAttribute("data-embed","");addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(!a||a.target==="_blank")return;var h=a.getAttribute("href");if(!h||h.charAt(0)==="#"||/^(mailto|tel):/.test(h))return;var u=new URL(h,location.href);if(u.origin!==location.origin){a.target="_blank";return;}e.preventDefault();parent.postMessage({type:"embed:navigate",href:u.pathname+u.search+u.hash},location.origin);},true);}`,
+          }}
+        />
       </head>
       <body data-tone="paper">
         {/* The real site is always rendered; the intro sits above it. */}
