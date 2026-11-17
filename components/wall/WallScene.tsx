@@ -62,8 +62,11 @@ export default function WallScene() {
         <h2 id="wall-scene-title" className={w.sceneTitle}>Leave a little something.</h2>
         <p className={w.sceneLine}>A thought, a note, or just a little sticker. I&apos;d love to see what you leave.</p>
         <div className={w.sceneActions}>
-          <button type="button" className={w.btnPrimary} onClick={() => open("the-wall/note")}>
-            Add a note
+          <button type="button" className={`${w.btnPrimary} ${w.nudge}`} onClick={() => open("the-wall/note")}>
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M13.5 3.5l3 3L7 16H4v-3z" />
+            </svg>
+            Write a note
           </button>
           <button type="button" className={w.btnGhost} onClick={() => open("the-wall")}>
             See what people left <span aria-hidden="true">↗</span>
