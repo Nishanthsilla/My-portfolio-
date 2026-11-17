@@ -1,5 +1,5 @@
 /**
- * The face sticker's two sounds (swag on hover, talk on click). These play even
+ * The face sticker's two sounds (swag on hover; talk when the chat opens and closes). These play even
  * though the site-wide sound is off. Browsers allow audio only after the
  * visitor has clicked, tapped or pressed a key once, so until then hovering
  * is silent; a click or tap always counts.
@@ -33,11 +33,11 @@ export function preloadUiSounds() {
   });
 }
 
-export function uiSound(name: Name) {
+export function uiSound(name: Name, again = false) {
   const c = context();
   if (!c || document.hidden) return;
   const now = performance.now();
-  if (now - (last.get(name) ?? 0) < 350) return;
+  if (!again && now - (last.get(name) ?? 0) < 350) return;
   last.set(name, now);
   if (c.state !== "running") void c.resume();
   preloadUiSounds();
