@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { Project } from "@/lib/site/content";
+import { useRouter } from "next/navigation";
+import { projects, type Project } from "@/lib/site/content";
 import { caseStudyHref, categoryLabel, overviewHref } from "@/lib/site/routes";
 import d from "./drawer.module.css";
 
@@ -14,7 +15,8 @@ export type DrawerMode = "simple" | "deep";
  * case study). The pages themselves load inside the panel, so the homepage
  * stays exactly where it was underneath.
  */
-export default function ProjectDrawer({ project: p, mode, onMode, onClose }: { project: Project; mode: DrawerMode; onMode: (m: DrawerMode) => void; onClose: () => void }) {
+export default function ProjectDrawer({ project: p, mode, onMode, onProject, onClose }: { project: Project; mode: DrawerMode; onMode: (m: DrawerMode) => void; onProject: (p: Project, m: DrawerMode) => void; onClose: () => void }) {
+  const router = useRouter();
   const [closing, setClosing] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const panel = useRef<HTMLDivElement>(null);
@@ -39,9 +41,19 @@ export default function ProjectDrawer({ project: p, mode, onMode, onClose }: { p
     const onMsg = (e: MessageEvent) => {
       if (e.origin !== location.origin || e.data?.type !== "embed:navigate") return;
       const to: string = e.data.href;
-      if (to === overviewHref(p)) onMode("simple");
-      else if (to === caseStudyHref(p)) onMode("deep");
-      else location.href = to;
+      const path = to.split("#")[0].split("?")[0];
+      // another project: show it in the same panel (no page load)
+      const other = projects.find((x) => !x.external && (path === overviewHref(x) || path === caseStudyHref(x)));
+      if (other) return onProject(other, path === caseStudyHref(other) ? "deep" : "simple");
+      // a homepage section ("All work"): close the panel and move the journey there
+      if (path === "/" || path === "") {
+        onClose();
+        const hash = to.includes("#") ? to.slice(to.indexOf("#")) : "";
+        if (hash) window.setTimeout(() => document.querySelector<HTMLAnchorElement>(`header a[href="/${hash}"]`)?.click(), 50);
+        return;
+      }
+      // anywhere else in the site: a client-side navigation, never a full reload
+      router.push(to);
     };
     addEventListener("keydown", onKey);
     addEventListener("message", onMsg);
@@ -52,7 +64,7 @@ export default function ProjectDrawer({ project: p, mode, onMode, onClose }: { p
       opener?.focus?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [p.slug]);
+  }, [p.slug, mode]);
 
   const meta = [categoryLabel(p.category), p.org, p.year].filter(Boolean).join(" · ");
 
