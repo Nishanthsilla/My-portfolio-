@@ -393,3 +393,26 @@
   .large .tileBody { padding: 70px 16px 16px; }
   .large .tileTitle { font-size: 24px; }
 }
+
+/* ---------- work: category tabs, "Explore more", tiles as buttons ---------- */
+.workTabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.workTabs button { height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: #55514b; font: 500 13.5px/1 var(--sans); cursor: pointer; transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease; }
+.workTabs button:hover { border-color: #c9c4bc; color: var(--ink); }
+.workTabs button[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+.workTabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.stretch { padding: 0; border: 0; background: transparent; cursor: pointer; }
+button.tileCta { font-family: inherit; cursor: pointer; }
+.moreTile {
+  grid-row: span 2; display: grid; align-content: center; justify-items: start; gap: 10px; padding: 28px; text-align: left;
+  border-radius: var(--radius, 16px); border: 1.5px dashed #cfc9c0; background: transparent; color: var(--ink); cursor: pointer;
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+.moreTile:hover { border-color: var(--ink); background: #fff; }
+.moreTile:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.moreCount { font: 500 13px/1 var(--mono); color: var(--accent); }
+.moreLabel { font-size: clamp(20px, 1.8vw, 26px); line-height: 1.15; letter-spacing: -0.02em; font-weight: 560; }
+.moreLabel span { display: inline-block; color: var(--accent); transition: transform 220ms ease; }
+.moreTile:hover .moreLabel span { transform: translateX(5px); }
+.moreNote { font-size: 14px; color: var(--muted); }
+.journey[data-mode="touch"] .bentoRow > .moreTile { grid-column: span 2 !important; grid-row: span 1 !important; padding: 22px; }
+.journey[data-mode="stack"] .bentoRow > .moreTile { grid-row: span 1; }

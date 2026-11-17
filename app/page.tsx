@@ -1,7 +1,7 @@
 import SiteShell from "@/components/site/SiteShell";
 import Journey from "@/components/site/home/Journey";
 import StoryPanels from "@/components/site/home/StoryPanels";
-import Bento from "@/components/site/home/Bento";
+import WorkScene from "@/components/site/home/WorkScene";
 import FolderShelf from "@/components/site/home/FolderShelf";
 import ContactScene from "@/components/site/home/ContactScene";
 import WallScene from "@/components/wall/WallScene";
@@ -18,7 +18,7 @@ export default function HomePage() {
     <SiteShell footer={false}>
       <Journey
         intro={<StoryPanels />}
-        work={<Bento variant="journey" />}
+        work={<WorkScene />}
         folders={<FolderShelf />}
         wall={<WallScene />}
         contact={<ContactScene />}

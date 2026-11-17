@@ -47,7 +47,7 @@ export default function IntroFilm() {
     try {
       seen = FILM_REPLAY === "once-per-session" && sessionStorage.getItem(SESSION_KEY) === "1";
     } catch {}
-    if (reduce || seen) {
+    if (reduce || seen || html.hasAttribute("data-embed")) {
       announceDone();
       setActive(false);
       return;
