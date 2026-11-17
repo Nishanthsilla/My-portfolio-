@@ -37,18 +37,7 @@ html[data-embed] .sticker { display: none; }
 @keyframes tilt { 0%, 78%, 100% { transform: rotate(0); } 82% { transform: rotate(-7deg); } 88% { transform: rotate(5deg); } 93% { transform: rotate(-2deg); } }
 .sticker:hover .face img, .on .face img { animation: none; }
 
-/* googly eyes over his own eyes */
-.googly { position: absolute; inset: 0; pointer-events: none; transform-origin: 50% 90%; animation: tilt 7s ease-in-out 3s infinite; }
-.eye { position: absolute; top: 51%; width: 23%; aspect-ratio: 1; margin: -11.5% 0 0 -11.5%; border-radius: 50%; background: #fff; border: 1.5px solid #222;
-  box-shadow: inset -1px -2px 0 rgba(0, 0, 0, 0.12); animation: pop 260ms cubic-bezier(0.34, 1.7, 0.64, 1) both; }
-.eyeL { left: 34%; }
-.eyeR { left: 69%; animation-delay: 60ms; }
-.eye i { position: absolute; left: 50%; top: 50%; width: 52%; aspect-ratio: 1; margin: -26% 0 0 -26%; border-radius: 50%; background: #111;
-  transform: translate(var(--px, 0), var(--py, 0)); }
-.eye i::after { content: ""; position: absolute; left: 22%; top: 18%; width: 28%; aspect-ratio: 1; border-radius: 50%; background: rgba(255, 255, 255, 0.85); }
-@keyframes pop { from { transform: scale(0); } }
-.sticker:hover .googly { display: none; }
-@media (prefers-reduced-motion: reduce) { .face img, .googly { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .face img { animation: none; } }
 
 /* a slider: the panel slides in from the right edge; the page stays visible behind it */
 .layer { position: fixed; inset: 0; z-index: 80; background: rgba(20, 19, 17, 0.16); animation: fade 260ms ease; }

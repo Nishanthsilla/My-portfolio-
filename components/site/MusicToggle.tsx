@@ -108,7 +108,6 @@ export default function MusicToggle() {
         <circle cx="17.5" cy="16" r="2.6" fill="currentColor" />
         {!on && <path d="M3 3l18 18" stroke="#ff4938" strokeWidth="2.4" strokeLinecap="round" />}
       </svg>
-      <span className={s.label}>{on ? "Music on" : "Music off"}</span>
     </button>
   );
 }
