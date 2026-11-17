@@ -7,6 +7,7 @@ import { SCENE_EVENT } from "../Header";
 import GlyphEmbers from "./GlyphEmbers";
 import { JourneyContext, type BranchId } from "./journeyContext";
 import { useHashLayer } from "./useHashLayer";
+import siteCss from "../site.module.css";
 import h from "./home.module.css";
 
 type Mode = "desktop" | "touch" | "stack";
@@ -318,6 +319,7 @@ export default function Journey({
 
       {branch &&
         createPortal(
+          <div className={siteCss.site} style={{ display: "contents" }}>
           <div className={h.sheet} role="dialog" aria-modal="true" aria-label={branch === "beyond" ? "Beyond the Interface" : "Photography"}>
             <div className={h.sheetBar}>
               <button type="button" className={h.sheetClose} onClick={close}>
@@ -326,8 +328,9 @@ export default function Journey({
               <span className={h.sheetTitle}>{branch === "beyond" ? "Beyond the Interface" : "Photography"}</span>
             </div>
             <div className={h.sheetBody}>{branch === "beyond" ? beyond : photography}</div>
+          </div>
           </div>,
-          document.querySelector("[data-site]") ?? document.body,
+          document.body,
         )}
     </JourneyContext.Provider>
   );

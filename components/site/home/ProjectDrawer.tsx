@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { projects, type Project } from "@/lib/site/content";
 import { caseStudyHref, categoryLabel, overviewHref } from "@/lib/site/routes";
+import siteCss from "../site.module.css";
 import d from "./drawer.module.css";
 
 export type DrawerMode = "simple" | "deep";
@@ -69,6 +70,8 @@ export default function ProjectDrawer({ project: p, mode, onMode, onProject, onC
   const meta = [categoryLabel(p.category), p.org, p.year].filter(Boolean).join(" · ");
 
   return createPortal(
+    // display: contents: the site's colour and type tokens, no extra box
+    <div className={siteCss.site} style={{ display: "contents" }}>
     <div className={`${d.layer} ${closing ? d.closing : ""}`} onPointerDown={(e) => e.target === e.currentTarget && close()}>
       <div ref={panel} className={d.panel} role="dialog" aria-modal="true" aria-label={p.title}>
         <div className={d.bar}>
@@ -100,7 +103,8 @@ export default function ProjectDrawer({ project: p, mode, onMode, onProject, onC
           <iframe key={href} src={href} title={`${p.title} — ${mode === "simple" ? "simplified" : "deep dive"}`} className={`${d.frame} ${loaded ? d.frameOn : ""}`} onLoad={() => setLoaded(true)} />
         </div>
       </div>
+    </div>
     </div>,
-    document.querySelector("[data-site]") ?? document.body,
+    document.body,
   );
 }

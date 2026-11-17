@@ -10,7 +10,7 @@ const GAIN: Record<Name, number> = { swag: 0.4, "chat-open": 0.5, "chat-close": 
  * logo, dexter and huh are meme sounds supplied by Nishanth (public/audio/sfx/<name>.mp3).
  * List a name here once its file has been added; until then it stays silent (and is never requested).
  */
-const MEMES_READY: Name[] = [];
+const MEMES_READY: Name[] = ["logo", "dexter", "huh"];
 const MEME = new Set<Name>(["logo", "dexter", "huh"]);
 const usable = (n: Name) => !MEME.has(n) || MEMES_READY.includes(n);
 
@@ -47,9 +47,9 @@ export function uiSound(name: Name, again = false) {
   const now = performance.now();
   if (!again && now - (last.get(name) ?? 0) < 350) return;
   last.set(name, now);
-  if (c.state !== "running") void c.resume();
   preloadUiSounds();
-  void buffers.get(name)?.then((buf) => {
+  // the first sound of a visit waits for the browser to wake audio up
+  void Promise.all([c.state === "running" ? null : c.resume(), buffers.get(name)]).then(([, buf]) => {
     if (!buf || c.state !== "running") return;
     const src = c.createBufferSource();
     src.buffer = buf;
