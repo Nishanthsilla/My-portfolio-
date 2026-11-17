@@ -75,10 +75,6 @@ export default function StoryPanels() {
         <a className={m.insta} href={st.me.instagram.href} target="_blank" rel="noopener noreferrer">
           {st.me.instagram.label} <span aria-hidden="true">↗</span>
         </a>
-        <p className={m.hint}>
-          <span className={m.hintHover}>Hover</span>
-          <span className={m.hintTap}>Tap</span> the coloured words
-        </p>
       </div>
     </div>
 
