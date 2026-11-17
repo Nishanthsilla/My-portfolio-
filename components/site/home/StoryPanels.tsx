@@ -9,7 +9,7 @@ import h from "./home.module.css";
 /** photos for a living word, once their files exist: /public/images/about/<key>-1.webp, -2, … */
 const photosFor = (key: string) => {
   const out: string[] = [];
-  for (let n = 1; n <= 12; n++) {
+  for (let n = 1; n <= 30; n++) {
     const ext = ["webp", "jpg", "jpeg", "png"].find((e) => fs.existsSync(path.join(process.cwd(), "public", `images/about/${key}-${n}.${e}`)));
     if (ext) out.push(`/images/about/${key}-${n}.${ext}`);
   }
