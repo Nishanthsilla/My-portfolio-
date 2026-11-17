@@ -1,6 +1,6 @@
 """
 Two original sounds for the face sticker (composed here, no samples):
-  swag  — a soft, round bubble pop (hover)
+  swag  — two quick rising pops, "pop-pop" (hover)
   talk  — a screen sliding open: an airy upward whoosh and a soft landing (the chat opens and closes)
 
   python3 scripts/audio/compose_sticker_sounds.py
@@ -33,11 +33,17 @@ def sweep_noise(n, f0, f1, q=1.2, curve=1.0):
         out[i] = band
     return out
 
+def _pop(f0, f1, rise, dur, decay):
+    n = int(SR * dur); t = np.arange(n) / SR
+    f = f0 + (f1 - f0) * (1 - np.exp(-t / rise))
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * env(n, 0.001, decay)
+
 def swag():
-    """hover: a soft, round bubble pop"""
-    n = int(SR * 0.11); t = np.arange(n) / SR
-    f = 520 + 380 * (1 - np.exp(-t / 0.012))
-    return np.sin(2 * np.pi * np.cumsum(f) / SR) * env(n, 0.001, 0.028)
+    """hover: two quick rising pops (pop-pop)"""
+    out = np.zeros(int(SR * 0.17))
+    for at, x, g in ((0.0, _pop(480, 820, 0.01, 0.09, 0.022), 0.8), (0.065, _pop(620, 1050, 0.01, 0.09, 0.022), 1.0)):
+        i = int(at * SR); out[i:i + len(x)] += g * x[: len(out) - i]
+    return out
 
 def talk():
     """a screen sliding open: an airy whoosh that sweeps up, settling with a soft low thud"""
