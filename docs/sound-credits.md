@@ -35,3 +35,7 @@ The intro film's score and end chime are separate (`public/audio/intro-film.*`, 
 ## Face sticker
 
 - `swag` (a "pop-pop" on hover), `chat-open` and `chat-close` (a crisp swipe as the chat slides in and out) are original sounds composed for this site in `scripts/audio/compose_sticker_sounds.py`. No samples are used.
+
+## Oneko
+
+The pixel cat that follows the mouse is adapted from [oneko.js](https://github.com/adryd325/oneko.js) by adryd (MIT licence), including its sprite sheet (`public/cursors/oneko.gif`).
