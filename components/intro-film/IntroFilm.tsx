@@ -56,6 +56,7 @@ export default function IntroFilm() {
     html.classList.add("intro-lock");
     root.dataset.js = "1";
     const engine = new FilmEngine(root);
+    const bar = root.querySelector<HTMLElement>("[data-film-progress]");
     const audio = new FilmAudio(FILM_AUDIO_SRC);
     const victory = new Audio(FILM_VICTORY_SRC);
     victory.preload = "auto";
@@ -93,6 +94,7 @@ export default function IntroFilm() {
         else if (at > t || t - at > 0.05) t = at; // never let picture and sound drift
       }
       engine.render(t);
+      if (bar) bar.style.transform = `scaleX(${Math.min(1, t / T.end).toFixed(4)})`;
       const tone = t >= DARK_RANGE[0] && t < DARK_RANGE[1] ? "dark" : "light";
       if (root.dataset.tone !== tone) root.dataset.tone = tone;
       // The reward: only on natural completion, only with sound on.
@@ -371,6 +373,8 @@ export default function IntroFilm() {
       {/* the camera's stacked exposures + the website emerging from the button (zoom.ts) */}
       <div className={styles.zoom} data-zoom aria-hidden="true" />
 
+      {/* how far through the intro you are */}
+      <div className={styles.progress} aria-hidden="true"><i data-film-progress /></div>
       <div className={styles.controls} data-film-controls>
         <button type="button" className={styles.ctrl} onClick={toggleSound} aria-pressed={sound === "on"}>
           <svg viewBox="0 0 20 20" aria-hidden="true">

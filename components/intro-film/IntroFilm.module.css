@@ -476,3 +476,9 @@
 .root[data-tone="dark"] .ctrl:hover { background: var(--warm); color: var(--ink); }
 .root[data-skipping] { opacity: 0; transition: opacity 0.45s ease; }
 @media (max-width: 480px) { .ctrl { padding: 8px 12px; font-size: 11px; } }
+
+/* a thin progress bar along the bottom edge, like a video player */
+.progress { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; height: 3px; background: rgba(127, 127, 127, 0.18); transition: opacity 400ms ease; }
+.progress i { display: block; height: 100%; background: #ff4938; transform: scaleX(0); transform-origin: 0 50%; }
+.root[data-tone="dark"] .progress { background: rgba(255, 255, 255, 0.16); }
+.root[data-ending] .progress, .root[data-skipping] .progress { opacity: 0; }
