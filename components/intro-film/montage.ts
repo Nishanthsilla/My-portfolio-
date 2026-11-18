@@ -15,6 +15,8 @@
  * Photos: Nishanth's own (/public/images/about), shown in black and white.
  */
 export const MONTAGE = { at: 0, dur: 5 } as const;
+/** the logo's width on every frame, as a share of the screen's shorter side (CSS: .mApps, .mGrid match it) */
+const LOGO_SIZE = 0.16;
 
 type Img = { kind: "img"; src: string; fx: number; fy: number; w: number; ink?: string; blend?: string; rot?: number; photo?: boolean };
 type Txt = { kind: "text"; font: string; bg: string; color: string; italic?: boolean; weight?: number; word?: string; scale?: number };
@@ -34,7 +36,7 @@ const STRIP: (Img | Txt | Gfx | Plain)[] = [
   { kind: "img", src: P + "model-4.webp", fx: 0.56, fy: 0.5, w: 0.16, ink: "#fff", photo: true },
   { kind: "apps" },
   { kind: "img", src: M + "keychain.webp", fx: 0.49, fy: 0.655, w: 0.034, ink: "#4a4a4a", blend: "multiply" },
-  { kind: "img", src: M + "bottle.webp", fx: 0.55, fy: 0.44, w: 0.05, rot: -20 },
+  { kind: "img", src: M + "bottle.webp", fx: 0.55, fy: 0.44, w: 0.05 },
   { kind: "img", src: M + "cards.webp", fx: 0.5, fy: 0.48, w: 0.042, ink: "#c9c9c9" },
   { kind: "img", src: P + "camera-1.webp", fx: 0.72, fy: 0.6, w: 0.13, ink: "#222", blend: "multiply", photo: true },
   { kind: "img", src: M + "tshirt.webp", fx: 0.5, fy: 0.45, w: 0.07, ink: "#f2f2f2" },
@@ -101,8 +103,9 @@ export class Montage {
   }
 
   layout() {
-    this.vw = innerWidth;
-    this.vh = innerHeight;
+    // the film's own frame (a scrollbar can make the window wider than it)
+    this.vw = this.el.root.clientWidth || innerWidth;
+    this.vh = this.el.root.clientHeight || innerHeight;
     this.current = -2; // re-apply the current frame at the new size
   }
 
@@ -132,6 +135,8 @@ export class Montage {
     mark.style.transform = "translate(-50%,-50%)";
     root.style.background = "#000";
     const base = Math.min(this.vw, this.vh);
+    // one size on every frame, dead centre of the screen
+    mark.style.width = `${base * LOGO_SIZE}px`;
 
     if (f.kind === "img") {
       const size = this.sizes.get(f.src);
@@ -146,12 +151,9 @@ export class Montage {
       img.style.top = `${this.vh / 2 - f.fy * size.h * s}px`;
       img.style.filter = f.photo ? "grayscale(1) contrast(1.1)" : "none";
       mark.style.display = "block";
-      mark.style.width = `${Math.max(36, f.w * size.w * s * 1.15)}px`;
-      if (f.rot) mark.style.transform = `translate(-50%,-50%) rotate(${f.rot}deg)`;
     } else if (f.kind === "plain") {
       root.style.background = f.bg;
       mark.style.display = "block";
-      mark.style.width = `${base * 0.24}px`;
       if (f.mono) mark.dataset.mono = "1";
     } else if (f.kind === "text") {
       root.style.background = f.bg;
@@ -168,17 +170,13 @@ export class Montage {
       mark.style.display = "block";
       if (f.kind === "grid") {
         root.style.background = "#000";
-        mark.style.width = `${base * 0.22}px`;
         mark.style.opacity = "0";
       } else if (f.kind === "soft") {
         root.style.background = "#fff";
-        mark.style.width = `${base * 0.2}px`;
       } else if (f.kind === "apps") {
         root.style.background = "#cfcfcf";
-        mark.style.width = `${base * 0.1}px`;
       } else {
         root.style.background = "#e60a30";
-        mark.style.width = `${base * 0.36}px`;
         mark.dataset.mono = "1";
       }
     }
