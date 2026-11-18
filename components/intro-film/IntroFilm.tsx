@@ -9,7 +9,9 @@ import {
 import { film } from "./content";
 import { FilmEngine } from "./engine";
 import { FilmAudio, type SoundState } from "./audio";
-import { DARK_RANGE, T, VICTORY_AT } from "./timeline";
+import { DARK_RANGE, FILM_END, T, VICTORY_AT, filmClock, montageTime } from "./timeline";
+import { Montage, MONTAGE_FONTS } from "./montage";
+import { FONTS_HREF } from "@/lib/wall/fonts";
 import styles from "./IntroFilm.module.css";
 import ControlRoom from "./ControlRoom";
 import { Artefacts, CodeDetails, DesignDetails } from "./BoardParts";
@@ -56,6 +58,16 @@ export default function IntroFilm() {
     html.classList.add("intro-lock");
     root.dataset.js = "1";
     const engine = new FilmEngine(root);
+    const montage = new Montage(root);
+    // the montage's fonts (the text match cut) and pictures, loaded up front
+    if (!document.querySelector("link[data-wall-fonts]")) {
+      const l = document.createElement("link");
+      l.rel = "stylesheet";
+      l.href = FONTS_HREF;
+      l.dataset.wallFonts = "";
+      document.head.appendChild(l);
+    }
+    const montageReady = Promise.all([montage.preload(), ...MONTAGE_FONTS.map((f) => document.fonts?.load(f).catch(() => {}))]);
     const bar = root.querySelector<HTMLElement>("[data-film-progress]");
     const audio = new FilmAudio(FILM_AUDIO_SRC);
     const victory = new Audio(FILM_VICTORY_SRC);
@@ -93,30 +105,34 @@ export default function IntroFilm() {
         if (at === null) t += dt;
         else if (at > t || t - at > 0.05) t = at; // never let picture and sound drift
       }
-      engine.render(t);
-      if (bar) bar.style.transform = `scaleX(${Math.min(1, t / T.end).toFixed(4)})`;
-      const tone = t >= DARK_RANGE[0] && t < DARK_RANGE[1] ? "dark" : "light";
+      // t is the long clock (the score's); the film itself holds still during the montage
+      const ft = filmClock(t);
+      engine.render(ft);
+      montage.render(montageTime(t));
+      if (bar) bar.style.transform = `scaleX(${Math.min(1, t / FILM_END).toFixed(4)})`;
+      const tone = ft >= DARK_RANGE[0] && ft < DARK_RANGE[1] ? "dark" : "light";
       if (root.dataset.tone !== tone) root.dataset.tone = tone;
       // The reward: only on natural completion, only with sound on.
-      if (!victoryPlayed && !skipped && !paused && t >= VICTORY_AT) {
+      if (!victoryPlayed && !skipped && !paused && ft >= VICTORY_AT) {
         victoryPlayed = true;
         if (soundWanted && audio.playing) victory.play().catch(() => {});
       }
-      if (t >= T.handoff[0]) {
+      if (ft >= T.handoff[0]) {
         announceReveal();
         if (!ending) {
           ending = true;
           root.dataset.ending = "1";
         }
       }
-      if (t >= T.end && !paused) return finish();
+      if (t >= FILM_END && !paused) return finish();
       raf = requestAnimationFrame(frame);
     };
 
     const start = async () => {
-      await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 1500))]);
+      await Promise.race([Promise.all([document.fonts?.ready, montageReady]), new Promise((r) => setTimeout(r, 1500))]);
       if (done) return;
       engine.layout();
+      montage.layout();
       engine.render(0);
       // Start picture and sound together; if the audio is slow to begin, the
       // film starts anyway and the audio joins at the film's time when ready.
@@ -151,7 +167,9 @@ export default function IntroFilm() {
       cancelAnimationFrame(resizeRaf);
       resizeRaf = requestAnimationFrame(() => {
         engine.layout();
-        engine.render(t);
+        montage.layout();
+        engine.render(filmClock(t));
+        montage.render(montageTime(t));
       });
     };
     const onKey = (e: KeyboardEvent) => {
@@ -182,7 +200,7 @@ export default function IntroFilm() {
 
     addEventListener("resize", onResize);
     addEventListener("keydown", onKey);
-    const failsafe = window.setTimeout(finish, (T.end + 15) * 1000);
+    const failsafe = window.setTimeout(finish, (FILM_END + 15) * 1000);
     raf = requestAnimationFrame(frame);
     start();
 
@@ -372,6 +390,31 @@ export default function IntroFilm() {
       <div className={styles.wipe} data-wipe aria-hidden="true" />
       {/* the camera's stacked exposures + the website emerging from the button (zoom.ts) */}
       <div className={styles.zoom} data-zoom aria-hidden="true" />
+
+      {/* "I'm Nishanth." → the logo match cut (montage.ts) */}
+      <div className={styles.montage} data-montage aria-hidden="true">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className={styles.mImg} data-mimg alt="" />
+        <div className={styles.mGrid} data-mgfx="grid"><i /><i /><i /><i /><b /></div>
+        <div className={styles.mSoft} data-mgfx="soft"><svg viewBox="0 0 112 64"><path d="M0 64H18L42 0H24ZM24 0H42L66 64H48ZM48 64H66L90 0H72Z" /><circle cx="103" cy="57" r="7.5" /></svg></div>
+        <div className={styles.mApps} data-mgfx="apps"><span><i /><i /><i /></span></div>
+        <div className={styles.mFlat} data-mgfx="flat" />
+        <div className={styles.mText} data-mtext />
+        {/* Nishanth's logo: a folded-ribbon N and his orange dot */}
+        <div className={styles.mMark} data-mmark>
+          <svg viewBox="0 0 112 64" aria-hidden="true">
+            <defs>
+              <linearGradient id="nlogo1" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="#ff7a63" /><stop offset="1" stopColor="#ff4938" /></linearGradient>
+              <linearGradient id="nlogo2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#d8301f" /><stop offset="1" stopColor="#a51f12" /></linearGradient>
+              <linearGradient id="nlogo3" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="#ff5a45" /><stop offset="1" stopColor="#ff7a63" /></linearGradient>
+            </defs>
+            <path fill="url(#nlogo1)" d="M0 64H18L42 0H24Z" />
+            <path fill="url(#nlogo2)" d="M24 0H42L66 64H48Z" />
+            <path fill="url(#nlogo3)" d="M48 64H66L90 0H72Z" />
+            <circle fill="#ff4938" cx="103" cy="57" r="7.5" />
+          </svg>
+        </div>
+      </div>
 
       {/* how far through the intro you are */}
       <div className={styles.progress} aria-hidden="true"><i data-film-progress /></div>
