@@ -12,7 +12,10 @@
  * little bigger, the backgrounds keep moving), so the hard cuts stay punchy
  * without ever looking like a static slide.
  */
-export const MONTAGE = { at: 0, dur: 8 } as const;
+import { INTRO_OPENER } from "@/lib/introConfig";
+
+/** off (lib/introConfig.ts INTRO_OPENER = false): no opener, the film runs exactly as before */
+export const MONTAGE = { at: 0, dur: INTRO_OPENER ? 8 : 0 } as const;
 /** the logo's width, as a share of the screen's shorter side */
 const LOGO_SIZE = 0.16;
 
