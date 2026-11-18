@@ -15,6 +15,9 @@
   --muted: var(--brand-muted, #66615b);
   position: fixed;
   inset: 0;
+  /* the whole screen, the scrollbar's reserved strip included (html has scrollbar-gutter: stable) */
+  right: auto;
+  width: 100vw;
   z-index: 1000;
   overflow: hidden;
   font-family: var(--film-sans);
