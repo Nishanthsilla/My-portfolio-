@@ -3,6 +3,7 @@ import CopyEmail from "../CopyEmail";
 import SocialLinks from "../SocialLinks";
 import PeekCat from "./PeekCat";
 
+import WhatsAppLink from "../WhatsAppLink";
 import s from "../site.module.css";
 import c from "./contact.module.css";
 
@@ -29,6 +30,7 @@ export default function ContactScene() {
               </div>
               <span className={`${s.eyebrow} ${c.gapTop}`}>{contact.phoneLabel}</span>
               <a className={s.arrowLink} href={contact.phoneHref}>{contact.phone}</a>
+              <WhatsAppLink />
             </div>
             <div className={`${c.col} ${c.elsewhere}`}>
               <span className={s.eyebrow}>Elsewhere</span>
