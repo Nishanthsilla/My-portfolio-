@@ -1,22 +1,27 @@
 """
-The 5-second track for the logo match cut that opens the intro (see
-components/intro-film/montage.ts), synthesised from scratch (NumPy only).
+The opener's track: 10 s for the logo reel before "Hello World" (see
+components/intro-film/montage.ts). Original, synthesised from scratch (NumPy
+only), in the spirit of a fast brand-reel beat: 150 BPM, heavy 808, crisp hats,
+a bright phonk-style bell riff. D minor, the same key as the film's score, and
+it finishes with a proper ending (a final hit and a ringing tail) so the score
+can begin underneath without a cut.
 
-It is spliced into the finished score at MONTAGE_AT (the very start), so the
-score itself plays exactly as it did, only MONTAGE_DUR seconds later. Called from
-compose_intro_film.py; the cue times below are seconds into the montage:
+One beat = 0.4 s, one bar = 1.6 s:
+  0.0 – 1.6  intro: a sub swell, a tick per screen, a filtered riser
+  1.6 – 8.0  the beat (4 bars): 808 + kick, half-time clap, 8th hats with rolls,
+             the bell riff, a shutter click on every cut (0.2 s)
+  8.0 – 8.4  the break: everything drops out but a reverse swell
+  8.4        the final hit (the end card); its tail rings out by ~10 s
 
-  0.0 – 1.5  slow: a sub swell, a tick for each background swap, a roll that speeds up
-  1.5        the drop: impact + 808 sub, when the NS mark lands
-  1.5 – 4.5  fast and bassy: four-on-the-floor kick, rolling 16th-note bass
-             (ducked under the kick), claps on 2 and 4, a shutter click per cut
-  4.5 – 5.0  the final hit on the still logo, ringing into the score
+It is spliced in at MONTAGE_AT (the very start), so the film's score plays
+exactly as before, only MONTAGE_DUR seconds later.
 """
 import numpy as np
 
 SR = 48000
-MONTAGE_AT, MONTAGE_DUR = 0.0, 5.0  # it opens the intro
-rng = np.random.default_rng(11)
+MONTAGE_AT, MONTAGE_DUR = 0.0, 10.0  # it opens the intro
+BEAT = 0.4
+rng = np.random.default_rng(23)
 
 
 def tt(d):
@@ -44,165 +49,206 @@ def midi(m):
     return 440 * 2 ** ((m - 69) / 12)
 
 
-def kick(g=1.0, tail=0.18):
-    t = tt(0.5)
-    f = 44 + 130 * np.exp(-t / 0.03)
-    body = np.sin(2 * np.pi * np.cumsum(f) / SR) * env(len(t), 0.001, tail)
-    click = band(rng.standard_normal(len(t)), lo=2500, hi=9000) * env(len(t), 0.0005, 0.003) * 0.35
-    return np.tanh((body + click) * 2.2) * g
+def kick(g=1.0):
+    t = tt(0.35)
+    f = 50 + 160 * np.exp(-t / 0.025)
+    body = np.sin(2 * np.pi * np.cumsum(f) / SR) * env(len(t), 0.001, 0.09)
+    click = band(rng.standard_normal(len(t)), lo=3000, hi=10000) * env(len(t), 0.0004, 0.002) * 0.5
+    return np.tanh((body + click) * 2.5) * g
 
 
-def sub808(f0, d=1.2, g=1.0):
+def b808(note, d, g=1.0, glide_from=None):
+    """A long, slightly distorted 808 that can glide in from another note."""
     t = tt(d)
-    f = f0 * (1 + 1.5 * np.exp(-t / 0.02))
+    f1 = midi(note)
+    f = f1 if glide_from is None else midi(glide_from) + (f1 - midi(glide_from)) * (1 - np.exp(-t / 0.06))
+    f = f * (1 + 0.8 * np.exp(-t / 0.012))
     s = np.sin(2 * np.pi * np.cumsum(f) / SR)
-    return np.tanh(s * 2.5 * env(len(t), 0.002, d * 0.45)) * g
+    e = np.minimum(1, t / 0.003) * np.exp(-t / (d * 0.7)) * np.minimum(1, (d - t) / 0.03)
+    return np.tanh(s * e * 3.0) * g
 
 
-def bass16(f, g=0.5, d=0.12):
-    t = tt(d)
-    saw = 2 * ((f * t) % 1) - 1
-    sq = np.sign(np.sin(2 * np.pi * f * 0.5 * t)) * 0.5
-    s = band(saw + sq, hi=700) + np.sin(2 * np.pi * f * 0.5 * t) * 0.8
-    return np.tanh(s * env(len(t), 0.002, d * 0.5) * 2.0) * g
-
-
-def hat(g=0.1, d=0.04):
-    n = int(d * SR)
-    return band(rng.standard_normal(n), lo=7500, hi=16000) * env(n, 0.0004, d / 4) * g
-
-
-def clap(g=0.4):
-    n = int(0.25 * SR)
-    noise = band(rng.standard_normal(n), lo=900, hi=5000)
+def clap(g=0.5):
+    n = int(0.35 * SR)
+    noise = band(rng.standard_normal(n), lo=1000, hi=7000)
     e = np.zeros(n)
-    for k, off in enumerate([0, 0.011, 0.022]):
+    for k, off in enumerate([0, 0.009, 0.018, 0.027]):
         i = int(off * SR)
-        e[i:] += env(n - i, 0.0005, 0.006 if k < 2 else 0.07)
-    return noise * e * g
+        e[i:] += env(n - i, 0.0005, 0.005 if k < 3 else 0.09)
+    snap = np.sin(2 * np.pi * 190 * tt(0.35)) * env(n, 0.001, 0.03) * 0.4
+    return (noise * e + snap) * g
 
 
-def shutter(g=0.12):
+def hat(g=0.1, d=0.035, open_=False):
+    n = int((0.25 if open_ else d) * SR)
+    return band(rng.standard_normal(n), lo=7000, hi=17000) * env(n, 0.0004, (0.08 if open_ else d / 4)) * g
+
+
+def bell(note, g=0.18, d=0.32):
+    """A bright, slightly detuned square bell (the phonk 'cowbell' colour)."""
+    t = tt(d)
+    s = np.zeros(len(t))
+    for ratio, amp in ((1, 1), (1.505, 0.7)):
+        ph = midi(note) * ratio * t
+        s += amp * np.sign(np.sin(2 * np.pi * ph))
+    s = band(s, lo=400, hi=5200)
+    return s * env(len(t), 0.001, d * 0.28) * g
+
+
+def shutter(g=0.1):
     n = int(0.03 * SR)
     a = band(rng.standard_normal(n), lo=3000, hi=11000) * env(n, 0.0003, 0.002)
     b = np.zeros(n)
-    i = int(0.012 * SR)
+    i = int(0.011 * SR)
     b[i:] = band(rng.standard_normal(n - i), lo=2000, hi=8000) * env(n - i, 0.0003, 0.003)
     return (a + b * 0.7) * g
 
 
-def tick(f, g=0.16):
-    t = tt(0.12)
+def tick(f, g=0.14):
+    t = tt(0.1)
     fr = f * (1 + 0.8 * np.exp(-t / 0.01))
-    return np.sin(2 * np.pi * np.cumsum(fr) / SR) * env(len(t), 0.0008, 0.03) * g
+    return np.sin(2 * np.pi * np.cumsum(fr) / SR) * env(len(t), 0.0008, 0.025) * g
 
 
-def riser(d, g=0.25):
+def riser(d, g=0.25, up=True):
     t = tt(d)
-    f = 120 * (16 ** (t / d))
+    p = t / d if up else 1 - t / d
+    f = 150 * (20 ** p)
     saw = 2 * ((np.cumsum(f) / SR) % 1) - 1
     noise = rng.standard_normal(len(t))
-    s = band(saw, hi=4000) * 0.6 + band(noise, lo=1500, hi=9000) * 0.5 * (t / d)
-    return s * (t / d) ** 2.2 * g
+    s = band(saw, hi=4500) * 0.5 + band(noise, lo=1500, hi=10000) * 0.6 * p
+    return s * (t / d) ** 2.5 * g
 
 
-def stab(notes, g=0.35, d=0.7):
+def pad(notes, d, g=0.1, hi=1800):
     t = tt(d)
     s = np.zeros(len(t))
     for n in notes:
         for det in (-0.1, 0, 0.1):
             ff = midi(n) * 2 ** (det / 12)
             s += 2 * ((ff * t + rng.random()) % 1) - 1
-    s = band(s / (len(notes) * 3), lo=120, hi=3800)
-    return s * env(len(t), 0.003, d * 0.35) * g
+    s = band(s / (len(notes) * 3), lo=150, hi=hi)
+    e = np.minimum(1, t / 0.4) * np.minimum(1, (d - t) / 0.5)
+    return s * np.clip(e, 0, 1) * g
+
+
+def stab(notes, g=0.35, d=1.6):
+    t = tt(d)
+    s = np.zeros(len(t))
+    for n in notes:
+        for det in (-0.12, 0, 0.12):
+            ff = midi(n) * 2 ** (det / 12)
+            s += 2 * ((ff * t + rng.random()) % 1) - 1
+    s = band(s / (len(notes) * 3), lo=120, hi=4200)
+    return s * env(len(t), 0.003, d * 0.3) * g
 
 
 def impact(g=0.9):
-    t = tt(1.6)
-    f = 34 + 80 * np.exp(-t / 0.06)
-    body = np.sin(2 * np.pi * np.cumsum(f) / SR) * env(len(t), 0.001, 0.6)
-    air = band(rng.standard_normal(len(t)), lo=200, hi=5000) * env(len(t), 0.001, 0.2) * 0.45
+    t = tt(2.0)
+    f = 32 + 90 * np.exp(-t / 0.06)
+    body = np.sin(2 * np.pi * np.cumsum(f) / SR) * env(len(t), 0.001, 0.7)
+    air = band(rng.standard_normal(len(t)), lo=200, hi=6000) * env(len(t), 0.001, 0.25) * 0.5
     return np.tanh((body + air) * 1.6) * g
 
 
 def track():
-    n = int(MONTAGE_DUR * SR) + int(1.5 * SR)  # tails ring past the end, into the score
+    n = int(MONTAGE_DUR * SR) + int(1.5 * SR)  # the last tail rings past 10 s, under the score
     L, R = np.zeros(n), np.zeros(n)
-    bassL, bassR = np.zeros(n), np.zeros(n)
+    bL, bR = np.zeros(n), np.zeros(n)
 
     def put(sig, t, g=1.0, pan=0.0, bus=None):
         i = int(t * SR)
         sig = sig[: n - i] * g
         a = (pan + 1) * np.pi / 4
-        l, r = (bus if bus else (L, R))
+        l, r = bus if bus else (L, R)
         l[i : i + len(sig)] += sig * np.cos(a)
         r[i : i + len(sig)] += sig * np.sin(a)
 
-    D2, F2, C2, BB1 = 38, 41, 36, 34
-    # ---- 0 – 1.5: slow ----
-    put(sub808(midi(26), 1.5, 0.55), 0.0)                       # a deep D swell under the first logo
-    put(stab([62, 65, 69, 72], 0.12, 1.4), 0.0, pan=-0.1)
-    for k, at in enumerate([0.5, 0.875, 1.125, 1.3]):            # each background swap
-        put(tick(midi(74 + 3 * k), 0.2), at, pan=-0.3 + 0.2 * k)
-        put(kick(0.35, 0.08), at)
-    for at in np.concatenate([np.arange(0.5, 1.0, 0.125), np.arange(1.0, 1.25, 0.0625), np.arange(1.25, 1.5, 0.03125)]):
-        put(clap(0.07 + 0.12 * (at - 0.5)), at, pan=0.15)      # the roll speeds up into the drop
-    put(riser(1.0, 0.22), 0.5)
-    # ---- 1.5: the drop ----
-    put(impact(0.75), 1.5)
-    put(sub808(midi(D2 - 12), 1.0, 0.7), 1.5)
-    put(stab([62, 65, 69, 72, 76], 0.3, 0.5), 1.5)
-    # ---- 1.5 – 4.5: fast and bassy ----
-    roots = [D2, D2, F2, F2, C2, BB1 + 12]                      # one per beat
-    octs = [0, 0, 12, 0, 0, 12, 0, 12]
-    for b in range(6):
-        t0 = 1.5 + b * 0.5
-        if b > 0:
-            put(kick(0.95), t0)
-        if b % 2 == 1:
-            put(clap(0.42), t0, pan=0.05)
-        for s in range(4):
-            st = t0 + s * 0.125
-            put(bass16(midi(roots[b] + octs[(b * 4 + s) % 8]), 0.5), st, bus=(bassL, bassR))
-            put(hat(0.11 if s % 2 else 0.05), st + (0.0 if s % 2 else 0.0625 * 0), pan=0.3 if s % 2 else -0.3)
-    for k in range(22):                                          # a shutter for every cut
-        put(shutter(0.11), 1.75 + k * 0.125, pan=-0.2 + 0.4 * (k % 2))
-    for k in range(4):                                           # the orange frame: a quick fill
-        put(clap(0.18 + 0.05 * k), 4.375 + k * 0.03125)
-    # duck the bass under each kick
+    D1, F1, C1, A0, BB0 = 26, 29, 24, 21, 22
+    # ---- 0 – 1.6: intro ----
+    put(b808(D1, 1.6, 0.55), 0.0)
+    put(pad([50, 53, 57, 62], 1.7, 0.09, 1200), 0.0)
+    for k in range(4):
+        put(tick(midi(81 + 2 * k)), k * BEAT, pan=-0.3 + 0.2 * k)
+    put(riser(1.0, 0.2), 0.6)
+    for k, at in enumerate(np.arange(1.2, 1.6, 0.05)):           # a quick roll into the drop
+        put(hat(0.05 + 0.02 * k), at, pan=0.2)
+
+    # ---- 1.6 – 8.0: the beat (4 bars of 4 beats) ----
+    roots = [D1, D1, F1, C1]                                     # one per bar
+    riff = [74, 77, 81, 77, 74, 72, 74, 69]                      # the bell, on 8th notes
+    for bar in range(4):
+        b0 = 1.6 + bar * 1.6
+        root = roots[bar]
+        # 808: long on 1, a quick hit on the "and" of 2, a glide on 4
+        put(b808(root, 0.75, 0.9), b0, bus=(bL, bR))
+        put(b808(root, 0.3, 0.75), b0 + 1.5 * BEAT, bus=(bL, bR))
+        put(b808(root + 12 if bar % 2 else root + 7, 0.45, 0.8, glide_from=root), b0 + 3 * BEAT, bus=(bL, bR))
+        # kick with the 808 hits
+        for at in (0, 1.5 * BEAT, 3 * BEAT):
+            put(kick(0.9), b0 + at)
+        # half-time clap on beat 3
+        put(clap(0.55), b0 + 2 * BEAT, pan=0.04)
+        # hats: 8ths, a 16th/triplet roll at the end of every bar, an open hat on bar 4
+        for s in range(8):
+            put(hat(0.09 if s % 2 else 0.06), b0 + s * 0.2, pan=0.25 if s % 2 else -0.25)
+        roll = 0.1 if bar % 2 == 0 else 0.4 / 6
+        for k, at in enumerate(np.arange(b0 + 1.2, b0 + 1.6, roll)):
+            put(hat(0.05 + 0.012 * k, 0.025), at, pan=0.3)
+        if bar == 3:
+            put(hat(0.08, open_=True), b0 + 0.6, pan=-0.2)
+        # the bell riff (bars 2–4, an octave up on the last)
+        if bar >= 1:
+            for s, note in enumerate(riff):
+                put(bell(note + (12 if bar == 3 and s % 2 else 0), 0.16), b0 + s * 0.2, pan=-0.35 + 0.1 * (s % 7))
+    # a shutter for every cut (0.2 s)
+    for k in range(32):
+        put(shutter(0.1), 1.6 + k * 0.2, pan=-0.2 + 0.4 * (k % 2))
+    # duck the 808 under the kick
     duck = np.ones(n)
-    for b in range(6):
-        i = int((1.5 + b * 0.5) * SR)
-        m = min(n - i, int(0.16 * SR))
-        duck[i : i + m] = 0.35 + 0.65 * (np.arange(m) / m) ** 1.5
-    L += bassL * duck
-    R += bassR * duck
-    # ---- 4.5: the hit, the logo holds ----
-    put(impact(0.8), 4.5)
-    put(sub808(midi(D2 - 12), 1.3, 0.6), 4.5)
-    put(stab([62, 65, 69, 72, 76], 0.32, 1.2), 4.5, pan=-0.15)
-    put(stab([74, 77, 81], 0.16, 1.2), 4.52, pan=0.2)
+    for bar in range(4):
+        for at in (0, 1.5 * BEAT, 3 * BEAT):
+            i = int((1.6 + bar * 1.6 + at) * SR)
+            m = min(n - i, int(0.06 * SR))
+            duck[i : i + m] = 0.55 + 0.45 * (np.arange(m) / m)
+    L += bL * duck
+    R += bR * duck
+    # the last bar builds: a clap roll speeding up, a riser
+    for k, at in enumerate(np.concatenate([np.arange(7.2, 7.6, 0.1), np.arange(7.6, 8.0, 0.05)])):
+        put(clap(0.12 + 0.03 * k), at, pan=0.1)
+    put(riser(1.2, 0.24), 6.8)
+
+    # ---- 8.0 – 8.4: the break ----
+    put(riser(0.4, 0.18, up=True), 8.0)
+
+    # ---- 8.4: the final hit, then it rings out ----
+    put(impact(0.85), 8.4)
+    put(b808(D1, 1.6, 1.0), 8.4)
+    put(stab([62, 65, 69, 72, 76], 0.34, 1.8), 8.4, pan=-0.12)
+    put(stab([74, 77, 81], 0.16, 1.8), 8.42, pan=0.2)
+    put(bell(86, 0.12, 0.9), 9.0, pan=0.25)                      # "design that ships." lands
+    put(bell(81, 0.08, 1.0), 9.2, pan=-0.25)
     mix = np.stack([L, R])
-    return np.stack([band(mix[0], lo=25), band(mix[1], lo=25)])
+    mix = np.stack([band(mix[0], lo=24), band(mix[1], lo=24)])
+    # the tail fades away by ~10.3 s, under the score's first notes
+    t = np.arange(n) / SR
+    mix *= np.clip(1 - (t - 9.6) / 0.8, 0, 1)
+    return mix
 
 
 def splice(score):
-    """score: the mastered (2, n) score. Returns it with the montage track inserted at MONTAGE_AT."""
+    """score: the mastered (2, n) score. Returns it with the opener's track at MONTAGE_AT."""
     i = int(MONTAGE_AT * SR)
     gap = int(MONTAGE_DUR * SR)
     m = track()
-    # match loudness to the score around the cut, a touch hotter (it should hit)
-    ref = score[:, int(1.0 * SR) : int(8.0 * SR)]
-    m *= (np.sqrt(np.mean(ref ** 2)) * 1.7) / (np.sqrt(np.mean(m[:, :gap] ** 2)) + 1e-9)
-    m = np.tanh(m * 1.2) / np.tanh(1.2) * 0.9
+    # as loud as the score's busiest moments, a touch hotter (it should hit)
+    ref = score[:, int(2.0 * SR) : int(8.0 * SR)]
+    m *= (np.sqrt(np.mean(ref ** 2)) * 1.9) / (np.sqrt(np.mean(m[:, int(1.6 * SR) : int(8.0 * SR)] ** 2)) + 1e-9)
+    m = np.tanh(m * 1.15) / np.tanh(1.15) * 0.92
     before, after = score[:, :i].copy(), score[:, i:].copy()
-    # the score fades out quickly as the montage starts…
     f = min(int(0.06 * SR), before.shape[1])
     if f:
         before[:, -f:] *= np.linspace(1, 0, f)
-    # …and comes back in on the hit, under the montage's ringing tail
-    f2 = int(0.04 * SR)
-    after[:, :f2] *= np.linspace(0, 1, f2)
     out = np.concatenate([before, np.zeros((2, gap)), after], axis=1)
     tail = m.shape[1]
     out[:, i : i + tail] += m[:, : out.shape[1] - i]

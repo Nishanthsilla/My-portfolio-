@@ -15,7 +15,7 @@ import styles from "./IntroFilm.module.css";
 import ControlRoom from "./ControlRoom";
 import { Artefacts, CodeDetails, DesignDetails } from "./BoardParts";
 import AsciiBridge from "./AsciiBridge";
-import Logo from "@/components/site/Logo";
+import OpenerScreens from "./OpenerScreens";
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 const SESSION_KEY = "nishanth.introFilm.seen";
@@ -384,17 +384,9 @@ export default function IntroFilm() {
       {/* the camera's stacked exposures + the website emerging from the button (zoom.ts) */}
       <div className={styles.zoom} data-zoom aria-hidden="true" />
 
-      {/* "I'm Nishanth." → the logo match cut (montage.ts) */}
+      {/* the opener: a 10 s logo reel before "Hello World" (montage.ts) */}
       <div className={styles.montage} data-montage aria-hidden="true">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className={styles.mImg} data-mimg alt="" />
-        <div className={styles.mGrid} data-mgfx="grid"><i /><i /><i /><i /><b /></div>
-        <div className={styles.mSoft} data-mgfx="soft"><Logo id="montage-soft" mono="#e6e6e6" /></div>
-        <div className={styles.mApps} data-mgfx="apps"><span><i /><i /><i /></span></div>
-        <div className={styles.mFlat} data-mgfx="flat" />
-        <div className={styles.mText} data-mtext />
-        {/* Nishanth's logo (components/site/Logo.tsx) */}
-        <div className={styles.mMark} data-mmark><Logo id="montage-logo" /></div>
+        <OpenerScreens />
       </div>
 
       {/* how far through the intro you are */}
