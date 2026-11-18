@@ -43,20 +43,20 @@ export default function OpenerScreens() {
       </div>
       {/* 3 · an app icon on its own */}
       <div className={`${o.s} ${o.light}`} data-screen="tile">
-        <div className={o.tile} />
-        <span className={o.tag}>open to work</span>
+        <div className={`${o.tile} ${o.pop}`} />
+        <span className={`${o.tag} ${o.slide}`}>open to work</span>
         <span className={o.tileMeta}><b>Nishanth Silla</b><br />Lead Product Designer<br />Hyderabad, IN</span>
       </div>
       {/* 4 · a tool bar */}
       <div className={`${o.s} ${o.charcoal}`} data-screen="toolbar">
-        <div className={o.toolbar}>
+        <div className={`${o.toolbar} ${o.pop}`}>
           <i>{Icon.plus}</i><i>{Icon.pen}</i><i className={o.gap} /><i>{Icon.trend}</i><i>{Icon.cursor}</i>
         </div>
       </div>
       {/* 5 · the address bar */}
       <div className={`${o.s} ${o.light}`} data-screen="browser">
-        <div className={o.dots}><i /><i /><i /></div>
-        <div className={o.pill}><span>nishanthsilla.vercel.app</span></div>
+        <div className={`${o.dots} ${o.slide}`}><i /><i /><i /></div>
+        <div className={`${o.pill} ${o.pop}`}><span>nishanthsilla.vercel.app</span></div>
       </div>
       {/* 6 · giant letters drifting behind */}
       <div className={`${o.s} ${o.sand}`} data-screen="giant">
@@ -65,7 +65,7 @@ export default function OpenerScreens() {
       </div>
       {/* 7 · a phone's lock screen */}
       <div className={`${o.s} ${o.dark}`} data-screen="phone">
-        <div className={o.phone}>
+        <div className={`${o.phone} ${o.pop}`}>
           <span className={o.time}>10:29</span>
           <span className={o.phoneName}>NISHANTH SILLA</span>
           <span className={o.phoneSub}>Lead Product Designer</span>
@@ -74,55 +74,49 @@ export default function OpenerScreens() {
       </div>
       {/* 8 · the line, going round */}
       <div className={`${o.s} ${o.red}`} data-screen="ring">
-        <svg className={o.ring} viewBox="0 0 200 200">
+        <svg className={`${o.ring} ${o.pop}`} viewBox="0 0 200 200">
           <defs><path id="opener-ring" d="M100 100m-74 0a74 74 0 1 1 148 0a74 74 0 1 1-148 0" /></defs>
           <text><textPath href="#opener-ring">DESIGN THAT SHIPS ✦ DESIGN THAT SHIPS ✦ DESIGN THAT SHIPS ✦</textPath></text>
         </svg>
       </div>
       {/* 9 · how the work connects */}
       <div className={`${o.s} ${o.paper}`} data-screen="nodes">
-        <div className={o.chips}><span>research</span><span>design</span><span>code</span></div>
+        <div className={`${o.chips} ${o.slide}`}><span>research</span><span>design</span><span>code</span></div>
         <svg className={o.links} viewBox="0 0 100 60" preserveAspectRatio="none"><path d="M0 12C40 12 60 30 100 30M0 30H100M0 48C40 48 60 30 100 30" /></svg>
-        <div className={o.node} />
+        <div className={`${o.node} ${o.pop}`} />
         <div className={o.half} />
       </div>
       {/* 10 · the search bar */}
       <div className={`${o.s} ${o.light}`} data-screen="search">
         <span className={`${o.meta} ${o.tl}`}>ask anything</span>
-        <div className={o.search}><span>Hire a product designer<i /></span></div>
+        <div className={`${o.search} ${o.pop}`}><span>Hire a product designer<i /></span></div>
       </div>
       {/* 11 · a star, turning */}
       <div className={`${o.s} ${o.dark}`} data-screen="star">
-        <svg className={o.star} viewBox="0 0 100 100"><path d="M50 0C54 34 66 46 100 50 66 54 54 66 50 100 46 66 34 54 0 50 34 46 46 34 50 0z" /></svg>
+        <svg className={`${o.star} ${o.grow}`} viewBox="0 0 100 100"><path d="M50 0C54 34 66 46 100 50 66 54 54 66 50 100 46 66 34 54 0 50 34 46 46 34 50 0z" /></svg>
       </div>
       {/* 12 · the icon with colour in the corners */}
       <div className={`${o.s} ${o.paper}`} data-screen="corners">
         <div className={o.cornerA} /><div className={o.cornerB} />
-        <div className={o.tile} />
+        <div className={`${o.tile} ${o.pop}`} />
         <span className={`${o.meta} ${o.tl}`}>brand / mark<br />2026</span>
         <span className={`${o.meta} ${o.br}`}>n.<br />lowercase, folded</span>
       </div>
       {/* 13 · stripes */}
-      <div className={`${o.s} ${o.stripes}`} data-screen="stripes"><div className={o.disc} /></div>
+      <div className={`${o.s} ${o.stripes}`} data-screen="stripes"><div className={`${o.disc} ${o.pop}`} /></div>
       {/* 14 · a dock of tools */}
       <div className={`${o.s} ${o.orange}`} data-screen="dock">
-        <div className={o.dock}><i>{Icon.spark}</i><i className={o.dockMe} /><i>{Icon.trend}</i></div>
+        <div className={`${o.dock} ${o.pop}`}><i>{Icon.spark}</i><i className={o.dockMe} /><i>{Icon.trend}</i></div>
       </div>
       {/* 15 · code, scrolling */}
       <div className={`${o.s} ${o.charcoal}`} data-screen="code">
         <pre className={o.code}>{[...CODE, "", ...CODE, "", ...CODE].join("\n")}</pre>
       </div>
-      {/* 16 · blush */}
-      <div className={`${o.s} ${o.blush}`} data-screen="blush">
-        <span className={`${o.meta} ${o.tl}`}>product · systems · ai</span>
-        <span className={`${o.meta} ${o.br}`}>hyderabad, in</span>
-      </div>
-      {/* end card */}
-      <div className={`${o.s} ${o.end}`} data-screen="end">
-        <div className={o.word}><span>NISHANTH SILLA</span></div>
-        <div className={o.line}><b>design</b> that ships.</div>
-        <span className={`${o.meta} ${o.bl}`}>nishanthsilla.vercel.app</span>
-        <span className={`${o.meta} ${o.br}`}>©2026</span>
+      {/* 16 · the construction grid, drawing itself around the logo */}
+      <div className={`${o.s} ${o.paper}`} data-screen="grid">
+        <div className={o.grid}><i /><i /><i /><i /><b /></div>
+        <span className={`${o.meta} ${o.tl}`}>construction<br />grid 8pt</span>
+        <span className={`${o.meta} ${o.br}`}>n.<br />v2.0</span>
       </div>
 
       {/* the logo: one size, dead centre, on every screen */}

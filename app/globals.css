@@ -8,6 +8,8 @@ html.intro-lock body {
   overflow: hidden;
   overscroll-behavior: none;
 }
+/* …and the scrollbar's reserved strip (below) is released, so the intro fills the whole screen */
+html.intro-lock { scrollbar-gutter: auto; }
 
 /* keep the scrollbar's space even when a full-screen layer locks the page (the wall, a folder sheet):
    otherwise the page gets wider for a moment and the homepage journey shifts sideways */

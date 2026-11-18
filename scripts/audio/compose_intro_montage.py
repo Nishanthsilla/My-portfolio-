@@ -1,5 +1,5 @@
 """
-The opener's track: 10 s for the logo reel before "Hello World" (see
+The opener's track: 8 s for the logo reel before "Hello World" (see
 components/intro-film/montage.ts). Original, synthesised from scratch (NumPy
 only), in the spirit of a fast brand-reel beat: 150 BPM, heavy 808, crisp hats,
 a bright phonk-style bell riff. D minor, the same key as the film's score, and
@@ -10,8 +10,8 @@ One beat = 0.4 s, one bar = 1.6 s:
   0.0 – 1.6  intro: a sub swell, a tick per screen, a filtered riser
   1.6 – 8.0  the beat (4 bars): 808 + kick, half-time clap, 8th hats with rolls,
              the bell riff, a shutter click on every cut (0.2 s)
-  8.0 – 8.4  the break: everything drops out but a reverse swell
-  8.4        the final hit (the end card); its tail rings out by ~10 s
+  8.0        the final hit, as the film cuts in on "Hello World"; its tail
+             rings out underneath the score's first notes
 
 It is spliced in at MONTAGE_AT (the very start), so the film's score plays
 exactly as before, only MONTAGE_DUR seconds later.
@@ -19,7 +19,7 @@ exactly as before, only MONTAGE_DUR seconds later.
 import numpy as np
 
 SR = 48000
-MONTAGE_AT, MONTAGE_DUR = 0.0, 10.0  # it opens the intro
+MONTAGE_AT, MONTAGE_DUR = 0.0, 8.0  # it opens the intro
 BEAT = 0.4
 rng = np.random.default_rng(23)
 
@@ -218,21 +218,16 @@ def track():
         put(clap(0.12 + 0.03 * k), at, pan=0.1)
     put(riser(1.2, 0.24), 6.8)
 
-    # ---- 8.0 – 8.4: the break ----
-    put(riser(0.4, 0.18, up=True), 8.0)
-
-    # ---- 8.4: the final hit, then it rings out ----
-    put(impact(0.85), 8.4)
-    put(b808(D1, 1.6, 1.0), 8.4)
-    put(stab([62, 65, 69, 72, 76], 0.34, 1.8), 8.4, pan=-0.12)
-    put(stab([74, 77, 81], 0.16, 1.8), 8.42, pan=0.2)
-    put(bell(86, 0.12, 0.9), 9.0, pan=0.25)                      # "design that ships." lands
-    put(bell(81, 0.08, 1.0), 9.2, pan=-0.25)
+    # ---- 8.0: the final hit, as the film cuts in on "Hello World"; it rings out underneath ----
+    put(impact(0.85), 8.0)
+    put(b808(D1, 1.6, 1.0), 8.0)
+    put(stab([62, 65, 69, 72, 76], 0.34, 1.8), 8.0, pan=-0.12)
+    put(stab([74, 77, 81], 0.16, 1.8), 8.02, pan=0.2)
     mix = np.stack([L, R])
     mix = np.stack([band(mix[0], lo=24), band(mix[1], lo=24)])
-    # the tail fades away by ~10.3 s, under the score's first notes
+    # the tail fades away by ~9.8 s, under the score's first notes ("Hello World" typing)
     t = np.arange(n) / SR
-    mix *= np.clip(1 - (t - 9.6) / 0.8, 0, 1)
+    mix *= np.clip(1 - (t - 8.9) / 0.9, 0, 1)
     return mix
 
 
