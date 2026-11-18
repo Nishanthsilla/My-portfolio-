@@ -168,8 +168,9 @@ export const TOPICS: Topic[] = [
     id: "contact",
     q: "How can I contact him?",
     keys: ["contact", "reach", "email", "mail", "hire", "hiring", "available", "availability", "freelance", "work with", "collaborate with", "get in touch", "phone", "call", "whatsapp", "linkedin", "connect"],
-    answer: `The best way is email: ${contact.email}. You can also call or WhatsApp him on ${contact.phone}, or connect on LinkedIn.`,
+    answer: `Quickest is WhatsApp: ${contact.phone} (tap below, a hello is already typed for you). Or email ${contact.email}, or connect on LinkedIn.`,
     links: [
+      { label: "WhatsApp Nishanth", href: contact.whatsappHref },
       { label: "Email Nishanth", href: `mailto:${contact.email}` },
       { label: "LinkedIn", href: "https://www.linkedin.com/in/nishanth-silla" },
     ],
