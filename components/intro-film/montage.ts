@@ -24,33 +24,37 @@ type Variant = "color" | "mono" | "dim";
 const LOGO: Record<string, { v: Variant; c?: string }> = {
   dark: { v: "dim", c: "#3a3a3a" },
   words: { v: "mono", c: "#fff" },
-  tile: { v: "mono", c: "#fff" },
-  toolbar: { v: "color" },
+  gradient: { v: "mono", c: "#fff" },
+  grid: { v: "color" },
   browser: { v: "color" },
   giant: { v: "color" },
   phone: { v: "color" },
   ring: { v: "mono", c: "#fff" },
-  nodes: { v: "color" },
-  search: { v: "color" },
-  star: { v: "mono", c: "#fff" },
-  corners: { v: "mono", c: "#fff" },
-  stripes: { v: "color" },
-  dock: { v: "mono", c: "#fff" },
-  code: { v: "color" },
-  grid: { v: "color" },
   figma: { v: "color" },
+  palette: { v: "mono", c: "#fff" },
+  dock: { v: "mono", c: "#fff" },
+  star: { v: "mono", c: "#fff" },
   editor: { v: "color" },
+  split: { v: "mono", c: "#fff" },
+  corners: { v: "mono", c: "#fff" },
+  halftone: { v: "color" },
+  stripes: { v: "color" },
   zoom: { v: "color" },
+  rings: { v: "color" },
+  crop: { v: "color" },
+  ghost: { v: "color" },
+  tagline: { v: "color" },
+  sand: { v: "color" },
+  solidred: { v: "mono", c: "#fff" },
 };
 
-const SLOW = ["dark", "words", "tile", "toolbar"];
-/** the drop: one screen per 1/8 note; the design tool, the editor and the zoom hold for two */
+/** every screen appears once: no repeats */
+const SLOW = ["dark", "words", "gradient", "grid"];
+/** the drop: one 1/8 note each; the busier screens hold for two, and the cuts speed up towards the end */
 const FAST: [string, number][] = [
-  ["browser", 1], ["giant", 1], ["phone", 1], ["ring", 1], ["figma", 2], ["nodes", 1], ["dock", 1],
-  ["search", 1], ["code", 1], ["star", 1], ["editor", 2], ["corners", 1], ["stripes", 1],
-  ["grid", 1], ["tile", 1], ["zoom", 2], ["words", 1], ["ring", 1], ["dock", 1], ["star", 1],
-  ["browser", 1], ["phone", 1], ["corners", 1], ["nodes", 1], ["search", 1], ["code", 1], ["giant", 1],
-  ["stripes", 1], ["tile", 1],
+  ["browser", 2], ["giant", 2], ["phone", 2], ["ring", 2], ["figma", 2], ["palette", 2],
+  ["dock", 2], ["star", 2], ["editor", 2], ["split", 2], ["corners", 1], ["halftone", 1], ["stripes", 2],
+  ["zoom", 2], ["rings", 1], ["crop", 1], ["ghost", 1], ["tagline", 1], ["sand", 1], ["solidred", 1],
 ];
 export const FRAMES: { at: number; screen: string }[] = [
   ...SLOW.map((screen, i) => ({ at: i * 0.4, screen })),

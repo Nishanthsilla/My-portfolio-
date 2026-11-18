@@ -7,20 +7,6 @@ import o from "./opener.module.css";
  * inside a screen reads --m (seconds since the screen came on).
  */
 const WORDS = ["Product Design", "Design Systems", "AI Experiences", "Prototyping", "Research", "Motion", "Front-end", "Strategy"];
-const CODE = [
-  "export function ship(idea: Idea) {",
-  "  const flow = design(idea, { clarity: 1 });",
-  "  const ui = build(flow).test(users);",
-  "  return ui.ok ? launch(ui) : iterate(ui);",
-  "}",
-  "",
-  "const system = tokens({ color, type, space });",
-  "components.map((c) => c.with(system));",
-  "",
-  "// make the complex feel simple",
-  "await review(team).then(ship);",
-];
-
 const IDE = [
   'import { LogoN } from "./Logo";',
   "",
@@ -43,10 +29,7 @@ const IDE = [
 ];
 
 const Icon = {
-  plus: <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>,
-  pen: <svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4zM14 6l3 3" /></svg>,
   trend: <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6" /></svg>,
-  cursor: <svg viewBox="0 0 24 24"><path d="M5 3l14 7-6 2-2 6z" /></svg>,
   spark: <svg viewBox="0 0 24 24"><path d="M12 2c.6 5 2.4 7.4 8 8-5.6.6-7.4 3-8 8-.6-5-2.4-7.4-8-8 5.6-.6 7.4-3 8-8z" /></svg>,
 };
 
@@ -61,18 +44,6 @@ export default function OpenerScreens() {
       {/* 2 · what he does, scrolling past */}
       <div className={`${o.s} ${o.words}`} data-screen="words">
         <div className={o.wordList}>{[...WORDS, ...WORDS].map((w, i) => <span key={i}>{w}</span>)}</div>
-      </div>
-      {/* 3 · an app icon on its own */}
-      <div className={`${o.s} ${o.light}`} data-screen="tile">
-        <div className={o.tile} />
-        <span className={o.tag}>open to work</span>
-        <span className={o.tileMeta}><b>Nishanth Silla</b><br />Lead Product Designer<br />Hyderabad, IN</span>
-      </div>
-      {/* 4 · a tool bar */}
-      <div className={`${o.s} ${o.charcoal}`} data-screen="toolbar">
-        <div className={o.toolbar}>
-          <i>{Icon.plus}</i><i>{Icon.pen}</i><i className={o.gap} /><i>{Icon.trend}</i><i>{Icon.cursor}</i>
-        </div>
       </div>
       {/* 5 · the address bar */}
       <div className={`${o.s} ${o.light}`} data-screen="browser">
@@ -100,18 +71,6 @@ export default function OpenerScreens() {
           <text><textPath href="#opener-ring">DESIGN THAT SHIPS ✦ DESIGN THAT SHIPS ✦ DESIGN THAT SHIPS ✦</textPath></text>
         </svg>
       </div>
-      {/* 9 · how the work connects */}
-      <div className={`${o.s} ${o.paper}`} data-screen="nodes">
-        <div className={o.chips}><span>research</span><span>design</span><span>code</span></div>
-        <svg className={o.links} viewBox="0 0 100 60" preserveAspectRatio="none"><path d="M0 12C40 12 60 30 100 30M0 30H100M0 48C40 48 60 30 100 30" /></svg>
-        <div className={o.node} />
-        <div className={o.half} />
-      </div>
-      {/* 10 · the search bar */}
-      <div className={`${o.s} ${o.light}`} data-screen="search">
-        <span className={`${o.meta} ${o.tl}`}>ask anything</span>
-        <div className={o.search}><span>Hire a product designer<i /></span></div>
-      </div>
       {/* 11 · a star, turning */}
       <div className={`${o.s} ${o.dark}`} data-screen="star">
         <svg className={o.star} viewBox="0 0 100 100"><path d="M50 0C54 34 66 46 100 50 66 54 54 66 50 100 46 66 34 54 0 50 34 46 46 34 50 0z" /></svg>
@@ -128,10 +87,6 @@ export default function OpenerScreens() {
       {/* 14 · a dock of tools */}
       <div className={`${o.s} ${o.orange}`} data-screen="dock">
         <div className={o.dock}><i>{Icon.spark}</i><i className={o.dockMe} /><i>{Icon.trend}</i></div>
-      </div>
-      {/* 15 · code, scrolling */}
-      <div className={`${o.s} ${o.charcoal}`} data-screen="code">
-        <pre className={o.code}>{[...CODE, "", ...CODE, "", ...CODE].join("\n")}</pre>
       </div>
       {/* 16 · the construction grid, drawing itself around the logo */}
       <div className={`${o.s} ${o.paper}`} data-screen="grid">
@@ -190,6 +145,28 @@ export default function OpenerScreens() {
         <svg className={o.zoomCursor} viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5" /><path d="M15 15l6 6M7.5 10h5M10 7.5v5" /></svg>
         <span className={o.zoomHud}><b>−</b> Zoom <b>+</b></span>
       </div>
+
+      {/* minimal screens: one idea each */}
+      <div className={`${o.s} ${o.gradient}`} data-screen="gradient" />
+      <div className={`${o.s} ${o.paper}`} data-screen="palette">
+        <div className={o.palette}>
+          {[["#0d0d0d", "0D0D0D"], ["#f50427", "F50427"], ["#ff5a36", "FF5A36"], ["#efe3d3", "EFE3D3"], ["#f6f5f2", "F6F5F2"]].map(([c, h]) => (
+            <i key={h} style={{ background: c }}><span>{h}</span></i>
+          ))}
+        </div>
+      </div>
+      <div className={`${o.s} ${o.split}`} data-screen="split" />
+      <div className={`${o.s} ${o.dark}`} data-screen="halftone"><div className={o.halftone} /></div>
+      <div className={`${o.s} ${o.sand}`} data-screen="rings"><div className={o.rings} /></div>
+      <div className={`${o.s} ${o.paper}`} data-screen="crop">
+        <div className={o.crop}><i /><i /><i /><i /></div>
+        <span className={`${o.meta} ${o.tl}`}>n. / print</span>
+        <span className={`${o.meta} ${o.br}`}>100%</span>
+      </div>
+      <div className={`${o.s} ${o.paper}`} data-screen="ghost"><Logo id="opener-ghost" mono="currentColor" className={o.ghost} /></div>
+      <div className={`${o.s} ${o.dark}`} data-screen="tagline"><span className={o.tagline}><b>design</b> that ships.</span></div>
+      <div className={`${o.s} ${o.sand}`} data-screen="sand" />
+      <div className={`${o.s} ${o.red}`} data-screen="solidred" />
 
       {/* the logo: one size, dead centre, on every screen */}
       <div className={o.logo} data-ologo>
