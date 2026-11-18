@@ -21,8 +21,18 @@ export type FilmReplay = "every-load" | "once-per-session";
 // (?intro=replay plays it again.)
 export const FILM_REPLAY: FilmReplay = "once-per-session";
 
+/**
+ * The 8-second logo opener before "Hello World" (components/intro-film/montage.ts).
+ *  - true:  the opener plays first, then the film (music: intro-film-opener.*)
+ *  - false: the film exactly as it was before the opener (music: intro-film.*)
+ * Both versions are kept; flip this to switch.
+ */
+export const INTRO_OPENER = true;
+
 /** Audio track for the film (original score). Swap for a licensed file here. */
-export const FILM_AUDIO_SRC = { mp3: "/audio/intro-film.mp3", ogg: "/audio/intro-film.ogg" };
+export const FILM_AUDIO_SRC = INTRO_OPENER
+  ? { mp3: "/audio/intro-film-opener.mp3", ogg: "/audio/intro-film-opener.ogg" }
+  : { mp3: "/audio/intro-film.mp3", ogg: "/audio/intro-film.ogg" };
 
 /** Original retro "level clear" sound — plays only when the film completes (never on skip). */
 export const FILM_VICTORY_SRC = "/audio/level-clear.mp3";

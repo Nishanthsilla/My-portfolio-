@@ -320,19 +320,25 @@ fade = int(1.2 * SR)
 mix[:, -fade:] *= np.linspace(1, 0, fade) ** 2
 mix *= 0.89 / np.abs(mix).max()
 
-# the logo match cut that opens the intro: its own 5 s track, spliced in at the start (compose_intro_montage.py)
+OUT.mkdir(parents=True, exist_ok=True)
+
+
+def write(mix, name):
+    wav = OUT / f"{name}.wav"
+    with wave.open(str(wav), "wb") as w:
+        w.setnchannels(2)
+        w.setsampwidth(2)
+        w.setframerate(SR)
+        w.writeframes((mix.T * 32767).astype(np.int16).tobytes())
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(wav), "-c:a", "libmp3lame", "-b:a", "256k", str(OUT / f"{name}.mp3")], check=True)
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(wav), "-c:a", "libvorbis", "-q:a", "7", str(OUT / f"{name}.ogg")], check=True)
+    wav.unlink()
+
+
+# the film's score on its own (used when lib/introConfig.ts INTRO_OPENER is off)
+write(mix, "intro-film")
+# the logo opener's track first, then the same score (INTRO_OPENER on; compose_intro_montage.py)
 from compose_intro_montage import splice  # noqa: E402
 
-mix = splice(mix)
-
-OUT.mkdir(parents=True, exist_ok=True)
-wav = OUT / "intro-film.wav"
-with wave.open(str(wav), "wb") as w:
-    w.setnchannels(2)
-    w.setsampwidth(2)
-    w.setframerate(SR)
-    w.writeframes((mix.T * 32767).astype(np.int16).tobytes())
-subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(wav), "-c:a", "libmp3lame", "-b:a", "256k", str(OUT / "intro-film.mp3")], check=True)
-subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(wav), "-c:a", "libvorbis", "-q:a", "7", str(OUT / "intro-film.ogg")], check=True)
-wav.unlink()
-print("wrote", OUT / "intro-film.mp3", OUT / "intro-film.ogg")
+write(splice(mix), "intro-film-opener")
+print("wrote", OUT / "intro-film.{mp3,ogg}", OUT / "intro-film-opener.{mp3,ogg}")
