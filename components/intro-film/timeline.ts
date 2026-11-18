@@ -40,11 +40,11 @@ export const T = {
 } as const;
 
 /**
- * The logo match cut after "I'm Nishanth." (montage.ts): for MONTAGE.dur seconds
- * the film holds on the name while the montage plays over it, then carries on.
- * The score has the montage's own track spliced in at the same spot, so the
- * audio clock (and the progress bar) run on the long clock, and everything in T
- * above is read on the film's own clock: filmClock(t).
+ * The logo match cut that opens the intro (montage.ts): for its first
+ * MONTAGE.dur seconds the montage plays and the film waits, then the film runs.
+ * The score starts with the montage's own track, so the audio clock (and the
+ * progress bar) run on the long clock, and everything in T above is read on the
+ * film's own clock: filmClock(t).
  */
 import { MONTAGE } from "./montage";
 export const filmClock = (t: number) => (t < MONTAGE.at ? t : t < MONTAGE.at + MONTAGE.dur ? MONTAGE.at : t - MONTAGE.dur);

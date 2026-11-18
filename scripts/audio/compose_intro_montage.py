@@ -1,21 +1,21 @@
 """
-The 5-second track for the logo match cut after "I'm Nishanth." (see
+The 5-second track for the logo match cut that opens the intro (see
 components/intro-film/montage.ts), synthesised from scratch (NumPy only).
 
-It is spliced into the finished score at MONTAGE_AT, so everything before and
-after plays exactly as it did, only MONTAGE_DUR seconds later. Called from
+It is spliced into the finished score at MONTAGE_AT (the very start), so the
+score itself plays exactly as it did, only MONTAGE_DUR seconds later. Called from
 compose_intro_film.py; the cue times below are seconds into the montage:
 
-  0.0 – 1.5  slow: a sub swell, a tick for each font swap, a roll that speeds up
+  0.0 – 1.5  slow: a sub swell, a tick for each background swap, a roll that speeds up
   1.5        the drop: impact + 808 sub, when the NS mark lands
   1.5 – 4.5  fast and bassy: four-on-the-floor kick, rolling 16th-note bass
              (ducked under the kick), claps on 2 and 4, a shutter click per cut
-  4.5 – 5.0  the final hit as the name comes back, ringing into the score
+  4.5 – 5.0  the final hit on the still logo, ringing into the score
 """
 import numpy as np
 
 SR = 48000
-MONTAGE_AT, MONTAGE_DUR = 2.25, 5.0
+MONTAGE_AT, MONTAGE_DUR = 0.0, 5.0  # it opens the intro
 rng = np.random.default_rng(11)
 
 
@@ -140,9 +140,9 @@ def track():
 
     D2, F2, C2, BB1 = 38, 41, 36, 34
     # ---- 0 – 1.5: slow ----
-    put(sub808(midi(26), 1.5, 0.55), 0.0)                       # a deep D swell under the held name
+    put(sub808(midi(26), 1.5, 0.55), 0.0)                       # a deep D swell under the first logo
     put(stab([62, 65, 69, 72], 0.12, 1.4), 0.0, pan=-0.1)
-    for k, at in enumerate([0.5, 0.875, 1.125, 1.3]):            # each font swap
+    for k, at in enumerate([0.5, 0.875, 1.125, 1.3]):            # each background swap
         put(tick(midi(74 + 3 * k), 0.2), at, pan=-0.3 + 0.2 * k)
         put(kick(0.35, 0.08), at)
     for at in np.concatenate([np.arange(0.5, 1.0, 0.125), np.arange(1.0, 1.25, 0.0625), np.arange(1.25, 1.5, 0.03125)]):
@@ -177,7 +177,7 @@ def track():
         duck[i : i + m] = 0.35 + 0.65 * (np.arange(m) / m) ** 1.5
     L += bassL * duck
     R += bassR * duck
-    # ---- 4.5: the hit, the name is back ----
+    # ---- 4.5: the hit, the logo holds ----
     put(impact(0.8), 4.5)
     put(sub808(midi(D2 - 12), 1.3, 0.6), 4.5)
     put(stab([62, 65, 69, 72, 76], 0.32, 1.2), 4.5, pan=-0.15)
@@ -197,8 +197,9 @@ def splice(score):
     m = np.tanh(m * 1.2) / np.tanh(1.2) * 0.9
     before, after = score[:, :i].copy(), score[:, i:].copy()
     # the score fades out quickly as the montage starts…
-    f = int(0.06 * SR)
-    before[:, -f:] *= np.linspace(1, 0, f)
+    f = min(int(0.06 * SR), before.shape[1])
+    if f:
+        before[:, -f:] *= np.linspace(1, 0, f)
     # …and comes back in on the hit, under the montage's ringing tail
     f2 = int(0.04 * SR)
     after[:, :f2] *= np.linspace(0, 1, f2)
