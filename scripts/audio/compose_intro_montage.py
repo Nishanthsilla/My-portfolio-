@@ -1,17 +1,15 @@
 """
 The opener's track: 8 s for the logo reel before "Hello World" (see
 components/intro-film/montage.ts). Original, synthesised from scratch (NumPy
-only): a dark, beat-switching trap beat in the spirit of a stadium rap anthem
-(no samples, no melody taken from any song). 150 BPM, D minor, the same key as
-the film's score.
+only), in the spirit of a fast brand-reel beat: 150 BPM, heavy 808, crisp hats,
+a bright phonk-style bell riff. D minor, the same key as the film's score, and
+it finishes with a proper ending (a final hit and a ringing tail) so the score
+can begin underneath without a cut.
 
 One beat = 0.4 s, one bar = 1.6 s:
-  0.0 – 1.6  dark and eerie: a low pad, three lonely lead notes, a hiccup
-  1.6 – 4.8  switch 1: a long distorted 808 that slides between notes,
-             half-time snare, 8th hats with triplet rolls, a sparse dark lead
-  4.6 – 4.8  the stop: everything winds down for one 8th note
-  4.8 – 8.0  switch 2: harder: busier kicks, back-beat snares, 16th hats,
-             the 808 jumping octaves, the lead an octave up; a snare roll in
+  0.0 – 1.6  intro: a sub swell, a tick per screen, a filtered riser
+  1.6 – 8.0  the beat (4 bars): 808 + kick, half-time clap, 8th hats with rolls,
+             the bell riff, a shutter click on every cut (0.2 s)
   8.0        the final hit, as the film cuts in on "Hello World"; its tail
              rings out underneath the score's first notes
 
@@ -153,50 +151,8 @@ def impact(g=0.9):
     return np.tanh((body + air) * 1.6) * g
 
 
-def slide808(notes, d, g=1.0):
-    """The long, distorted 808 that slides between notes: notes = [(time, midi), …] within d seconds."""
-    t = tt(d)
-    f = np.full(len(t), midi(notes[0][1]))
-    for (t0, n0), (t1, n1) in zip(notes, notes[1:]):
-        i = int(t1 * SR)
-        glide = np.exp(-np.maximum(0, t[i:] - t1) / 0.045)
-        f[i:] = midi(n1) + (midi(n0) - midi(n1)) * glide
-    f = f * (1 + 0.6 * np.exp(-t / 0.01))
-    s = np.sin(2 * np.pi * np.cumsum(f) / SR)
-    e = np.minimum(1, t / 0.004) * np.minimum(1, (d - t) / 0.04) * (0.75 + 0.25 * np.exp(-t / 0.4))
-    return np.tanh(s * e * 4.0) * g
-
-
-def snare(g=0.6):
-    """A dark trap snare with a short roomy tail."""
-    n = int(0.6 * SR)
-    t = np.arange(n) / SR
-    body = np.sin(2 * np.pi * 185 * t) * env(n, 0.001, 0.04)
-    noise = band(rng.standard_normal(n), lo=1200, hi=8000) * (env(n, 0.0008, 0.06) + 0.18 * env(n, 0.005, 0.25))
-    return np.tanh((body * 0.7 + noise) * 1.5) * g
-
-
-def flute(note, d, g=0.14):
-    """A dark, breathy lead (sine, a little vibrato and air)."""
-    t = tt(d)
-    f = midi(note) * (1 + 0.006 * np.sin(2 * np.pi * 5.5 * t) * np.minimum(1, t / 0.2))
-    s = np.sin(2 * np.pi * np.cumsum(f) / SR) + 0.25 * np.sin(4 * np.pi * np.cumsum(f) / SR)
-    air = band(rng.standard_normal(len(t)), lo=midi(note) * 0.8, hi=midi(note) * 3) * 0.12
-    e = np.minimum(1, t / 0.03) * np.minimum(1, (d - t) / 0.06)
-    return (s + air) * e * g
-
-
-def tape_stop(d, g=0.5, note=38):
-    """Everything winding down for a split second (the beat-switch stop)."""
-    t = tt(d)
-    f = midi(note) * (1 - t / d) ** 2
-    s = np.sign(np.sin(2 * np.pi * np.cumsum(f) / SR))
-    return band(s, hi=2000) * (1 - t / d) * g
-
-
 def track():
-    """An original beat in the spirit of a dark, beat-switching trap anthem (150 BPM, D minor)."""
-    n = int(MONTAGE_DUR * SR) + int(1.5 * SR)  # the last tail rings past 8 s, under the score
+    n = int(MONTAGE_DUR * SR) + int(1.5 * SR)  # the last tail rings past 10 s, under the score
     L, R = np.zeros(n), np.zeros(n)
     bL, bR = np.zeros(n), np.zeros(n)
 
@@ -208,80 +164,68 @@ def track():
         l[i : i + len(sig)] += sig * np.cos(a)
         r[i : i + len(sig)] += sig * np.sin(a)
 
-    D1, F1, G1, A1, C1, BB0 = 26, 29, 31, 33, 24, 22
-    TRIP = BEAT / 3
+    D1, F1, C1, A0, BB0 = 26, 29, 24, 21, 22
+    # ---- 0 – 1.6: intro ----
+    put(b808(D1, 1.6, 0.55), 0.0)
+    put(pad([50, 53, 57, 62], 1.7, 0.09, 1200), 0.0)
+    for k in range(4):
+        put(tick(midi(81 + 2 * k)), k * BEAT, pan=-0.3 + 0.2 * k)
+    put(riser(1.0, 0.2), 0.6)
+    for k, at in enumerate(np.arange(1.2, 1.6, 0.05)):           # a quick roll into the drop
+        put(hat(0.05 + 0.02 * k), at, pan=0.2)
 
-    # ---- 0 – 1.6: dark and eerie, holding back ----
-    put(pad([50, 53, 57, 60], 1.7, 0.1, 900), 0.0)                 # Dm7, filtered and low
-    for k, note in enumerate([74, 72, 69]):                         # three lonely lead notes
-        put(flute(note, 0.38, 0.12), 0.05 + k * 0.4, pan=-0.2 + 0.2 * k)
-    put(tick(midi(86), 0.1), 1.2)
-    put(riser(0.5, 0.16), 1.1)
-    put(tape_stop(0.15, 0.25), 1.45)                                # a hiccup into the switch
-
-    # ---- 1.6 – 4.8: switch 1: the 808 lands, half-time and heavy ----
-    put(slide808([(0, D1), (0.6, D1 + 12), (0.8, D1), (1.2, F1), (1.6, D1), (2.4, C1), (2.8, D1)], 3.2, 0.95), 1.6, bus=(bL, bR))
-    for bar in range(2):
+    # ---- 1.6 – 8.0: the beat (4 bars of 4 beats) ----
+    roots = [D1, D1, F1, C1]                                     # one per bar
+    riff = [74, 77, 81, 77, 74, 72, 74, 69]                      # the bell, on 8th notes
+    for bar in range(4):
         b0 = 1.6 + bar * 1.6
-        for at in (0, 1.5 * BEAT, 2.5 * BEAT):
-            put(kick(0.95), b0 + at)
-        put(snare(0.62), b0 + 2 * BEAT, pan=0.03)                   # half-time snare on 3
-        for s_ in range(8):                                         # 8th hats…
-            put(hat(0.085 if s_ % 2 else 0.055), b0 + s_ * 0.2, pan=0.25 if s_ % 2 else -0.25)
-        for k in range(3):                                          # …a triplet roll at the end of each bar
-            put(hat(0.07 + 0.015 * k, 0.025), b0 + 3 * BEAT + k * TRIP, pan=0.3)
-        for k in range(6):
-            put(hat(0.05 + 0.01 * k, 0.02), b0 + 3.5 * BEAT + k * TRIP / 2, pan=-0.3)
-    lead = [(1.6, 74, 0.35), (2.0, 77, 0.2), (2.2, 76, 0.2), (2.4, 74, 0.55), (3.2, 72, 0.35), (3.6, 74, 0.2), (3.8, 69, 0.75)]
-    for at, note, d in lead:                                        # the dark lead, sparse
-        put(flute(note, d, 0.13), at, pan=-0.15)
-
-    # ---- 4.8: the stop: everything winds down for one 8th note ----
-    put(tape_stop(0.2, 0.45), 4.6)
-    put(riser(0.2, 0.12), 4.6)
-
-    # ---- 4.8 – 8.0: switch 2: harder, faster, the 808 jumping ----
-    put(impact(0.5), 4.8)
-    put(slide808([(0, G1), (0.4, G1 + 12), (0.6, F1), (0.8, D1), (1.2, D1 + 12), (1.4, D1), (1.6, BB0), (2.0, C1), (2.4, D1), (2.8, D1 + 12)], 3.2, 1.0), 4.8, bus=(bL, bR))
-    for bar in range(2):
-        b0 = 4.8 + bar * 1.6
-        for at in (0, 0.5 * BEAT, 1.5 * BEAT, 2.5 * BEAT, 3.25 * BEAT):
-            put(kick(0.95), b0 + at)
-        put(snare(0.66), b0 + BEAT, pan=0.03)                       # back-beat snare: it gets busier
-        put(snare(0.66), b0 + 3 * BEAT, pan=-0.03)
-        for s_ in range(16):                                        # 16th hats
-            put(hat(0.08 if s_ % 2 else 0.05, 0.025), b0 + s_ * 0.1, pan=0.25 if s_ % 2 else -0.25)
-        for k in range(6):                                          # triplet rolls
-            put(hat(0.05 + 0.012 * k, 0.02), b0 + 1.5 * BEAT + k * TRIP / 2, pan=0.35)
-        put(hat(0.09, open_=True), b0 + 2.5 * BEAT, pan=-0.2)
-    for k, note in enumerate([81, 79, 77, 76, 74, 72, 74, 77]):     # the lead, now an octave up and moving
-        put(flute(note, 0.18, 0.11), 4.8 + k * 0.4 + (0.2 if k % 2 else 0), pan=0.2)
-    for k, at in enumerate(np.arange(7.4, 8.0, 0.05)):              # a snare roll into the hit
-        put(snare(0.08 + 0.025 * k), at, pan=0.1)
-    put(riser(0.9, 0.2), 7.1)
-
+        root = roots[bar]
+        # 808: long on 1, a quick hit on the "and" of 2, a glide on 4
+        put(b808(root, 0.75, 0.9), b0, bus=(bL, bR))
+        put(b808(root, 0.3, 0.75), b0 + 1.5 * BEAT, bus=(bL, bR))
+        put(b808(root + 12 if bar % 2 else root + 7, 0.45, 0.8, glide_from=root), b0 + 3 * BEAT, bus=(bL, bR))
+        # kick with the 808 hits
+        for at in (0, 1.5 * BEAT, 3 * BEAT):
+            put(kick(0.9), b0 + at)
+        # half-time clap on beat 3
+        put(clap(0.55), b0 + 2 * BEAT, pan=0.04)
+        # hats: 8ths, a 16th/triplet roll at the end of every bar, an open hat on bar 4
+        for s in range(8):
+            put(hat(0.09 if s % 2 else 0.06), b0 + s * 0.2, pan=0.25 if s % 2 else -0.25)
+        roll = 0.1 if bar % 2 == 0 else 0.4 / 6
+        for k, at in enumerate(np.arange(b0 + 1.2, b0 + 1.6, roll)):
+            put(hat(0.05 + 0.012 * k, 0.025), at, pan=0.3)
+        if bar == 3:
+            put(hat(0.08, open_=True), b0 + 0.6, pan=-0.2)
+        # the bell riff (bars 2–4, an octave up on the last)
+        if bar >= 1:
+            for s, note in enumerate(riff):
+                put(bell(note + (12 if bar == 3 and s % 2 else 0), 0.16), b0 + s * 0.2, pan=-0.35 + 0.1 * (s % 7))
     # a shutter on every cut (montage.ts FAST: most screens last one 1/8 note, a few hold for two)
     holds = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1]
     at = 1.6
     for k, h in enumerate(holds):
-        put(shutter(0.08), at, pan=-0.2 + 0.4 * (k % 2))
+        put(shutter(0.1), at, pan=-0.2 + 0.4 * (k % 2))
         at += h * 0.2
-    # duck the 808 under every kick
+    # duck the 808 under the kick
     duck = np.ones(n)
-    kicks = [1.6 + bar * 1.6 + x for bar in range(2) for x in (0, 1.5 * BEAT, 2.5 * BEAT)]
-    kicks += [4.8 + bar * 1.6 + x for bar in range(2) for x in (0, 0.5 * BEAT, 1.5 * BEAT, 2.5 * BEAT, 3.25 * BEAT)]
-    for k_ in kicks:
-        i = int(k_ * SR)
-        m = min(n - i, int(0.05 * SR))
-        duck[i : i + m] = 0.6 + 0.4 * (np.arange(m) / m)
+    for bar in range(4):
+        for at in (0, 1.5 * BEAT, 3 * BEAT):
+            i = int((1.6 + bar * 1.6 + at) * SR)
+            m = min(n - i, int(0.06 * SR))
+            duck[i : i + m] = 0.55 + 0.45 * (np.arange(m) / m)
     L += bL * duck
     R += bR * duck
+    # the last bar builds: a clap roll speeding up, a riser
+    for k, at in enumerate(np.concatenate([np.arange(7.2, 7.6, 0.1), np.arange(7.6, 8.0, 0.05)])):
+        put(clap(0.12 + 0.03 * k), at, pan=0.1)
+    put(riser(1.2, 0.24), 6.8)
 
     # ---- 8.0: the final hit, as the film cuts in on "Hello World"; it rings out underneath ----
     put(impact(0.85), 8.0)
     put(b808(D1, 1.6, 1.0), 8.0)
-    put(stab([62, 65, 69, 72, 76], 0.3, 1.8), 8.0, pan=-0.12)
-    put(flute(74, 1.0, 0.1), 8.05, pan=0.2)
+    put(stab([62, 65, 69, 72, 76], 0.34, 1.8), 8.0, pan=-0.12)
+    put(stab([74, 77, 81], 0.16, 1.8), 8.02, pan=0.2)
     mix = np.stack([L, R])
     mix = np.stack([band(mix[0], lo=24), band(mix[1], lo=24)])
     # the tail fades away by ~9.8 s, under the score's first notes ("Hello World" typing)
