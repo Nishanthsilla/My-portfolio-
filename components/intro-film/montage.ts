@@ -24,7 +24,9 @@ type Variant = "color" | "mono" | "dim";
 const LOGO: Record<string, { v: Variant; c?: string }> = {
   dark: { v: "dim", c: "#3a3a3a" },
   words: { v: "mono", c: "#fff" },
-  gradient: { v: "mono", c: "#fff" },
+  warm: { v: "mono", c: "#fff" },
+  mesh: { v: "mono", c: "#fff" },
+  glow: { v: "color" },
   grid: { v: "color" },
   browser: { v: "color" },
   giant: { v: "color" },
@@ -44,17 +46,15 @@ const LOGO: Record<string, { v: Variant; c?: string }> = {
   crop: { v: "color" },
   ghost: { v: "color" },
   tagline: { v: "color" },
-  sand: { v: "color" },
-  solidred: { v: "mono", c: "#fff" },
 };
 
 /** every screen appears once: no repeats */
-const SLOW = ["dark", "words", "gradient", "grid"];
+const SLOW = ["dark", "words", "warm", "grid"];
 /** the drop: one 1/8 note each; the busier screens hold for two, and the cuts speed up towards the end */
 const FAST: [string, number][] = [
   ["browser", 2], ["giant", 2], ["phone", 2], ["ring", 2], ["figma", 2], ["palette", 2],
-  ["dock", 2], ["star", 2], ["editor", 2], ["split", 2], ["corners", 1], ["halftone", 1], ["stripes", 2],
-  ["zoom", 2], ["rings", 1], ["crop", 1], ["ghost", 1], ["tagline", 1], ["sand", 1], ["solidred", 1],
+  ["dock", 2], ["star", 2], ["editor", 2], ["mesh", 2], ["split", 1], ["corners", 1], ["halftone", 1], ["stripes", 2],
+  ["zoom", 2], ["rings", 1], ["crop", 1], ["ghost", 1], ["tagline", 1], ["glow", 1],
 ];
 export const FRAMES: { at: number; screen: string }[] = [
   ...SLOW.map((screen, i) => ({ at: i * 0.4, screen })),

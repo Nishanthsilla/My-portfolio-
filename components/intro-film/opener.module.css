@@ -179,7 +179,26 @@
 .zoomHud b { margin: 0 0.4em; }
 
 /* minimal screens */
-.gradient { background: linear-gradient(135deg, #ff6a3d 0%, #f50427 60%, #a8001b 100%); }
+/* gradients */
+.warm {
+  background:
+    radial-gradient(55% 60% at 28% 26%, #ffd8b4 0%, rgba(255, 216, 180, 0) 62%),
+    radial-gradient(75% 80% at 85% 88%, #9e0019 0%, rgba(158, 0, 25, 0) 70%),
+    linear-gradient(135deg, #ff7a3d 0%, #f50427 70%);
+}
+.mesh {
+  background:
+    radial-gradient(65% 60% at -2% 104%, #ff3a14 0%, rgba(255, 58, 20, 0) 68%),
+    radial-gradient(55% 45% at 30% 104%, #ffa052 0%, rgba(255, 160, 82, 0) 70%),
+    radial-gradient(75% 50% at 72% 104%, #fff1d6 0%, rgba(255, 241, 214, 0) 70%),
+    linear-gradient(160deg, #03051a 0%, #0a1fb8 32%, #1f63ff 50%, #8fd0ff 72%, #e4f3ff 88%);
+}
+.glow {
+  background:
+    radial-gradient(42% 55% at 50% 62%, rgba(245, 4, 39, 0.6) 0%, rgba(245, 4, 39, 0) 70%),
+    radial-gradient(28% 34% at 60% 44%, rgba(255, 106, 61, 0.5) 0%, rgba(255, 106, 61, 0) 70%),
+    #050505;
+}
 .palette { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(5, 1fr); }
 .palette i { position: relative; }
 .palette span { position: absolute; left: 1.2vmin; bottom: 2vmin; font: 500 calc(var(--L) * 0.07) / 1 var(--film-mono); color: rgba(255, 255, 255, 0.7); }

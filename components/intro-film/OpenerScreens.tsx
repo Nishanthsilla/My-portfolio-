@@ -147,7 +147,10 @@ export default function OpenerScreens() {
       </div>
 
       {/* minimal screens: one idea each */}
-      <div className={`${o.s} ${o.gradient}`} data-screen="gradient" />
+      {/* gradients: warm, a blue sky with an orange-red sunrise, a dark glow */}
+      <div className={`${o.s} ${o.warm}`} data-screen="warm" />
+      <div className={`${o.s} ${o.mesh}`} data-screen="mesh" />
+      <div className={`${o.s} ${o.glow}`} data-screen="glow" />
       <div className={`${o.s} ${o.paper}`} data-screen="palette">
         <div className={o.palette}>
           {[["#0d0d0d", "0D0D0D"], ["#f50427", "F50427"], ["#ff5a36", "FF5A36"], ["#efe3d3", "EFE3D3"], ["#f6f5f2", "F6F5F2"]].map(([c, h]) => (
@@ -165,8 +168,6 @@ export default function OpenerScreens() {
       </div>
       <div className={`${o.s} ${o.paper}`} data-screen="ghost"><Logo id="opener-ghost" mono="currentColor" className={o.ghost} /></div>
       <div className={`${o.s} ${o.dark}`} data-screen="tagline"><span className={o.tagline}><b>design</b> that ships.</span></div>
-      <div className={`${o.s} ${o.sand}`} data-screen="sand" />
-      <div className={`${o.s} ${o.red}`} data-screen="solidred" />
 
       {/* the logo: one size, dead centre, on every screen */}
       <div className={o.logo} data-ologo>
