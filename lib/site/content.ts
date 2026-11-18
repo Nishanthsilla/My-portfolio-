@@ -290,6 +290,10 @@ export const contact = {
   phoneLabel: "Call or WhatsApp",
   phone: "+91 77355 70520",
   phoneHref: "tel:+917735570520",
+  /** opens a WhatsApp chat with Nishanth, a friendly first message already typed (the visitor can edit it before sending) */
+  whatsappHref: `https://wa.me/917735570520?text=${encodeURIComponent(
+    "Hey Nishanth! 👋 I just went through your portfolio and really liked your work. I'd love to chat about ",
+  )}`,
   location: "Hyderabad",
 };
 

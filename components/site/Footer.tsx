@@ -4,6 +4,7 @@ import CopyEmail from "./CopyEmail";
 import HoverPreview from "./HoverPreview";
 import ProjectMedia from "./ProjectMedia";
 import SocialLinks from "./SocialLinks";
+import WhatsAppLink from "./WhatsAppLink";
 import s from "./site.module.css";
 
 /** Contact + footer, on every page. */
@@ -21,6 +22,7 @@ export default function Footer() {
             </div>
             <span className={s.eyebrow} style={{ marginTop: 24 }}>{contact.phoneLabel}</span>
             <a className={s.arrowLink} href={contact.phoneHref}>{contact.phone}</a>
+            <WhatsAppLink />
           </div>
           <div className={s.footerCol}>
             <span className={s.eyebrow}>Elsewhere</span>
