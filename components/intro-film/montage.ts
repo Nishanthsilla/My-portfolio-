@@ -1,21 +1,20 @@
 /**
- * "I'm Nishanth." → a 5-second logo match cut (film time MONTAGE.at … +dur).
+ * The opening: a 5-second logo match cut (film time 0 … MONTAGE.dur), before
+ * the film proper ("Hello World") begins. Logo only, no text.
  *
- * While it plays the film's own clock holds on the name (see filmClock in
- * timeline.ts) and this layer covers the stage:
- *   0.0 – 0.5   the name, as it was (the music starts slow)
- *   0.5 – 1.4   the logo takes over: same place, a new background, faster and faster
- *   1.4 – 1.75  construction lines draw in; the NS mark lands on the drop (1.5)
+ *   0.0 – 1.4   the logo, same place, a new plain background each time, faster
+ *               and faster (the music starts slow)
+ *   1.4 – 1.75  construction lines draw in; the logo lands on the drop (1.5)
  *   1.75 – 4.5  one frame every 1/8 s (16th notes at 120 BPM): mockups, real
- *               photos and graphic frames, the NS mark always dead centre
- *   4.5 – 5.0   back to the name; the film carries on
+ *               photos and graphic frames, the logo always dead centre
+ *   4.5 – 5.0   the hit: the logo, still; then the film starts
  *
  * Mockups: AI-generated (Figma AI) blank products, /public/images/intro-montage.
  * The mark is Nishanth's logo (components/site/Logo.tsx), in its own reds on
  * every frame except the red one, where it turns white.
  * Photos: Nishanth's own (/public/images/about), shown in black and white.
  */
-export const MONTAGE = { at: 2.25, dur: 5 } as const;
+export const MONTAGE = { at: 0, dur: 5 } as const;
 
 type Img = { kind: "img"; src: string; fx: number; fy: number; w: number; ink?: string; blend?: string; rot?: number; photo?: boolean };
 type Txt = { kind: "text"; font: string; bg: string; color: string; italic?: boolean; weight?: number; word?: string; scale?: number };
@@ -55,7 +54,7 @@ const STRIP: (Img | Txt | Gfx | Plain)[] = [
 ];
 
 export const FRAMES: Frame[] = [
-  { at: 0, kind: "none" },
+  { at: 0, kind: "plain", bg: "#faf9f6" },
   // the logo takes over: same place, a new background each time, faster and faster
   { at: 0.5, kind: "plain", bg: "#faf9f6" },
   { at: 0.875, kind: "plain", bg: "#111" },
@@ -63,7 +62,8 @@ export const FRAMES: Frame[] = [
   { at: 1.3, kind: "plain", bg: "#e60a30", mono: true },
   { at: 1.4, kind: "grid" },
   ...STRIP.map((f, i) => ({ ...f, at: 1.75 + i * 0.125 })),
-  { at: 4.5, kind: "none" },
+  // the hit: the logo, still, on the film's own background; then "Hello World" begins
+  { at: 4.5, kind: "plain", bg: "#faf9f6" },
 ];
 
 export const MONTAGE_IMAGES = [...new Set(STRIP.filter((f): f is Img => f.kind === "img").map((f) => f.src))];

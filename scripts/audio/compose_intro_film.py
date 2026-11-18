@@ -320,7 +320,7 @@ fade = int(1.2 * SR)
 mix[:, -fade:] *= np.linspace(1, 0, fade) ** 2
 mix *= 0.89 / np.abs(mix).max()
 
-# the logo match cut after "I'm Nishanth.": its own 5 s track, spliced in (compose_intro_montage.py)
+# the logo match cut that opens the intro: its own 5 s track, spliced in at the start (compose_intro_montage.py)
 from compose_intro_montage import splice  # noqa: E402
 
 mix = splice(mix)
