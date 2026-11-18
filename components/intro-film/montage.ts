@@ -8,9 +8,9 @@
  *   1.6 – 8.0   the drop: a new screen every 1/8 note (0.2 s)
  *   8.0         the final hit lands as the film cuts in on "Hello World"
  *
- * Every screen eases in over its first moments (its objects settle from a
- * little bigger, the backgrounds keep moving), so the hard cuts stay punchy
- * without ever looking like a static slide.
+ * Hard cuts: every screen simply appears on its beat and leaves on the next
+ * (no sliding or scaling in). A few keep moving while they're up: the words
+ * scroll, the ring turns, the stripes run, the zoom breathes.
  */
 import { INTRO_OPENER } from "@/lib/introConfig";
 
@@ -38,18 +38,26 @@ const LOGO: Record<string, { v: Variant; c?: string }> = {
   dock: { v: "mono", c: "#fff" },
   code: { v: "color" },
   grid: { v: "color" },
+  figma: { v: "color" },
+  editor: { v: "color" },
+  zoom: { v: "color" },
 };
 
 const SLOW = ["dark", "words", "tile", "toolbar"];
-const FAST = [
-  "browser", "giant", "phone", "ring", "nodes", "dock", "search", "code",
-  "star", "corners", "stripes", "grid", "tile", "words", "toolbar", "ring",
-  "dock", "star", "browser", "giant", "phone", "corners", "grid", "nodes",
-  "code", "search", "stripes", "tile", "ring", "star", "dock", "words",
+/** the drop: one screen per 1/8 note; the design tool, the editor and the zoom hold for two */
+const FAST: [string, number][] = [
+  ["browser", 1], ["giant", 1], ["phone", 1], ["ring", 1], ["figma", 2], ["nodes", 1], ["dock", 1],
+  ["search", 1], ["code", 1], ["star", 1], ["editor", 2], ["corners", 1], ["stripes", 1],
+  ["grid", 1], ["tile", 1], ["zoom", 2], ["words", 1], ["ring", 1], ["dock", 1], ["star", 1],
+  ["browser", 1], ["phone", 1], ["corners", 1], ["nodes", 1], ["search", 1], ["code", 1], ["giant", 1],
+  ["stripes", 1], ["tile", 1],
 ];
 export const FRAMES: { at: number; screen: string }[] = [
   ...SLOW.map((screen, i) => ({ at: i * 0.4, screen })),
-  ...FAST.map((screen, i) => ({ at: 1.6 + i * 0.2, screen })),
+  ...FAST.reduce<{ at: number; screen: string }[]>((acc, [screen, n], i) => {
+    const at = i === 0 ? 1.6 : acc[acc.length - 1].at + FAST[i - 1][1] * 0.2;
+    return [...acc, { at, screen }];
+  }, []),
 ];
 
 export class Montage {
@@ -96,10 +104,7 @@ export class Montage {
       else this.logo.setAttribute("data-mono", "");
       this.logo.style.color = lv.c ?? "";
     }
-    // motion inside the screen: --m is time on screen, --e its eased entrance (0 → 1 over 0.16 s)
-    const s = m - f.at;
-    const e = 1 - Math.pow(1 - Math.min(1, s / 0.16), 3);
-    el.style.setProperty("--m", s.toFixed(3));
-    el.style.setProperty("--e", e.toFixed(3));
+    // motion inside the screen (the scrolling words, the turning ring, the zoom…): --m is time on screen
+    el.style.setProperty("--m", (m - f.at).toFixed(3));
   }
 }
