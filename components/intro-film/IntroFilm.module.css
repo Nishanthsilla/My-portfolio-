@@ -489,8 +489,8 @@
 .mText { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; white-space: nowrap; line-height: 1; letter-spacing: -0.01em; }
 .mMark { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; }
 .mMark svg { display: block; width: 100%; height: auto; overflow: visible; }
-/* one colour (white) on the orange frame */
-.mMark[data-mono] path, .mMark[data-mono] circle { fill: #fff; }
+/* one colour (white) on the red frame */
+.mMark[data-mono] path, .mMark[data-mono] rect { fill: #fff; }
 /* construction lines (they draw in from the centre: --p 0 → 1) */
 .mGrid { position: absolute; inset: 0; display: none; }
 .mGrid i { position: absolute; background: rgba(255, 255, 255, 0.28); }
@@ -503,11 +503,11 @@
 .mGrid b { position: absolute; left: 50%; top: 50%; width: 30vmin; height: 30vmin; border: 1px solid rgba(255, 255, 255, 0.28); border-radius: 50%; transform: translate(-50%, -50%) scale(var(--p, 0)); }
 /* soft: the mark, huge and out of focus, behind the crisp one */
 .mSoft { position: absolute; left: 50%; top: 50%; width: 110vmin; transform: translate(-50%, -50%); display: none; filter: blur(22px); }
-.mSoft svg { display: block; width: 100%; fill: #ececec; }
+.mSoft svg { display: block; width: 100%; }
 /* apps: a dock of app icons; the mark's icon sits dead centre */
 .mApps { position: absolute; inset: 0; display: none; }
 .mApps span { position: absolute; left: 50%; top: 50%; display: flex; gap: 2.4vmin; padding: 2.4vmin; border-radius: 6vmin; background: #e9e9e9; box-shadow: 0 2vmin 6vmin rgba(0, 0, 0, 0.18); transform: translate(calc(-14vmin / 2 - 2.4vmin), -50%); }
 .mApps i { width: 14vmin; height: 14vmin; border-radius: 3.4vmin; background: #8a8a8a; }
 .mApps i:first-child { background: #fff; }
-.mApps i:last-child { background: #111; }
+.mApps i:last-child { background: #e60a30; }
 .mFlat { position: absolute; inset: 0; display: none; }
