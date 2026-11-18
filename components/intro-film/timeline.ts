@@ -39,6 +39,20 @@ export const T = {
   end: 38.53,
 } as const;
 
+/**
+ * The logo match cut after "I'm Nishanth." (montage.ts): for MONTAGE.dur seconds
+ * the film holds on the name while the montage plays over it, then carries on.
+ * The score has the montage's own track spliced in at the same spot, so the
+ * audio clock (and the progress bar) run on the long clock, and everything in T
+ * above is read on the film's own clock: filmClock(t).
+ */
+import { MONTAGE } from "./montage";
+export const filmClock = (t: number) => (t < MONTAGE.at ? t : t < MONTAGE.at + MONTAGE.dur ? MONTAGE.at : t - MONTAGE.dur);
+/** seconds into the montage while it plays, otherwise null */
+export const montageTime = (t: number) => (t >= MONTAGE.at && t < MONTAGE.at + MONTAGE.dur ? t - MONTAGE.at : null);
+/** the whole intro, montage included (long clock) */
+export const FILM_END = T.end + MONTAGE.dur;
+
 /** The level-clear sound's held note lands as the website settles. */
 export const VICTORY_AT = T.handoff[1] - 0.62;
 /** No full-dark chapter. */
