@@ -400,7 +400,10 @@
 html[data-embed] .back { display: none; }
 
 /* the logo: his initials, after the orange dot the intro film lands on */
-.logoNs { font: 700 17px/1 var(--sans) !important; letter-spacing: 0.02em !important; margin-right: 4px; }
+.logoNs { align-items: flex-end !important; gap: 0 !important; margin-right: 4px; line-height: 0 !important; }
+.logoNs svg { display: block; }
+/* the logo's square full stop, flush against the stem */
+.logoNs i { width: 6.96px !important; height: 6.96px !important; border-radius: 0 !important; background: #e60a30 !important; }
 .headerRow { padding-left: 22px !important; }
 
 /* the phone number: Call / WhatsApp pop out on hover (laptops); a WhatsApp button beside it (phones) */

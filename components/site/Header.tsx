@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { uiSound } from "@/lib/sound/ui";
+import { LogoN } from "./Logo";
 import s from "./site.module.css";
 
 /**
@@ -47,7 +48,7 @@ export default function Header() {
         <Link
           className={`mark ${s.logo} ${s.logoNs}`}
           href="/#about"
-          aria-label="Nishanth Silla — home"
+          aria-label="Nishanth Silla, home"
           title="Nishanth Silla"
           onClick={() => {
             uiSound("logo");
@@ -58,8 +59,9 @@ export default function Header() {
             } catch {}
           }}
         >
+          {/* the logo: the "n", then its square full stop (kept as <i>: the intro film lands its dot on it) */}
+          <LogoN height={20} id="nav-logo" />
           <i aria-hidden="true" />
-          NS
         </Link>
         <button
           type="button"
