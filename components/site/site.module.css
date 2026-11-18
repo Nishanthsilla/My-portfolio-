@@ -414,7 +414,7 @@ html[data-embed] .back { display: none; }
   transition: background 160ms;
 }
 .popBtn svg { width: 24px; height: 24px; }
-.popWa svg { width: 27px; height: 27px; }
+.popWa svg { width: 25px; height: 25px; }
 .popBtn:hover { background: #474640; }
 .popTip {
   position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 0; padding: 4px 9px; border-radius: 8px; background: #1d1b19; color: #fff;
@@ -422,7 +422,8 @@ html[data-embed] .back { display: none; }
 }
 .popBtn:hover .popTip, .popBtn:focus-visible .popTip { opacity: 1; }
 .popBtn:focus-visible { outline: 2px solid #ff4938; outline-offset: 3px; }
-@media (hover: hover) and (pointer: fine) {
+/* laptops and desktops (anything with a mouse, touchscreen laptops included): the buttons pop out on hover */
+@media (any-hover: hover) and (min-width: 761px) {
   /* the gap between the number and the buttons still counts as hovering */
   .phonePop { position: absolute; left: 100%; top: 50%; padding-left: 14px; translate: 0 -50%; pointer-events: none; }
   .popBtn { scale: 0.3; opacity: 0; transition: scale 360ms cubic-bezier(0.34, 1.7, 0.64, 1), opacity 160ms, translate 360ms cubic-bezier(0.34, 1.7, 0.64, 1), background 160ms; }
@@ -433,9 +434,10 @@ html[data-embed] .back { display: none; }
   .phone:hover .popBtn, .phone:focus-within .popBtn { scale: 1; opacity: 1; translate: 0 -6px; }
   .phone:hover .popWa, .phone:focus-within .popWa { translate: 0 6px; }
 }
-@media (hover: none), (pointer: coarse) {
+/* phones and tablets (no mouse, or a small screen): just the WhatsApp button, always there */
+@media (max-width: 760px), (any-hover: none) {
   .popCall { display: none; }
   .popWa { width: 46px; height: 46px; }
-  .popWa svg { width: 25px; height: 25px; }
+  .popWa svg { width: 23px; height: 23px; }
 }
 @media (prefers-reduced-motion: reduce) { .popBtn { transition: opacity 120ms !important; translate: 0 0 !important; } }
