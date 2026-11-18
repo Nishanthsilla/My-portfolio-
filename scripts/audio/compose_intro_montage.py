@@ -201,9 +201,12 @@ def track():
         if bar >= 1:
             for s, note in enumerate(riff):
                 put(bell(note + (12 if bar == 3 and s % 2 else 0), 0.16), b0 + s * 0.2, pan=-0.35 + 0.1 * (s % 7))
-    # a shutter for every cut (0.2 s)
-    for k in range(32):
-        put(shutter(0.1), 1.6 + k * 0.2, pan=-0.2 + 0.4 * (k % 2))
+    # a shutter on every cut (montage.ts FAST: most screens last one 1/8 note, a few hold for two)
+    holds = [1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    at = 1.6
+    for k, h in enumerate(holds):
+        put(shutter(0.1), at, pan=-0.2 + 0.4 * (k % 2))
+        at += h * 0.2
     # duck the 808 under the kick
     duck = np.ones(n)
     for bar in range(4):
