@@ -408,10 +408,14 @@ html[data-embed] .back { display: none; }
 .phoneNum { color: inherit; text-decoration: none; }
 .phonePop { display: inline-flex; align-items: center; gap: 10px; }
 .popBtn {
-  position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
-  background: #2b2a28; color: #fff; text-decoration: none; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  position: relative; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%;
+  /* Pinterest's long-press buttons: warm charcoal, thin white icon, soft shadow */
+  background: #33322e; color: #f5f4f0; text-decoration: none; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28), 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: background 160ms;
 }
-.popBtn svg { width: 21px; height: 21px; }
+.popBtn svg { width: 24px; height: 24px; }
+.popWa svg { width: 27px; height: 27px; }
+.popBtn:hover { background: #474640; }
 .popTip {
   position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 0; padding: 4px 9px; border-radius: 8px; background: #1d1b19; color: #fff;
   font-size: 12px; font-weight: 500; white-space: nowrap; opacity: 0; transition: opacity 140ms; pointer-events: none;
@@ -428,12 +432,10 @@ html[data-embed] .back { display: none; }
   .phone:hover .phonePop, .phone:focus-within .phonePop { pointer-events: auto; }
   .phone:hover .popBtn, .phone:focus-within .popBtn { scale: 1; opacity: 1; translate: 0 -6px; }
   .phone:hover .popWa, .phone:focus-within .popWa { translate: 0 6px; }
-  .popCall:hover { background: #ff4938; }
-  .popWa:hover { background: #25d366; }
 }
 @media (hover: none), (pointer: coarse) {
   .popCall { display: none; }
-  .popWa { width: 38px; height: 38px; background: #25d366; box-shadow: none; }
-  .popWa svg { width: 22px; height: 22px; }
+  .popWa { width: 46px; height: 46px; }
+  .popWa svg { width: 25px; height: 25px; }
 }
 @media (prefers-reduced-motion: reduce) { .popBtn { transition: opacity 120ms !important; translate: 0 0 !important; } }
