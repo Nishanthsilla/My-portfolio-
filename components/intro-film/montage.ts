@@ -4,15 +4,15 @@
  * While it plays the film's own clock holds on the name (see filmClock in
  * timeline.ts) and this layer covers the stage:
  *   0.0 – 0.5   the name, as it was (the music starts slow)
- *   0.5 – 1.4   text match cut: "Nishanth" swaps font and colour, faster and faster
+ *   0.5 – 1.4   the logo takes over: same place, a new background, faster and faster
  *   1.4 – 1.75  construction lines draw in; the NS mark lands on the drop (1.5)
  *   1.75 – 4.5  one frame every 1/8 s (16th notes at 120 BPM): mockups, real
  *               photos and graphic frames, the NS mark always dead centre
  *   4.5 – 5.0   back to the name; the film carries on
  *
  * Mockups: AI-generated (Figma AI) blank products, /public/images/intro-montage.
- * The mark is Nishanth's logo (a folded-ribbon N and his orange dot), in its own
- * orange on every frame except the orange one, where it turns white.
+ * The mark is Nishanth's logo (components/site/Logo.tsx), in its own reds on
+ * every frame except the red one, where it turns white.
  * Photos: Nishanth's own (/public/images/about), shown in black and white.
  */
 export const MONTAGE = { at: 2.25, dur: 5 } as const;
@@ -20,20 +20,22 @@ export const MONTAGE = { at: 2.25, dur: 5 } as const;
 type Img = { kind: "img"; src: string; fx: number; fy: number; w: number; ink?: string; blend?: string; rot?: number; photo?: boolean };
 type Txt = { kind: "text"; font: string; bg: string; color: string; italic?: boolean; weight?: number; word?: string; scale?: number };
 type Gfx = { kind: "grid" | "soft" | "apps" | "flat" };
-type Frame = (Img | Txt | Gfx | { kind: "none" }) & { at: number };
+/** the logo alone on a plain colour (mono: all white) */
+type Plain = { kind: "plain"; bg: string; mono?: boolean };
+type Frame = (Img | Txt | Gfx | Plain | { kind: "none" }) & { at: number };
 
 const M = "/images/intro-montage/";
 const P = "/images/about/";
 const SANS = "var(--film-sans)";
 const MONO = "var(--film-mono)";
 
-const STRIP: (Img | Txt | Gfx)[] = [
+const STRIP: (Img | Txt | Gfx | Plain)[] = [
   { kind: "soft" },
   { kind: "img", src: M + "cap.webp", fx: 0.5, fy: 0.32, w: 0.06, ink: "#2a2a2a", blend: "multiply" },
   { kind: "img", src: P + "model-4.webp", fx: 0.56, fy: 0.5, w: 0.16, ink: "#fff", photo: true },
   { kind: "apps" },
   { kind: "img", src: M + "keychain.webp", fx: 0.49, fy: 0.655, w: 0.034, ink: "#4a4a4a", blend: "multiply" },
-  { kind: "text", font: '"Instrument Serif", serif', italic: true, bg: "#ff4938", color: "#fff", weight: 400 },
+  { kind: "img", src: M + "bottle.webp", fx: 0.55, fy: 0.44, w: 0.05, rot: -20 },
   { kind: "img", src: M + "cards.webp", fx: 0.5, fy: 0.48, w: 0.042, ink: "#c9c9c9" },
   { kind: "img", src: P + "camera-1.webp", fx: 0.72, fy: 0.6, w: 0.13, ink: "#222", blend: "multiply", photo: true },
   { kind: "img", src: M + "tshirt.webp", fx: 0.5, fy: 0.45, w: 0.07, ink: "#f2f2f2" },
@@ -41,7 +43,7 @@ const STRIP: (Img | Txt | Gfx)[] = [
   { kind: "img", src: P + "model-3.webp", fx: 0.42, fy: 0.4, w: 0.14, ink: "#222", blend: "multiply", photo: true },
   { kind: "img", src: M + "sticker.webp", fx: 0.5, fy: 0.49, w: 0.042, ink: "#fff" },
   { kind: "img", src: M + "laptop.webp", fx: 0.5, fy: 0.495, w: 0.06, ink: "#3a3a3a", blend: "multiply" },
-  { kind: "text", font: '"Permanent Marker", cursive', bg: "#111", color: "#fff", weight: 400 },
+  { kind: "plain", bg: "#111" },
   { kind: "img", src: M + "tote.webp", fx: 0.5, fy: 0.63, w: 0.05, ink: "#222", blend: "multiply" },
   { kind: "img", src: P + "gym-1.webp", fx: 0.35, fy: 0.74, w: 0.17, ink: "#fff", photo: true },
   { kind: "img", src: M + "mug.webp", fx: 0.485, fy: 0.55, w: 0.05, ink: "#222", blend: "multiply" },
@@ -54,18 +56,17 @@ const STRIP: (Img | Txt | Gfx)[] = [
 
 export const FRAMES: Frame[] = [
   { at: 0, kind: "none" },
-  // the text match cut: same word, same place, a new voice each time
-  { at: 0.5, kind: "text", font: '"Instrument Serif", serif', italic: true, bg: "#faf9f6", color: "#242424", weight: 400 },
-  { at: 0.875, kind: "text", font: '"Permanent Marker", cursive', bg: "#242424", color: "#fff", weight: 400 },
-  { at: 1.125, kind: "text", font: '"Special Elite", monospace', bg: "#e8e5e1", color: "#242424", weight: 400 },
-  { at: 1.3, kind: "text", font: '"Chewy", cursive', bg: "#ff4938", color: "#fff", weight: 400 },
+  // the logo takes over: same place, a new background each time, faster and faster
+  { at: 0.5, kind: "plain", bg: "#faf9f6" },
+  { at: 0.875, kind: "plain", bg: "#111" },
+  { at: 1.125, kind: "plain", bg: "#e8e5e1" },
+  { at: 1.3, kind: "plain", bg: "#e60a30", mono: true },
   { at: 1.4, kind: "grid" },
   ...STRIP.map((f, i) => ({ ...f, at: 1.75 + i * 0.125 })),
   { at: 4.5, kind: "none" },
 ];
 
 export const MONTAGE_IMAGES = [...new Set(STRIP.filter((f): f is Img => f.kind === "img").map((f) => f.src))];
-export const MONTAGE_FONTS = ['400 64px "Instrument Serif"', 'italic 400 64px "Instrument Serif"', '400 64px "Permanent Marker"', '400 64px "Special Elite"', '400 64px "Chewy"'];
 
 export class Montage {
   private el: { root: HTMLElement; img: HTMLImageElement; text: HTMLElement; mark: HTMLElement; gfx: Record<string, HTMLElement> };
@@ -147,6 +148,11 @@ export class Montage {
       mark.style.display = "block";
       mark.style.width = `${Math.max(36, f.w * size.w * s * 1.15)}px`;
       if (f.rot) mark.style.transform = `translate(-50%,-50%) rotate(${f.rot}deg)`;
+    } else if (f.kind === "plain") {
+      root.style.background = f.bg;
+      mark.style.display = "block";
+      mark.style.width = `${base * 0.24}px`;
+      if (f.mono) mark.dataset.mono = "1";
     } else if (f.kind === "text") {
       root.style.background = f.bg;
       text.style.display = "block";
@@ -171,7 +177,7 @@ export class Montage {
         root.style.background = "#cfcfcf";
         mark.style.width = `${base * 0.1}px`;
       } else {
-        root.style.background = "#ff4938";
+        root.style.background = "#e60a30";
         mark.style.width = `${base * 0.36}px`;
         mark.dataset.mono = "1";
       }

@@ -10,12 +10,12 @@ import { film } from "./content";
 import { FilmEngine } from "./engine";
 import { FilmAudio, type SoundState } from "./audio";
 import { DARK_RANGE, FILM_END, T, VICTORY_AT, filmClock, montageTime } from "./timeline";
-import { Montage, MONTAGE_FONTS } from "./montage";
-import { FONTS_HREF } from "@/lib/wall/fonts";
+import { Montage } from "./montage";
 import styles from "./IntroFilm.module.css";
 import ControlRoom from "./ControlRoom";
 import { Artefacts, CodeDetails, DesignDetails } from "./BoardParts";
 import AsciiBridge from "./AsciiBridge";
+import Logo from "@/components/site/Logo";
 
 const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 const SESSION_KEY = "nishanth.introFilm.seen";
@@ -59,15 +59,8 @@ export default function IntroFilm() {
     root.dataset.js = "1";
     const engine = new FilmEngine(root);
     const montage = new Montage(root);
-    // the montage's fonts (the text match cut) and pictures, loaded up front
-    if (!document.querySelector("link[data-wall-fonts]")) {
-      const l = document.createElement("link");
-      l.rel = "stylesheet";
-      l.href = FONTS_HREF;
-      l.dataset.wallFonts = "";
-      document.head.appendChild(l);
-    }
-    const montageReady = Promise.all([montage.preload(), ...MONTAGE_FONTS.map((f) => document.fonts?.load(f).catch(() => {}))]);
+    // the montage's pictures, loaded up front
+    const montageReady = montage.preload();
     const bar = root.querySelector<HTMLElement>("[data-film-progress]");
     const audio = new FilmAudio(FILM_AUDIO_SRC);
     const victory = new Audio(FILM_VICTORY_SRC);
@@ -396,24 +389,12 @@ export default function IntroFilm() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className={styles.mImg} data-mimg alt="" />
         <div className={styles.mGrid} data-mgfx="grid"><i /><i /><i /><i /><b /></div>
-        <div className={styles.mSoft} data-mgfx="soft"><svg viewBox="0 0 112 64"><path d="M0 64H18L42 0H24ZM24 0H42L66 64H48ZM48 64H66L90 0H72Z" /><circle cx="103" cy="57" r="7.5" /></svg></div>
+        <div className={styles.mSoft} data-mgfx="soft"><Logo id="montage-soft" mono="#e6e6e6" /></div>
         <div className={styles.mApps} data-mgfx="apps"><span><i /><i /><i /></span></div>
         <div className={styles.mFlat} data-mgfx="flat" />
         <div className={styles.mText} data-mtext />
-        {/* Nishanth's logo: a folded-ribbon N and his orange dot */}
-        <div className={styles.mMark} data-mmark>
-          <svg viewBox="0 0 112 64" aria-hidden="true">
-            <defs>
-              <linearGradient id="nlogo1" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="#ff7a63" /><stop offset="1" stopColor="#ff4938" /></linearGradient>
-              <linearGradient id="nlogo2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#d8301f" /><stop offset="1" stopColor="#a51f12" /></linearGradient>
-              <linearGradient id="nlogo3" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="#ff5a45" /><stop offset="1" stopColor="#ff7a63" /></linearGradient>
-            </defs>
-            <path fill="url(#nlogo1)" d="M0 64H18L42 0H24Z" />
-            <path fill="url(#nlogo2)" d="M24 0H42L66 64H48Z" />
-            <path fill="url(#nlogo3)" d="M48 64H66L90 0H72Z" />
-            <circle fill="#ff4938" cx="103" cy="57" r="7.5" />
-          </svg>
-        </div>
+        {/* Nishanth's logo (components/site/Logo.tsx) */}
+        <div className={styles.mMark} data-mmark><Logo id="montage-logo" /></div>
       </div>
 
       {/* how far through the intro you are */}
