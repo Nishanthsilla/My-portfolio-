@@ -230,29 +230,21 @@ export default function OpenerScreens() {
       </div>
       {/* refracted glass: hot red light through fluted glass panels */}
       <div className={`${o.s} ${o.glassBg}`} data-screen="glass"><div className={o.glass} /><div className={o.panels}><i /><i /><i /><i /></div></div>
-      {/* liquid chrome: a flowing silver surface, like molten mirror */}
-      <div className={`${o.s} ${o.dark}`} data-screen="chrome">
-        <svg className={o.chrome} viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <linearGradient id="opener-chrome" x1="0" y1="0" x2="0.22" y2="0.3" spreadMethod="repeat">
-              <stop offset="0" stopColor="#050505" />
-              <stop offset="0.18" stopColor="#8a8a8a" />
-              <stop offset="0.3" stopColor="#ffffff" />
-              <stop offset="0.42" stopColor="#3a3a3a" />
-              <stop offset="0.6" stopColor="#0a0a0a" />
-              <stop offset="0.74" stopColor="#d8d8d8" />
-              <stop offset="0.86" stopColor="#5c5c5c" />
-              <stop offset="1" stopColor="#050505" />
-            </linearGradient>
-            <filter id="opener-melt" x="-20%" y="-20%" width="140%" height="140%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.006 0.011" numOctaves="2" seed="8" />
-              <feDisplacementMap in="SourceGraphic" scale="140" xChannelSelector="R" yChannelSelector="G" />
-              <feGaussianBlur stdDeviation="0.6" />
-            </filter>
-          </defs>
-          <rect x="-60" y="-60" width="520" height="370" fill="url(#opener-chrome)" filter="url(#opener-melt)" />
+      {/* holographic foil: iridescent, crinkled, sparkling */}
+      <div className={`${o.s} ${o.holo}`} data-screen="holo">
+        <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
+          <filter id="opener-foil" x="-50%" y="-50%" width="200%" height="200%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="3" seed="4" />
+            <feDisplacementMap in="SourceGraphic" scale="90" xChannelSelector="R" yChannelSelector="B" />
+          </filter>
         </svg>
-        <div className={o.chromeShade} />
+        <div className={o.holoFoil} />
+        <div className={o.holoSheen} />
+        {[[18, 22, 1.1], [80, 18, 0.8], [70, 76, 1.3], [26, 70, 0.7], [58, 30, 0.6], [88, 55, 0.9], [10, 45, 0.6], [42, 86, 0.8]].map(([x, y, k], i) => (
+          <svg key={i} className={o.glint} viewBox="0 0 20 20" style={{ left: `${x}%`, top: `${y}%`, width: `calc(var(--L) * ${0.3 * k})`, ["--d" as string]: `${i * 0.07}s` }}>
+            <path d="M10 0C10.8 7 13 9.2 20 10 13 10.8 10.8 13 10 20 9.2 13 7 10.8 0 10 7 9.2 9.2 7 10 0Z" />
+          </svg>
+        ))}
       </div>
       {/* the logo: one size, dead centre, on every screen */}
       <div className={o.logo} data-ologo>
