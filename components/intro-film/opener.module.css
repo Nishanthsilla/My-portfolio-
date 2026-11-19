@@ -266,8 +266,34 @@
 }
 
 /* the logo */
-.logo { position: absolute; left: 50%; top: 50%; width: var(--L); transform: translate(-50%, -50%); z-index: 5; color: #fff; }
-.logo svg { display: block; width: 100%; height: auto; }
+.logo { position: absolute; left: 50%; top: 50%; width: var(--L); aspect-ratio: 961 / 563; transform: translate(-50%, -50%); z-index: 5; color: #fff; }
+.logo svg { position: absolute; left: 0; top: 0; display: block; width: 78.36%; height: 100%; }
 .logoMono { display: none !important; }
 .logo[data-mono] .logoColor { display: none; }
 .logo[data-mono] .logoMono { display: block !important; }
+/* the dot: the logo's full stop (783–961 × 399–563 of 961 × 563) */
+.dot { position: absolute; left: 81.48%; top: 70.87%; width: 18.52%; height: 29.13%; border-radius: calc(var(--L) * 0.0416); background: #f50427; will-change: transform; }
+.logo[data-mono] .dot { background: currentColor; }
+/* the transitions' extras */
+.portal { position: absolute; inset: 0; z-index: 7; background: #faf9f6; display: none; }
+.ring { position: absolute; z-index: 8; width: calc(var(--L) * 0.7); aspect-ratio: 1; transform: translate(-50%, -50%) scale(var(--rs, 1)); opacity: var(--ro, 0); pointer-events: none; }
+.ring i { position: absolute; left: 50%; top: 50%; width: 2px; height: 22%; background: currentColor; transform-origin: 50% 0; }
+.ring i:nth-child(1) { transform: rotate(0deg) translateY(20%); }
+.ring i:nth-child(2) { transform: rotate(45deg) translateY(20%); }
+.ring i:nth-child(3) { transform: rotate(90deg) translateY(20%); }
+.ring i:nth-child(4) { transform: rotate(135deg) translateY(20%); }
+.ring i:nth-child(5) { transform: rotate(180deg) translateY(20%); }
+.ring i:nth-child(6) { transform: rotate(225deg) translateY(20%); }
+.ring i:nth-child(7) { transform: rotate(270deg) translateY(20%); }
+.ring i:nth-child(8) { transform: rotate(315deg) translateY(20%); }
+.cursor { position: absolute; z-index: 8; width: calc(var(--L) * 0.2); display: none; filter: drop-shadow(0 0.3vmin 0.6vmin rgba(0, 0, 0, 0.35)); }
+.cursor path { fill: #111; stroke: #fff; stroke-width: 1.2; stroke-linejoin: round; }
+.floor { position: absolute; left: 20%; right: 20%; height: 1px; background: rgba(255, 255, 255, 0.35); z-index: 4; display: none; }
+/* the toggle */
+.cream { background: #efe8dc; }
+.toggle {
+  position: absolute; left: 50%; top: calc(50% + var(--L) * 0.95); width: calc(var(--L) * 1.1); height: calc(var(--L) * 0.55); border-radius: 999px; transform: translate(-50%, -50%);
+  background: #141414; overflow: hidden;
+}
+.toggle i { position: absolute; inset: 0; background: #f50427; opacity: clamp(0, calc((var(--m) - 0.38) / 0.08), 1); }
+.toggle b { position: absolute; left: calc(var(--L) * 0.06); top: 50%; width: calc(var(--L) * 0.43); aspect-ratio: 1; border-radius: 50%; background: #fff; transform: translate(calc(clamp(0, (var(--m) - 0.36) / 0.1, 1) * var(--L) * 0.55), -50%); }
