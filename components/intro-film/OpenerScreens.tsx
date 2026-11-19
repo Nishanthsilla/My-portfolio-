@@ -42,27 +42,27 @@ function seeded(seed: number) {
 /** white stipple particles (viewBox 200 × 200): a starfield, a dotted terrain and a glowing sphere with rays */
 const STIPPLE = (() => {
   const r = seeded(7);
-  const pts: { x: number; y: number; s: number; o: number }[] = [];
-  for (let i = 0; i < 260; i++) pts.push({ x: r() * 200, y: r() * 200, s: 0.12 + r() * 0.25, o: 0.15 + r() * 0.5 });
+  const pts: { x: number; y: number; s: number; o: number; k: "star" | "land" | "orb" | "ray" }[] = [];
+  for (let i = 0; i < 260; i++) pts.push({ x: r() * 200, y: r() * 200, s: 0.12 + r() * 0.25, o: 0.15 + r() * 0.5, k: "star" });
   // terrain: rows of dots along waves, denser and bigger towards the front
   for (let k = 0; k < 22; k++) {
     const y0 = 118 + k * k * 0.16, step = 0.9 + k * 0.08;
     for (let x = -10; x < 210; x += step * (0.6 + r() * 0.8)) {
       const y = y0 + Math.sin(x * 0.045 + k * 0.7) * (2 + k * 0.25) + Math.sin(x * 0.11 - k) * 1.2;
-      pts.push({ x, y, s: 0.12 + k * 0.012 + r() * 0.1, o: 0.25 + r() * 0.6 });
+      pts.push({ x, y, s: 0.12 + k * 0.012 + r() * 0.1, o: 0.25 + r() * 0.6, k: "land" });
     }
   }
   // the sphere: dots on its surface, brightest at the rim
   for (let i = 0; i < 900; i++) {
     const u = r() * 2 - 1, t = r() * Math.PI * 2, rim = Math.sqrt(1 - u * u);
     const R = 17 + (r() - 0.5) * 1.2;
-    pts.push({ x: 100 + Math.cos(t) * rim * R, y: 100 + u * R, s: 0.14 + r() * 0.2, o: 0.2 + 0.7 * Math.pow(1 - Math.abs(Math.sin(t) * rim), 2) });
+    pts.push({ x: 100 + Math.cos(t) * rim * R, y: 100 + u * R, s: 0.14 + r() * 0.2, o: 0.2 + 0.7 * Math.pow(1 - Math.abs(Math.sin(t) * rim), 2), k: "orb" });
   }
   // light rays
   for (const [ang, len] of [[-1.15, 70], [-0.35, 46], [2.2, 38]]) {
     for (let i = 0; i < 160; i++) {
       const d = 18 + Math.pow(r(), 1.6) * len, w = (r() - 0.5) * (1.4 - d / (len + 18));
-      pts.push({ x: 100 + Math.cos(ang) * d - Math.sin(ang) * w, y: 100 + Math.sin(ang) * d + Math.cos(ang) * w, s: 0.12 + r() * 0.18, o: 0.3 + r() * 0.7 });
+      pts.push({ x: 100 + Math.cos(ang) * d - Math.sin(ang) * w, y: 100 + Math.sin(ang) * d + Math.cos(ang) * w, s: 0.12 + r() * 0.18, o: 0.3 + r() * 0.7, k: "ray" });
     }
   }
   return pts;
@@ -125,6 +125,8 @@ const Icon = {
 export default function OpenerScreens() {
   return (
     <>
+      {/* the liquid background (montage.ts / fluid.ts), under the screens that use it */}
+      <canvas className={o.fluid} data-ofluid aria-hidden="true" />
       {/* 1 · dark: the logo, dim, waiting */}
       <div className={`${o.s} ${o.dark}`} data-screen="dark">
         <span className={`${o.meta} ${o.tl}`}>nishanth silla ©2026</span>
@@ -151,6 +153,7 @@ export default function OpenerScreens() {
           <span className={o.phoneName}>NISHANTH SILLA</span>
           <span className={o.phoneSub}>Lead Product Designer</span>
           <span className={o.phoneUrl}>nishanthsilla.vercel.app</span>
+          <span className={o.notif}><b>Nishanth</b> shipped a new design ✦</span>
         </div>
       </div>
       {/* 8 · the line, going round */}
@@ -240,7 +243,12 @@ export default function OpenerScreens() {
       {/* white stipple: a dotted terrain, a starfield, and a sphere of light around the logo */}
       <div className={`${o.s} ${o.dark}`} data-screen="particles">
         <svg className={o.particles} viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice">
-          {STIPPLE.map((p, i) => <circle key={i} cx={p.x.toFixed(2)} cy={p.y.toFixed(2)} r={p.s.toFixed(2)} fill="#fff" opacity={p.o.toFixed(2)} />)}
+          {(["star", "land", "orb", "ray"] as const).map((kind) => (
+            <g key={kind} className={o[`st_${kind}`]}>
+              {STIPPLE.filter((p) => p.k === kind).map((p, i) => <circle key={i} cx={p.x.toFixed(2)} cy={p.y.toFixed(2)} r={p.s.toFixed(2)} fill="#fff" opacity={p.o.toFixed(2)} />)}
+              {kind === "land" && STIPPLE.filter((p) => p.k === kind).map((p, i) => <circle key={`b${i}`} cx={(p.x + 220).toFixed(2)} cy={p.y.toFixed(2)} r={p.s.toFixed(2)} fill="#fff" opacity={p.o.toFixed(2)} />)}
+            </g>
+          ))}
         </svg>
       </div>
       {/* topographic contour lines */}

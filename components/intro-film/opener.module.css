@@ -272,28 +272,66 @@
 .logo[data-mono] .logoColor { display: none; }
 .logo[data-mono] .logoMono { display: block !important; }
 
-/* ---------- motion: no screen is a still picture ----------
-   --m is the time (s) a screen has been up; most last 0.4 s, the last few 0.2 s.
-   Every screen pushes in slowly like a camera, and its background keeps moving.
-   (The logo is a separate layer, so it stays put.) */
-.s[data-on] { transform: scale(calc(1.02 + var(--m) * 0.2)); transform-origin: 50% 50%; }
-/* a soft light that sweeps across the plain screens */
+/* ---------- motion: every background moves (fast, so it reads in 0.2–0.4 s) ----------
+   --m is the time (s) a screen has been up. The logo is a separate layer and stays put. */
+
+/* the liquid background (fluid.ts): under the gradient screens, which turn see-through when it runs */
+.fluid { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; display: none; }
+.s { z-index: 1; }
+.s[data-fluid] { background: transparent !important; }
+.s[data-fluid] .thermArc, .s[data-fluid] .grain { display: none; }
+
+/* a soft light sweeping across the plain screens */
 .dark::after, .orange::after, .light::after, .paper::after, .sand::after, .cream::after {
   content: ""; position: absolute; inset: -20%; pointer-events: none;
-  background: radial-gradient(35% 45% at calc(10% + var(--m) * 180%) 40%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(35% 45% at calc(10% + var(--m) * 220%) 40%, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 70%);
   mix-blend-mode: soft-light;
 }
-/* gradients drift */
+
+/* grids and lines */
+.blueprint { background-position: calc(50% + var(--m) * 40vmin) calc(50% + var(--m) * 20vmin) !important; }
+.grid::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+  background-size: calc(var(--L) * 0.25) calc(var(--L) * 0.25); background-position: calc(var(--m) * -36vmin) calc(var(--m) * 18vmin);
+}
+.topo path { stroke-dasharray: 3 2; stroke-dashoffset: calc(var(--m) * -60); }
+.topo { transform: translate(calc(var(--m) * -14vmin), calc(var(--m) * 5vmin)); }
+.halftone {
+  -webkit-mask-image: repeating-linear-gradient(110deg, #000 0, rgba(0, 0, 0, 0.15) calc(var(--L) * 0.6), #000 calc(var(--L) * 1.2)), radial-gradient(circle at center, transparent calc(var(--L) * 1.1), #000 75%) !important;
+  -webkit-mask-composite: source-in; mask-composite: intersect;
+  -webkit-mask-position: calc(var(--m) * 90vmin) 0, center; mask-position: calc(var(--m) * 90vmin) 0, center;
+}
+
+/* particles: the terrain flows, the stars drift, the sphere spins, the rays pulse */
+.st_land { transform: translateX(calc(var(--m) * -110px)); }
+.st_star { transform: translate(calc(var(--m) * -30px), calc(var(--m) * 12px)); }
+.st_orb { transform-origin: 100px 100px; transform: rotate(calc(var(--m) * 160deg)); }
+.st_ray { opacity: calc(0.45 + 0.55 * abs(sin(calc(var(--m) * 16rad)))); }
+
+/* ripples travel outward, again and again; the rings pulse outward */
+.rip i { animation: none; }
+.rip i:nth-child(1) { transform: translate(-50%, -50%) scale(calc(0.6 + mod(var(--m) * 2.4, 1) * 1.4)); opacity: calc(1 - mod(var(--m) * 2.4, 1)); }
+.rip i:nth-child(2) { transform: translate(-50%, -50%) scale(calc(0.6 + mod(var(--m) * 2.4 + 0.33, 1) * 1.4)); opacity: calc(1 - mod(var(--m) * 2.4 + 0.33, 1)); }
+.rip i:nth-child(3) { transform: translate(-50%, -50%) scale(calc(0.6 + mod(var(--m) * 2.4 + 0.66, 1) * 1.4)); opacity: calc(1 - mod(var(--m) * 2.4 + 0.66, 1)); }
+.rings { background: repeating-radial-gradient(circle at center, transparent calc(var(--m) * 120px), rgba(120, 80, 40, 0.3) calc(var(--m) * 120px + 1.5px), transparent calc(var(--m) * 120px + 2px), transparent calc(var(--m) * 120px + var(--L) * 0.42)) !important; }
+
+/* the gradients that don't get the liquid (no WebGL) still drift */
 .warm, .mesh { background-size: 150% 150% !important; background-position: calc(20% + var(--m) * 160%) calc(30% - var(--m) * 60%) !important; }
-.glassBg { background-size: 160% 160% !important; background-position: calc(10% + var(--m) * 200%) 50% !important; }
-/* the thermal arc and the particles turn */
-.thermArc { transform: translate(-58%, -40%) rotate(calc(-20deg + var(--m) * 70deg)) !important; }
-.particles { transform: rotate(calc(var(--m) * 28deg)) scale(calc(1 + var(--m) * 0.15)); }
-/* grids pan */
-.blueprint { background-position: calc(50% + var(--m) * 14vmin) calc(50% + var(--m) * 7vmin) !important; }
-.grid { transform: translate(calc(var(--m) * -10vmin), calc(var(--m) * 5vmin)); }
-.halftone { background-position: calc(50% + var(--m) * 20vmin) calc(50% - var(--m) * 10vmin) !important; }
-.topo { transform: translate(calc(var(--m) * -12vmin), calc(var(--m) * 4vmin)) scale(calc(1.05 + var(--m) * 0.1)); }
-/* rings and the ripple spread outward */
-.rings { transform: scale(calc(1 + var(--m) * 0.9)); }
-.rip { transform: scale(calc(1 + var(--m) * 0.6)) !important; }
+.thermArc { transform: translate(-58%, -40%) rotate(calc(-20deg + var(--m) * 120deg)) !important; }
+
+/* UI screens */
+.pill span { display: inline-block; overflow: hidden; vertical-align: bottom; white-space: nowrap; max-width: calc(clamp(0, var(--m) / 0.3, 1) * 100%); border-right: 2px solid #111; }
+.notif {
+  position: absolute; left: 7% !important; right: 7% !important; top: 7% !important; padding: 0.7em 0.8em; border-radius: 0.9em; background: rgba(255, 255, 255, 0.14);
+  font: 400 calc(var(--L) * 0.075) / 1.2 var(--film-sans); text-align: left !important; color: #fff;
+  transform: translateY(calc((1 - clamp(0, (var(--m) - 0.05) / 0.15, 1)) * -160%));
+}
+.figCursor { transform: translate(calc(sin(calc(var(--m) * 9rad)) * var(--L) * 0.5), calc(cos(calc(var(--m) * 7rad)) * var(--L) * 0.3)); }
+.dock i { transform: translateY(calc(abs(sin(calc(var(--m) * 14rad))) * var(--L) * -0.18)); }
+.dock i:nth-child(2) { transform: translateY(calc(abs(sin(calc(var(--m) * 14rad + 1rad))) * var(--L) * -0.18)); }
+.dock i:nth-child(3) { transform: translateY(calc(abs(sin(calc(var(--m) * 14rad + 2rad))) * var(--L) * -0.18)); }
+.codeBg { transform: translate(-50%, calc(-8% - var(--m) * 30vmin)) !important; }
+.crop { width: calc(var(--L) * (2.3 - clamp(0, var(--m) / 0.2, 1) * 0.6)) !important; height: calc(var(--L) * (1.7 - clamp(0, var(--m) / 0.2, 1) * 0.5)) !important; }
+.giant { transform: translate(calc(-12% - var(--m) * 70vmin), -50%) !important; }
+.ring { transform: translate(-50%, -50%) rotate(calc(var(--m) * 320deg)) !important; }
