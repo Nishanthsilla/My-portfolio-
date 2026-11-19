@@ -271,3 +271,29 @@
 .logoMono { display: none !important; }
 .logo[data-mono] .logoColor { display: none; }
 .logo[data-mono] .logoMono { display: block !important; }
+
+/* ---------- motion: no screen is a still picture ----------
+   --m is the time (s) a screen has been up; most last 0.4 s, the last few 0.2 s.
+   Every screen pushes in slowly like a camera, and its background keeps moving.
+   (The logo is a separate layer, so it stays put.) */
+.s[data-on] { transform: scale(calc(1.02 + var(--m) * 0.2)); transform-origin: 50% 50%; }
+/* a soft light that sweeps across the plain screens */
+.dark::after, .orange::after, .light::after, .paper::after, .sand::after, .cream::after {
+  content: ""; position: absolute; inset: -20%; pointer-events: none;
+  background: radial-gradient(35% 45% at calc(10% + var(--m) * 180%) 40%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 70%);
+  mix-blend-mode: soft-light;
+}
+/* gradients drift */
+.warm, .mesh { background-size: 150% 150% !important; background-position: calc(20% + var(--m) * 160%) calc(30% - var(--m) * 60%) !important; }
+.glassBg { background-size: 160% 160% !important; background-position: calc(10% + var(--m) * 200%) 50% !important; }
+/* the thermal arc and the particles turn */
+.thermArc { transform: translate(-58%, -40%) rotate(calc(-20deg + var(--m) * 70deg)) !important; }
+.particles { transform: rotate(calc(var(--m) * 28deg)) scale(calc(1 + var(--m) * 0.15)); }
+/* grids pan */
+.blueprint { background-position: calc(50% + var(--m) * 14vmin) calc(50% + var(--m) * 7vmin) !important; }
+.grid { transform: translate(calc(var(--m) * -10vmin), calc(var(--m) * 5vmin)); }
+.halftone { background-position: calc(50% + var(--m) * 20vmin) calc(50% - var(--m) * 10vmin) !important; }
+.topo { transform: translate(calc(var(--m) * -12vmin), calc(var(--m) * 4vmin)) scale(calc(1.05 + var(--m) * 0.1)); }
+/* rings and the ripple spread outward */
+.rings { transform: scale(calc(1 + var(--m) * 0.9)); }
+.rip { transform: scale(calc(1 + var(--m) * 0.6)) !important; }
