@@ -29,7 +29,7 @@ const IDE = [
 ];
 
 
-/* seeded random, so the particles and grass are the same on every visit (and on the server) */
+/* seeded random, so the particles and contours are the same on every visit (and on the server) */
 function seeded(seed: number) {
   let a = seed;
   return () => {
@@ -66,23 +66,6 @@ const STIPPLE = (() => {
     }
   }
   return pts;
-})();
-/** a grassy hill with wildflowers (viewBox 320 × 200) */
-const HILL = (() => {
-  const r = seeded(11);
-  const top = (x: number) => 150 - 48 * Math.exp(-(((x - 160) / 95) ** 2));
-  const blades: { d: string; c: string }[] = [];
-  for (let i = 0; i < 1500; i++) {
-    const x = r() * 330 - 5, base = top(x) + Math.pow(r(), 0.6) * 60, h = 4 + r() * 11, lean = (r() - 0.5) * 6;
-    const g = Math.floor(95 + r() * 110);
-    blades.push({ d: `M${x.toFixed(1)} ${base.toFixed(1)} Q${(x + lean * 0.4).toFixed(1)} ${(base - h * 0.6).toFixed(1)} ${(x + lean).toFixed(1)} ${(base - h).toFixed(1)} Q${(x + lean * 0.4 + 0.5).toFixed(1)} ${(base - h * 0.6).toFixed(1)} ${(x + 1.1).toFixed(1)} ${base.toFixed(1)}Z`, c: `rgb(${Math.floor(g * 0.42)},${g},${Math.floor(g * 0.28)})` });
-  }
-  const COLS = ["#ff7eb6", "#ffffff", "#ffd23a", "#b48cff", "#ff8a3d", "#7fb8ff"];
-  const flowers = Array.from({ length: 120 }, () => {
-    const x = 20 + r() * 280, y = top(x) + 4 + Math.pow(r(), 0.8) * 50;
-    return { x, y, s: 1 + r() * 1.6 * (y / 150), c: COLS[Math.floor(r() * COLS.length)] };
-  });
-  return { blades, flowers, ground: `M-5 205 L-5 ${top(-5).toFixed(1)} ${Array.from({ length: 34 }, (_, i) => `L${(i * 10).toFixed(0)} ${top(i * 10).toFixed(1)}`).join(" ")} L330 ${top(330).toFixed(1)} L330 205Z` };
 })();
 /** topographic contour lines from a smooth random height field (viewBox 160 × 100), via marching squares */
 const TOPO = (() => {
@@ -247,19 +230,29 @@ export default function OpenerScreens() {
       </div>
       {/* refracted glass: hot red light through fluted glass panels */}
       <div className={`${o.s} ${o.glassBg}`} data-screen="glass"><div className={o.glass} /><div className={o.panels}><i /><i /><i /><i /></div></div>
-      {/* a grassy hill with wildflowers, on a clean page */}
-      <div className={`${o.s} ${o.paper}`} data-screen="grass">
-        <svg className={o.grass} viewBox="0 0 320 200" preserveAspectRatio="xMidYMax slice">
-          <defs><linearGradient id="opener-hill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#4e8f2a" /><stop offset="1" stopColor="#1f4d14" /></linearGradient></defs>
-          <path d={HILL.ground} fill="url(#opener-hill)" />
-          {HILL.blades.map((b, i) => <path key={i} d={b.d} fill={b.c} />)}
-          {HILL.flowers.map((f, i) => (
-            <g key={i} transform={`translate(${f.x.toFixed(1)} ${f.y.toFixed(1)}) scale(${f.s.toFixed(2)})`}>
-              {[0, 72, 144, 216, 288].map((a) => <ellipse key={a} cx="0" cy="-0.9" rx="0.55" ry="0.9" fill={f.c} transform={`rotate(${a})`} />)}
-              <circle r="0.45" fill="#ffcf33" />
-            </g>
-          ))}
+      {/* liquid chrome: a flowing silver surface, like molten mirror */}
+      <div className={`${o.s} ${o.dark}`} data-screen="chrome">
+        <svg className={o.chrome} viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="opener-chrome" x1="0" y1="0" x2="0.22" y2="0.3" spreadMethod="repeat">
+              <stop offset="0" stopColor="#050505" />
+              <stop offset="0.18" stopColor="#8a8a8a" />
+              <stop offset="0.3" stopColor="#ffffff" />
+              <stop offset="0.42" stopColor="#3a3a3a" />
+              <stop offset="0.6" stopColor="#0a0a0a" />
+              <stop offset="0.74" stopColor="#d8d8d8" />
+              <stop offset="0.86" stopColor="#5c5c5c" />
+              <stop offset="1" stopColor="#050505" />
+            </linearGradient>
+            <filter id="opener-melt" x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.006 0.011" numOctaves="2" seed="8" />
+              <feDisplacementMap in="SourceGraphic" scale="140" xChannelSelector="R" yChannelSelector="G" />
+              <feGaussianBlur stdDeviation="0.6" />
+            </filter>
+          </defs>
+          <rect x="-60" y="-60" width="520" height="370" fill="url(#opener-chrome)" filter="url(#opener-melt)" />
         </svg>
+        <div className={o.chromeShade} />
       </div>
       {/* the logo: one size, dead centre, on every screen */}
       <div className={o.logo} data-ologo>
