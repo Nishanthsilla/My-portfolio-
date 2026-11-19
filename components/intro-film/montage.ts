@@ -39,7 +39,7 @@ const LOGO: Record<string, { v: Variant; c?: string }> = {
   topo: { v: "mono", c: "#fff" },
   mesh: { v: "mono", c: "#fff" },
   zoom: { v: "color" },
-  grass: { v: "color" },
+  chrome: { v: "color" },
   halftone: { v: "color" },
   crop: { v: "color" },
   rings: { v: "color" },
@@ -51,7 +51,7 @@ const SLOW = ["dark", "words", "warm", "grid"];
 /** the drop: one 1/8 note each, most holding for two; the last few cut faster into "Hello World" */
 const FAST: [string, number][] = [
   ["browser", 2], ["thermal", 2], ["giant", 2], ["blueprint", 2], ["phone", 2], ["ripples", 2], ["ring", 2],
-  ["figma", 2], ["particles", 2], ["dock", 2], ["topo", 2], ["mesh", 2], ["zoom", 2], ["grass", 2],
+  ["figma", 2], ["particles", 2], ["dock", 2], ["topo", 2], ["mesh", 2], ["zoom", 2], ["chrome", 2],
   ["halftone", 1], ["crop", 1], ["rings", 1], ["glass", 1],
 ];
 export const FRAMES: { at: number; screen: string }[] = [
