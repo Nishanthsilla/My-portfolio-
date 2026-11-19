@@ -69,6 +69,9 @@ const FLUID: Record<string, string[]> = {
   thermal: ["#0b0630", "#4a0c8f", "#c4126b", "#ff5a1f", "#ffd23a"],
   mesh: ["#03051a", "#0a1fb8", "#1f63ff", "#8fd0ff", "#ffb06a"],
   glass: ["#3a0402", "#a80f0a", "#f5361c", "#ff9a2e", "#fff0c0"],
+  dark: ["#030303", "#0b0b0d", "#17161a", "#2a0e0e", "#5a1410"],
+  phone: ["#050505", "#140607", "#3a0a0c", "#7a0f12", "#c4161a"],
+  ring: ["#8f0012", "#c8001f", "#f50427", "#ff3d2e", "#ff7a4a"],
 };
 
 export class Montage {
@@ -123,8 +126,17 @@ export class Montage {
       else this.logo.setAttribute("data-mono", "");
       this.logo.style.color = lv.c ?? "";
     }
-    // motion inside the screen: --m is time on screen
-    el.style.setProperty("--m", (m - f.at).toFixed(3));
+    // motion inside the screen: --m is time on screen; the waves below are worked out here
+    // (CSS sin()/mod() aren't in every browser yet)
+    const lm = m - f.at;
+    el.style.setProperty("--m", lm.toFixed(3));
+    el.style.setProperty("--w1", Math.sin(lm * 9).toFixed(3));
+    el.style.setProperty("--w2", Math.cos(lm * 7).toFixed(3));
+    for (let i = 0; i < 3; i++) {
+      el.style.setProperty(`--b${i}`, Math.abs(Math.sin(lm * 14 + i)).toFixed(3));
+      el.style.setProperty(`--r${i}`, ((lm * 1.5 + i / 3) % 1).toFixed(3));
+    }
+    el.style.setProperty("--pulse", Math.abs(Math.sin(lm * 16)).toFixed(3));
     // a liquid background for the gradient screens (it keeps flowing across the whole opener)
     const fl = FLUID[f.screen];
     if (this.fluid && this.fluidCanvas && fl) {
