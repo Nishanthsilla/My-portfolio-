@@ -239,9 +239,9 @@ def splice(score):
     i = int(MONTAGE_AT * SR)
     gap = int(MONTAGE_DUR * SR)
     m = track()
-    # as loud as the score's busiest moments, a touch hotter (it should hit)
+    # about as loud as the score that follows (a touch hotter), so the energy carries on into the film
     ref = score[:, int(2.0 * SR) : int(8.0 * SR)]
-    m *= (np.sqrt(np.mean(ref ** 2)) * 1.9) / (np.sqrt(np.mean(m[:, int(1.6 * SR) : int(8.0 * SR)] ** 2)) + 1e-9)
+    m *= (np.sqrt(np.mean(ref ** 2)) * 1.25) / (np.sqrt(np.mean(m[:, int(1.6 * SR) : int(8.0 * SR)] ** 2)) + 1e-9)
     m = np.tanh(m * 1.15) / np.tanh(1.15) * 0.92
     before, after = score[:, :i].copy(), score[:, i:].copy()
     f = min(int(0.06 * SR), before.shape[1])
