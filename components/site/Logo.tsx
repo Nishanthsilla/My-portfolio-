@@ -48,10 +48,10 @@ function NShapes({ id, mono }: { id: string; mono?: boolean }) {
   );
 }
 
-export function LogoN({ height, id = "logo-n", className, mono }: { height?: number; id?: string; className?: string; mono?: boolean }) {
+export function LogoN({ height, id = "logo-n", className }: { height: number; id?: string; className?: string }) {
   return (
-    <svg className={className} width={height ? (height * 753) / 563 : undefined} height={height} viewBox="0 0 753 563" aria-hidden="true">
-      <NShapes id={id} mono={mono} />
+    <svg className={className} width={(height * 753) / 563} height={height} viewBox="0 0 753 563" aria-hidden="true">
+      <NShapes id={id} />
     </svg>
   );
 }
