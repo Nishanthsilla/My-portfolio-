@@ -93,6 +93,30 @@ const TOPO = (() => {
   return paths;
 })();
 
+/** the code screen: his process, written as code */
+const CODE_BG = [
+  "nishanth.design({",
+  '  research: ["users", "data", "teams"],',
+  '  process: "flexible",',
+  "  systems: { tokens: true, chaos: false },",
+  "})",
+  "",
+  'await nishanth.prototype({ figma: true, code: true })',
+  "await nishanth.ship()",
+  "",
+  "while (complexity > clarity) {",
+  "  nishanth.simplify()",
+  '  nishanth.test("with real users")',
+  "  nishanth.iterate()",
+  "}",
+  "",
+  'report.send({ impact: "+15% engagement" })',
+  "// this is not decoration. it's design that ships.",
+  "",
+  'const nishanth = new Designer({ base: "Hyderabad" })',
+  "",
+];
+
 const Icon = {
   trend: <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6" /></svg>,
   spark: <svg viewBox="0 0 24 24"><path d="M12 2c.6 5 2.4 7.4 8 8-5.6.6-7.4 3-8 8-.6-5-2.4-7.4-8-8 5.6-.6 7.4-3 8-8z" /></svg>,
@@ -230,29 +254,9 @@ export default function OpenerScreens() {
       </div>
       {/* refracted glass: hot red light through fluted glass panels */}
       <div className={`${o.s} ${o.glassBg}`} data-screen="glass"><div className={o.glass} /><div className={o.panels}><i /><i /><i /><i /></div></div>
-      {/* the pen tool: big Bézier curves with anchors and handles, being drawn */}
-      <div className={`${o.s} ${o.penBg}`} data-screen="pen">
-        <svg className={o.pen} viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice">
-          <path className={o.penRed} d="M-20 190 C 60 40, 150 40, 170 125 S 280 230, 420 70" />
-          <path className={o.penOrange} d="M-10 40 C 90 110, 120 230, 230 205 S 360 120, 410 210" />
-          <path className={o.penWhite} d="M60 -10 C 40 70, 130 100, 200 90 S 330 30, 350 -10" />
-          {/* handles */}
-          {[[170, 125, 120, 60, 220, 190], [230, 205, 180, 216, 280, 194], [200, 90, 160, 104, 240, 76]].map(([x, y, hx1, hy1, hx2, hy2], i) => (
-            <g key={i} className={o.penHandle}>
-              <line x1={hx1} y1={hy1} x2={hx2} y2={hy2} />
-              <circle cx={hx1} cy={hy1} r="2.2" /><circle cx={hx2} cy={hy2} r="2.2" />
-              <rect x={x - 3} y={y - 3} width="6" height="6" />
-            </g>
-          ))}
-          {[[60, 72], [345, 130], [110, 150], [330, 34]].map(([x, y], i) => <rect key={i} className={o.penAnchor} x={x - 2.6} y={y - 2.6} width="5.2" height="5.2" />)}
-          {/* the pen cursor, at the end of the curve being drawn */}
-          <g transform="translate(346 132) rotate(-35)">
-            <path className={o.penCursor} d="M0 0 L5 14 L0 19 L-5 14 Z M-2 19 H2 V24 H-2 Z" />
-          </g>
-          <g transform="translate(356 146)"><rect className={o.penTip} width="34" height="12" rx="3" /><text className={o.penTipText} x="17" y="8.3">Pen (P)</text></g>
-        </svg>
-        <div className={o.penSel}><i /><i /><i /><i /></div>
-        <span className={`${o.meta} ${o.tl} ${o.onDark}`}>vector / bézier</span>
+      {/* code, full screen and faint: how he works, written as code */}
+      <div className={`${o.s} ${o.dark}`} data-screen="codebg">
+        <pre className={o.codeBg}>{[...CODE_BG, ...CODE_BG, ...CODE_BG, ...CODE_BG, ...CODE_BG].join("\n")}</pre>
       </div>
       {/* the logo: one size, dead centre, on every screen */}
       <div className={o.logo} data-ologo>
