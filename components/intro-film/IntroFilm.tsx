@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { FILM_AUDIO_SRC, FILM_REPLAY, FILM_VICTORY_SRC } from "@/lib/introConfig";
+import { FILM_AUDIO_SRC, FILM_REPLAY, FILM_VICTORY_SRC, INTRO_OPENER } from "@/lib/introConfig";
 import { announceDone, announceReveal, introState } from "@/lib/introState";
 import {
   ABTestVisual, AnalyticsVisual, DesignSystemVisual, LearningVisual, OrchestrationVisual, SalesVisual,
@@ -11,6 +11,7 @@ import { FilmEngine } from "./engine";
 import { FilmAudio, type SoundState } from "./audio";
 import { DARK_RANGE, FILM_END, T, VICTORY_AT, filmClock, montageTime } from "./timeline";
 import { Montage } from "./montage";
+import { FilmWipes } from "./wipes";
 import styles from "./IntroFilm.module.css";
 import ControlRoom from "./ControlRoom";
 import { Artefacts, CodeDetails, DesignDetails } from "./BoardParts";
@@ -59,6 +60,8 @@ export default function IntroFilm() {
     root.dataset.js = "1";
     const engine = new FilmEngine(root);
     const montage = new Montage(root);
+    // linked hand-overs between the film's chapters (only with the opener on: off = the film exactly as before)
+    const wipes = INTRO_OPENER ? new FilmWipes(root) : null;
     // the montage's pictures, loaded up front
     const montageReady = montage.preload();
     const bar = root.querySelector<HTMLElement>("[data-film-progress]");
@@ -102,6 +105,7 @@ export default function IntroFilm() {
       const ft = filmClock(t);
       engine.render(ft);
       montage.render(montageTime(t));
+      wipes?.render(ft);
       if (bar) bar.style.transform = `scaleX(${Math.min(1, t / FILM_END).toFixed(4)})`;
       const tone = ft >= DARK_RANGE[0] && ft < DARK_RANGE[1] ? "dark" : "light";
       if (root.dataset.tone !== tone) root.dataset.tone = tone;
@@ -388,6 +392,9 @@ export default function IntroFilm() {
       <div className={styles.montage} data-montage aria-hidden="true">
         <OpenerScreens />
       </div>
+
+      {/* linked hand-overs between the film's chapters (wipes.ts) */}
+      <div className={styles.filmWipe} data-film-wipe aria-hidden="true" />
 
       {/* how far through the intro you are */}
       <div className={styles.progress} aria-hidden="true"><i data-film-progress /></div>

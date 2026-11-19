@@ -488,3 +488,6 @@
 
 /* ---------- the opener: a 10 s logo reel before "Hello World" (montage.ts, opener.module.css) ---------- */
 .montage { position: absolute; inset: 0; z-index: 5; overflow: hidden; visibility: hidden; background: #050505; pointer-events: none; }
+
+/* linked hand-overs between the film's chapters (wipes.ts): above the stage, below the controls (2) and the opener (5) */
+.filmWipe { position: absolute; inset: 0; z-index: 1; display: none; pointer-events: none; }
