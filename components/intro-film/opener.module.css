@@ -307,13 +307,15 @@
 .st_land { transform: translateX(calc(var(--m) * -110px)); }
 .st_star { transform: translate(calc(var(--m) * -30px), calc(var(--m) * 12px)); }
 .st_orb { transform-origin: 100px 100px; transform: rotate(calc(var(--m) * 160deg)); }
-.st_ray { opacity: calc(0.45 + 0.55 * abs(sin(calc(var(--m) * 16rad)))); }
+.st_ray { opacity: calc(0.45 + 0.55 * var(--pulse, 1)); }
 
 /* ripples travel outward, again and again; the rings pulse outward */
 .rip i { animation: none; }
-.rip i:nth-child(1) { transform: translate(-50%, -50%) scale(calc(0.6 + mod(var(--m) * 2.4, 1) * 1.4)); opacity: calc(1 - mod(var(--m) * 2.4, 1)); }
-.rip i:nth-child(2) { transform: translate(-50%, -50%) scale(calc(0.6 + mod(var(--m) * 2.4 + 0.33, 1) * 1.4)); opacity: calc(1 - mod(var(--m) * 2.4 + 0.33, 1)); }
-.rip i:nth-child(3) { transform: translate(-50%, -50%) scale(calc(0.6 + mod(var(--m) * 2.4 + 0.66, 1) * 1.4)); opacity: calc(1 - mod(var(--m) * 2.4 + 0.66, 1)); }
+.rip { transform: none !important; }
+.rip i { width: calc(var(--L) * 1.5) !important; opacity: 1 !important; box-shadow: 1vmin 1vmin 2vmin rgba(0, 0, 0, 0.2), -1vmin -1vmin 2vmin #ffffff, inset 1vmin 1vmin 2vmin rgba(0, 0, 0, 0.17), inset -1vmin -1vmin 2vmin #ffffff !important; }
+.rip i:nth-child(1) { transform: translate(-50%, -50%) scale(calc(0.7 + var(--r0, 0) * 2.6)) !important; opacity: calc(1 - var(--r0, 0)) !important; }
+.rip i:nth-child(2) { transform: translate(-50%, -50%) scale(calc(0.7 + var(--r1, 0) * 2.6)) !important; opacity: calc(1 - var(--r1, 0)) !important; }
+.rip i:nth-child(3) { transform: translate(-50%, -50%) scale(calc(0.7 + var(--r2, 0) * 2.6)) !important; opacity: calc(1 - var(--r2, 0)) !important; }
 .rings { background: repeating-radial-gradient(circle at center, transparent calc(var(--m) * 120px), rgba(120, 80, 40, 0.3) calc(var(--m) * 120px + 1.5px), transparent calc(var(--m) * 120px + 2px), transparent calc(var(--m) * 120px + var(--L) * 0.42)) !important; }
 
 /* the gradients that don't get the liquid (no WebGL) still drift */
@@ -327,11 +329,24 @@
   font: 400 calc(var(--L) * 0.075) / 1.2 var(--film-sans); text-align: left !important; color: #fff;
   transform: translateY(calc((1 - clamp(0, (var(--m) - 0.05) / 0.15, 1)) * -160%));
 }
-.figCursor { transform: translate(calc(sin(calc(var(--m) * 9rad)) * var(--L) * 0.5), calc(cos(calc(var(--m) * 7rad)) * var(--L) * 0.3)); }
-.dock i { transform: translateY(calc(abs(sin(calc(var(--m) * 14rad))) * var(--L) * -0.18)); }
-.dock i:nth-child(2) { transform: translateY(calc(abs(sin(calc(var(--m) * 14rad + 1rad))) * var(--L) * -0.18)); }
-.dock i:nth-child(3) { transform: translateY(calc(abs(sin(calc(var(--m) * 14rad + 2rad))) * var(--L) * -0.18)); }
-.codeBg { transform: translate(-50%, calc(-8% - var(--m) * 30vmin)) !important; }
+.figCursor { transform: translate(calc(var(--w1, 0) * var(--L) * 0.7), calc(var(--w2, 0) * var(--L) * 0.45)); }
+.fig::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1.4px); background-size: calc(var(--L) * 0.14) calc(var(--L) * 0.14); background-position: calc(var(--m) * 40vmin) calc(var(--m) * 20vmin); }
+.dock i { transform: translateY(calc(var(--b0, 0) * var(--L) * -0.22)); }
+.dock i:nth-child(2) { transform: translateY(calc(var(--b1, 0) * var(--L) * -0.22)); }
+.dock i:nth-child(3) { transform: translateY(calc(var(--b2, 0) * var(--L) * -0.22)); }
+.codeBg { transform: translate(-50%, calc(-8% - var(--m) * 70vmin)) !important; }
 .crop { width: calc(var(--L) * (2.3 - clamp(0, var(--m) / 0.2, 1) * 0.6)) !important; height: calc(var(--L) * (1.7 - clamp(0, var(--m) / 0.2, 1) * 0.5)) !important; }
-.giant { transform: translate(calc(-12% - var(--m) * 70vmin), -50%) !important; }
+.giant { transform: translate(calc(-12% - var(--m) * 150vmin), -50%) !important; }
 .ring { transform: translate(-50%, -50%) rotate(calc(var(--m) * 320deg)) !important; }
+
+/* more motion for the screens that read as still */
+.wordList { transform: translate(-50%, calc(-10% - var(--m) * 45vmin)) !important; }
+.grid::before { background-position: calc(var(--m) * -90vmin) calc(var(--m) * 45vmin) !important; background-image: linear-gradient(rgba(0, 0, 0, 0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.09) 1px, transparent 1px) !important; }
+/* browser bar: soft colour blobs drifting behind */
+.s[data-screen="browser"]::before {
+  content: ""; position: absolute; inset: -10%;
+  background: radial-gradient(28% 40% at calc(15% + var(--m) * 160%) 30%, rgba(255, 90, 54, 0.35), rgba(255, 90, 54, 0) 70%),
+              radial-gradient(30% 42% at calc(85% - var(--m) * 150%) 72%, rgba(31, 99, 255, 0.25), rgba(31, 99, 255, 0) 70%);
+}
+/* crop marks: a dot grid drifting behind */
+.s[data-screen="crop"]::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(0, 0, 0, 0.18) 1px, transparent 1.4px); background-size: calc(var(--L) * 0.12) calc(var(--L) * 0.12); background-position: calc(var(--m) * 60vmin) calc(var(--m) * -30vmin); }
