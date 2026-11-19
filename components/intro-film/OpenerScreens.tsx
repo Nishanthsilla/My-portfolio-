@@ -39,30 +39,76 @@ function seeded(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-/** a vortex of particles around the centre (viewBox 200 × 200), clear of the logo */
-const PARTICLES = (() => {
+/** white stipple particles (viewBox 200 × 200): a starfield, a dotted terrain and a glowing sphere with rays */
+const STIPPLE = (() => {
   const r = seeded(7);
-  return Array.from({ length: 1600 }, () => {
-    const arm = Math.floor(r() * 3);
-    const d = 24 + Math.pow(r(), 1.3) * 110;
-    const a = arm * ((2 * Math.PI) / 3) + d * 0.035 + (r() - 0.5) * 0.55;
-    const hot = d < 60;
-    return { x: 100 + Math.cos(a) * d, y: 100 + Math.sin(a) * d, s: 0.25 + r() * (hot ? 1.1 : 0.7), c: hot ? (r() > 0.5 ? "#ffd2b0" : "#ff6a3d") : r() > 0.6 ? "#f50427" : "#ff5a36", o: 0.35 + r() * 0.65 };
-  });
+  const pts: { x: number; y: number; s: number; o: number }[] = [];
+  for (let i = 0; i < 260; i++) pts.push({ x: r() * 200, y: r() * 200, s: 0.12 + r() * 0.25, o: 0.15 + r() * 0.5 });
+  // terrain: rows of dots along waves, denser and bigger towards the front
+  for (let k = 0; k < 22; k++) {
+    const y0 = 118 + k * k * 0.16, step = 0.9 + k * 0.08;
+    for (let x = -10; x < 210; x += step * (0.6 + r() * 0.8)) {
+      const y = y0 + Math.sin(x * 0.045 + k * 0.7) * (2 + k * 0.25) + Math.sin(x * 0.11 - k) * 1.2;
+      pts.push({ x, y, s: 0.12 + k * 0.012 + r() * 0.1, o: 0.25 + r() * 0.6 });
+    }
+  }
+  // the sphere: dots on its surface, brightest at the rim
+  for (let i = 0; i < 900; i++) {
+    const u = r() * 2 - 1, t = r() * Math.PI * 2, rim = Math.sqrt(1 - u * u);
+    const R = 17 + (r() - 0.5) * 1.2;
+    pts.push({ x: 100 + Math.cos(t) * rim * R, y: 100 + u * R, s: 0.14 + r() * 0.2, o: 0.2 + 0.7 * Math.pow(1 - Math.abs(Math.sin(t) * rim), 2) });
+  }
+  // light rays
+  for (const [ang, len] of [[-1.15, 70], [-0.35, 46], [2.2, 38]]) {
+    for (let i = 0; i < 160; i++) {
+      const d = 18 + Math.pow(r(), 1.6) * len, w = (r() - 0.5) * (1.4 - d / (len + 18));
+      pts.push({ x: 100 + Math.cos(ang) * d - Math.sin(ang) * w, y: 100 + Math.sin(ang) * d + Math.cos(ang) * w, s: 0.12 + r() * 0.18, o: 0.3 + r() * 0.7 });
+    }
+  }
+  return pts;
 })();
-/** grass blades (viewBox 320 × 200) */
-const BLADES = (() => {
+/** a grassy hill with wildflowers (viewBox 320 × 200) */
+const HILL = (() => {
   const r = seeded(11);
-  return Array.from({ length: 900 }, () => {
-    const x = r() * 330 - 5, h = 40 + r() * 150, lean = (r() - 0.5) * 50, w = 0.8 + r() * 1.8;
-    const g = Math.floor(70 + r() * 110);
-    return { d: `M${x.toFixed(1)} 205 Q${(x + lean * 0.3).toFixed(1)} ${(205 - h * 0.6).toFixed(1)} ${(x + lean).toFixed(1)} ${(205 - h).toFixed(1)} Q${(x + lean * 0.3 + w).toFixed(1)} ${(205 - h * 0.6).toFixed(1)} ${(x + w * 2).toFixed(1)} 205Z`, c: `rgb(${Math.floor(g * 0.35)},${g},${Math.floor(g * 0.3)})` };
+  const top = (x: number) => 150 - 48 * Math.exp(-(((x - 160) / 95) ** 2));
+  const blades: { d: string; c: string }[] = [];
+  for (let i = 0; i < 1500; i++) {
+    const x = r() * 330 - 5, base = top(x) + Math.pow(r(), 0.6) * 60, h = 4 + r() * 11, lean = (r() - 0.5) * 6;
+    const g = Math.floor(95 + r() * 110);
+    blades.push({ d: `M${x.toFixed(1)} ${base.toFixed(1)} Q${(x + lean * 0.4).toFixed(1)} ${(base - h * 0.6).toFixed(1)} ${(x + lean).toFixed(1)} ${(base - h).toFixed(1)} Q${(x + lean * 0.4 + 0.5).toFixed(1)} ${(base - h * 0.6).toFixed(1)} ${(x + 1.1).toFixed(1)} ${base.toFixed(1)}Z`, c: `rgb(${Math.floor(g * 0.42)},${g},${Math.floor(g * 0.28)})` });
+  }
+  const COLS = ["#ff7eb6", "#ffffff", "#ffd23a", "#b48cff", "#ff8a3d", "#7fb8ff"];
+  const flowers = Array.from({ length: 120 }, () => {
+    const x = 20 + r() * 280, y = top(x) + 4 + Math.pow(r(), 0.8) * 50;
+    return { x, y, s: 1 + r() * 1.6 * (y / 150), c: COLS[Math.floor(r() * COLS.length)] };
   });
+  return { blades, flowers, ground: `M-5 205 L-5 ${top(-5).toFixed(1)} ${Array.from({ length: 34 }, (_, i) => `L${(i * 10).toFixed(0)} ${top(i * 10).toFixed(1)}`).join(" ")} L330 ${top(330).toFixed(1)} L330 205Z` };
 })();
-const TYPE_LINES = [
-  ["Product", "Design", "2019 — now"], ["Design systems", "AI", "Hyderabad"], ["Clarity", "over", "complexity"],
-  ["", "", ""], ["Research", "Prototype", "Ship"], ["Figma", "→", "Code"], ["n.", "Nishanth Silla", "Lead Product Designer"],
-];
+/** topographic contour lines from a smooth random height field (viewBox 160 × 100), via marching squares */
+const TOPO = (() => {
+  const r = seeded(23);
+  const hills = Array.from({ length: 14 }, () => ({ x: r() * 160, y: r() * 100, h: (r() - 0.35) * 2, w: 12 + r() * 30 }));
+  const W = 160, H = 100, S = 1.6;
+  const f = (x: number, y: number) => hills.reduce((a, k) => a + k.h * Math.exp(-((x - k.x) ** 2 + (y - k.y) ** 2) / (k.w * k.w)), 0);
+  const nx = Math.ceil(W / S) + 1, ny = Math.ceil(H / S) + 1;
+  const v: number[][] = Array.from({ length: ny }, (_, j) => Array.from({ length: nx }, (_, i) => f(i * S, j * S)));
+  const paths: string[] = [];
+  for (let L = -1.6; L <= 1.6; L += 0.055) {
+    let d = "";
+    for (let j = 0; j < ny - 1; j++)
+      for (let i = 0; i < nx - 1; i++) {
+        const a = v[j][i], b = v[j][i + 1], c = v[j + 1][i + 1], e = v[j + 1][i];
+        const pts: [number, number][] = [];
+        const edge = (p: number, q: number, x1: number, y1: number, x2: number, y2: number) => {
+          if ((p < L) !== (q < L)) { const t = (L - p) / (q - p); pts.push([(x1 + (x2 - x1) * t) * S, (y1 + (y2 - y1) * t) * S]); }
+        };
+        edge(a, b, i, j, i + 1, j); edge(b, c, i + 1, j, i + 1, j + 1); edge(e, c, i, j + 1, i + 1, j + 1); edge(a, e, i, j, i, j + 1);
+        for (let k = 0; k + 1 < pts.length; k += 2) d += `M${pts[k][0].toFixed(1)} ${pts[k][1].toFixed(1)}L${pts[k + 1][0].toFixed(1)} ${pts[k + 1][1].toFixed(1)}`;
+      }
+    if (d) paths.push(d);
+  }
+  return paths;
+})();
 
 const Icon = {
   trend: <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6" /></svg>,
@@ -170,37 +216,51 @@ export default function OpenerScreens() {
         <span className={`${o.meta} ${o.br}`}>100%</span>
       </div>
 
-      {/* thermal: a heat map, hottest where the logo is */}
-      <div className={`${o.s} ${o.thermal}`} data-screen="thermal"><span className={`${o.meta} ${o.tl} ${o.onDark}`}>ir / 36.6°</span></div>
-      {/* blueprint: the logo's construction, drawn on a blueprint grid */}
+      {/* thermal: a grainy thermographic sweep */}
+      <div className={`${o.s} ${o.thermal}`} data-screen="thermal"><div className={o.thermArc} /><div className={o.grain} /><span className={`${o.meta} ${o.tl} ${o.onDark}`}>thermographic / 36.6°</span></div>
+      {/* blueprint: the logo's technical drawing */}
       <div className={`${o.s} ${o.blueprint}`} data-screen="blueprint">
+        <div className={o.bpNav}><b>n.</b><span>Work</span><span>About</span><span>Contact</span></div>
+        <div className={o.bpCircle} /><div className={o.bpCircle2} />
+        <div className={o.bpCross} />
         <div className={o.bpBox}><i /><i /><b>961</b><em>563</em></div>
-        <span className={`${o.meta} ${o.tl}`}>DWG. N-01<br />SCALE 1:1</span>
-        <span className={`${o.meta} ${o.br}`}>n. / construction</span>
+        <span className={o.bpSpecL}>TO DESIGN PRODUCTS<br />THAT FEEL SIMPLE,<br />FUNCTIONAL, AND HUMAN.</span>
+        <span className={o.bpSpecR}>R 0.42 L<br />32°<br />GRID 8PT</span>
+        <span className={`${o.meta} ${o.br}`}>DWG. N-01 · SCALE 1:1</span>
       </div>
-      {/* water ripples spreading from the logo */}
-      <div className={`${o.s} ${o.water}`} data-screen="ripples"><div className={o.ripples} /></div>
-      {/* particles in a vortex */}
+      {/* a soft, embossed ripple on still white water */}
+      <div className={`${o.s} ${o.water}`} data-screen="ripples"><div className={o.rip}><i /><i /><i /></div></div>
+      {/* white stipple: a dotted terrain, a starfield, and a sphere of light around the logo */}
       <div className={`${o.s} ${o.dark}`} data-screen="particles">
         <svg className={o.particles} viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice">
-          {PARTICLES.map((p, i) => <circle key={i} cx={p.x.toFixed(2)} cy={p.y.toFixed(2)} r={p.s.toFixed(2)} fill={p.c} opacity={p.o.toFixed(2)} />)}
+          {STIPPLE.map((p, i) => <circle key={i} cx={p.x.toFixed(2)} cy={p.y.toFixed(2)} r={p.s.toFixed(2)} fill="#fff" opacity={p.o.toFixed(2)} />)}
         </svg>
       </div>
-      {/* typography lines: a Swiss-style type grid with a gap for the logo */}
-      <div className={`${o.s} ${o.paper}`} data-screen="typography">
-        <div className={o.typeLines}>
-          {TYPE_LINES.map((l, i) => <div key={i} className={i === 3 ? o.typeGap : undefined}>{l.map((w, j) => <span key={j}>{w}</span>)}</div>)}
-        </div>
+      {/* topographic contour lines */}
+      <div className={`${o.s} ${o.dark}`} data-screen="topo">
+        <svg className={o.topo} viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">
+          {TOPO.map((d, i) => <path key={i} d={d} />)}
+        </svg>
+        <div className={o.topoClear} />
+        <span className={`${o.meta} ${o.tl}`}>17.38° N · 78.48° E</span>
+        <span className={`${o.meta} ${o.br}`}>elev. 542 m</span>
       </div>
-      {/* refracted glass: colour seen through fluted glass */}
-      <div className={`${o.s} ${o.glassBg}`} data-screen="glass"><div className={o.glass} /></div>
-      {/* grass */}
-      <div className={`${o.s} ${o.grassBg}`} data-screen="grass">
+      {/* refracted glass: hot red light through fluted glass panels */}
+      <div className={`${o.s} ${o.glassBg}`} data-screen="glass"><div className={o.glass} /><div className={o.panels}><i /><i /><i /><i /></div></div>
+      {/* a grassy hill with wildflowers, on a clean page */}
+      <div className={`${o.s} ${o.paper}`} data-screen="grass">
         <svg className={o.grass} viewBox="0 0 320 200" preserveAspectRatio="xMidYMax slice">
-          {BLADES.map((b, i) => <path key={i} d={b.d} fill={b.c} />)}
+          <defs><linearGradient id="opener-hill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#4e8f2a" /><stop offset="1" stopColor="#1f4d14" /></linearGradient></defs>
+          <path d={HILL.ground} fill="url(#opener-hill)" />
+          {HILL.blades.map((b, i) => <path key={i} d={b.d} fill={b.c} />)}
+          {HILL.flowers.map((f, i) => (
+            <g key={i} transform={`translate(${f.x.toFixed(1)} ${f.y.toFixed(1)}) scale(${f.s.toFixed(2)})`}>
+              {[0, 72, 144, 216, 288].map((a) => <ellipse key={a} cx="0" cy="-0.9" rx="0.55" ry="0.9" fill={f.c} transform={`rotate(${a})`} />)}
+              <circle r="0.45" fill="#ffcf33" />
+            </g>
+          ))}
         </svg>
       </div>
-
       {/* the logo: one size, dead centre, on every screen */}
       <div className={o.logo} data-ologo>
         <Logo id="opener-logo" className={o.logoColor} />
