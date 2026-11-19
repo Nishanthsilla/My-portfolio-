@@ -259,27 +259,25 @@
 .panels i { border-right: 2px solid rgba(60, 0, 0, 0.45); box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.25); }
 .panels i:last-child { border-right: 0; box-shadow: none; }
 
-/* holographic foil: iridescent colour that shimmers (hue drifts while the screen is up), crinkled, with flashing glints */
-.holo { background: #e9d8ff; overflow: hidden; }
-.holoFoil {
-  position: absolute; inset: -25%;
-  background:
-    radial-gradient(30% 34% at 22% 30%, #7cf2ff 0%, rgba(124, 242, 255, 0) 100%),
-    radial-gradient(30% 34% at 72% 24%, #ff7ad0 0%, rgba(255, 122, 208, 0) 100%),
-    radial-gradient(28% 32% at 56% 74%, #ffd85a 0%, rgba(255, 216, 90, 0) 100%),
-    radial-gradient(26% 30% at 20% 78%, #7aa8ff 0%, rgba(122, 168, 255, 0) 100%),
-    radial-gradient(26% 32% at 86% 66%, #b98bff 0%, rgba(185, 139, 255, 0) 100%),
-    radial-gradient(22% 26% at 44% 46%, #8affc1 0%, rgba(138, 255, 193, 0) 100%),
-    #ffe6f6;
-  filter: url(#opener-foil) saturate(1.6) hue-rotate(calc(var(--m) * 160deg));
-}
-.holoSheen {
-  position: absolute; inset: -50%; mix-blend-mode: soft-light;
-  background: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.85) calc(var(--L) * 0.25), rgba(255, 255, 255, 0) calc(var(--L) * 0.5), rgba(80, 40, 160, 0.35) calc(var(--L) * 0.8), rgba(255, 255, 255, 0) calc(var(--L) * 1.1));
-  transform: translateX(calc(var(--m) * 40vmin));
-}
-.glint { position: absolute; aspect-ratio: 1; transform: translate(-50%, -50%) scale(calc(0.4 + 0.6 * abs(sin(calc((var(--m) * 9 + var(--d, 0s) / 1s * 3) * 1rad))))); filter: drop-shadow(0 0 0.8vmin #fff) drop-shadow(0 0 2vmin rgba(255, 255, 255, 0.8)); }
-.glint path { fill: #fff; }
+/* the pen tool */
+.penBg { background: #121214; background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1.4px); background-size: calc(var(--L) * 0.14) calc(var(--L) * 0.14); background-position: center; }
+.pen { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pen path { fill: none; stroke-linecap: round; }
+.penRed { stroke: #f50427; stroke-width: 9; }
+.penOrange { stroke: #ff6a3d; stroke-width: 6; }
+.penWhite { stroke: rgba(255, 255, 255, 0.9); stroke-width: 2.2; }
+.penHandle line { stroke: #0d99ff; stroke-width: 0.8; }
+.penHandle circle { fill: #fff; stroke: #0d99ff; stroke-width: 0.8; }
+.penHandle rect, .penAnchor { fill: #fff; stroke: #0d99ff; stroke-width: 1; }
+.penCursor { fill: #111; stroke: #fff; stroke-width: 1.2; stroke-linejoin: round; }
+.penTip { fill: #0d99ff; }
+.penTipText { fill: #fff; font: 600 6.5px var(--film-sans); text-anchor: middle; }
+.penSel { position: absolute; left: 50%; top: 50%; width: calc(var(--L) * 1.24); height: calc(var(--L) * 0.82); border: 1.5px solid #0d99ff; transform: translate(-50%, -50%); background: #121214; }
+.penSel i { position: absolute; width: calc(var(--L) * 0.055); height: calc(var(--L) * 0.055); background: #fff; border: 1.5px solid #0d99ff; }
+.penSel i:nth-child(1) { left: 0; top: 0; transform: translate(-50%, -50%); }
+.penSel i:nth-child(2) { right: 0; top: 0; transform: translate(50%, -50%); }
+.penSel i:nth-child(3) { left: 0; bottom: 0; transform: translate(-50%, 50%); }
+.penSel i:nth-child(4) { right: 0; bottom: 0; transform: translate(50%, 50%); }
 
 /* the logo */
 .logo { position: absolute; left: 50%; top: 50%; width: var(--L); transform: translate(-50%, -50%); z-index: 5; color: #fff; }

@@ -230,21 +230,29 @@ export default function OpenerScreens() {
       </div>
       {/* refracted glass: hot red light through fluted glass panels */}
       <div className={`${o.s} ${o.glassBg}`} data-screen="glass"><div className={o.glass} /><div className={o.panels}><i /><i /><i /><i /></div></div>
-      {/* holographic foil: iridescent, crinkled, sparkling */}
-      <div className={`${o.s} ${o.holo}`} data-screen="holo">
-        <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
-          <filter id="opener-foil" x="-50%" y="-50%" width="200%" height="200%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="3" seed="4" />
-            <feDisplacementMap in="SourceGraphic" scale="90" xChannelSelector="R" yChannelSelector="B" />
-          </filter>
+      {/* the pen tool: big Bézier curves with anchors and handles, being drawn */}
+      <div className={`${o.s} ${o.penBg}`} data-screen="pen">
+        <svg className={o.pen} viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice">
+          <path className={o.penRed} d="M-20 190 C 60 40, 150 40, 170 125 S 280 230, 420 70" />
+          <path className={o.penOrange} d="M-10 40 C 90 110, 120 230, 230 205 S 360 120, 410 210" />
+          <path className={o.penWhite} d="M60 -10 C 40 70, 130 100, 200 90 S 330 30, 350 -10" />
+          {/* handles */}
+          {[[170, 125, 120, 60, 220, 190], [230, 205, 180, 216, 280, 194], [200, 90, 160, 104, 240, 76]].map(([x, y, hx1, hy1, hx2, hy2], i) => (
+            <g key={i} className={o.penHandle}>
+              <line x1={hx1} y1={hy1} x2={hx2} y2={hy2} />
+              <circle cx={hx1} cy={hy1} r="2.2" /><circle cx={hx2} cy={hy2} r="2.2" />
+              <rect x={x - 3} y={y - 3} width="6" height="6" />
+            </g>
+          ))}
+          {[[60, 72], [345, 130], [110, 150], [330, 34]].map(([x, y], i) => <rect key={i} className={o.penAnchor} x={x - 2.6} y={y - 2.6} width="5.2" height="5.2" />)}
+          {/* the pen cursor, at the end of the curve being drawn */}
+          <g transform="translate(346 132) rotate(-35)">
+            <path className={o.penCursor} d="M0 0 L5 14 L0 19 L-5 14 Z M-2 19 H2 V24 H-2 Z" />
+          </g>
+          <g transform="translate(356 146)"><rect className={o.penTip} width="34" height="12" rx="3" /><text className={o.penTipText} x="17" y="8.3">Pen (P)</text></g>
         </svg>
-        <div className={o.holoFoil} />
-        <div className={o.holoSheen} />
-        {[[18, 22, 1.1], [80, 18, 0.8], [70, 76, 1.3], [26, 70, 0.7], [58, 30, 0.6], [88, 55, 0.9], [10, 45, 0.6], [42, 86, 0.8]].map(([x, y, k], i) => (
-          <svg key={i} className={o.glint} viewBox="0 0 20 20" style={{ left: `${x}%`, top: `${y}%`, width: `calc(var(--L) * ${0.3 * k})`, ["--d" as string]: `${i * 0.07}s` }}>
-            <path d="M10 0C10.8 7 13 9.2 20 10 13 10.8 10.8 13 10 20 9.2 13 7 10.8 0 10 7 9.2 9.2 7 10 0Z" />
-          </svg>
-        ))}
+        <div className={o.penSel}><i /><i /><i /><i /></div>
+        <span className={`${o.meta} ${o.tl} ${o.onDark}`}>vector / bézier</span>
       </div>
       {/* the logo: one size, dead centre, on every screen */}
       <div className={o.logo} data-ologo>
