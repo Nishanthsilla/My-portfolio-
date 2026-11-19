@@ -25,36 +25,34 @@ const LOGO: Record<string, { v: Variant; c?: string }> = {
   dark: { v: "dim", c: "#3a3a3a" },
   words: { v: "mono", c: "#fff" },
   warm: { v: "mono", c: "#fff" },
-  mesh: { v: "mono", c: "#fff" },
-  glow: { v: "color" },
   grid: { v: "color" },
   browser: { v: "color" },
+  thermal: { v: "mono", c: "#111" },
   giant: { v: "color" },
+  blueprint: { v: "mono", c: "#fff" },
   phone: { v: "color" },
+  ripples: { v: "mono", c: "#fff" },
   ring: { v: "mono", c: "#fff" },
   figma: { v: "color" },
-  palette: { v: "mono", c: "#fff" },
+  particles: { v: "color" },
   dock: { v: "mono", c: "#fff" },
-  star: { v: "mono", c: "#fff" },
-  editor: { v: "color" },
-  split: { v: "mono", c: "#fff" },
-  corners: { v: "mono", c: "#fff" },
-  halftone: { v: "color" },
-  stripes: { v: "color" },
+  typography: { v: "color" },
+  mesh: { v: "mono", c: "#fff" },
   zoom: { v: "color" },
-  rings: { v: "color" },
+  grass: { v: "mono", c: "#fff" },
+  halftone: { v: "color" },
   crop: { v: "color" },
-  ghost: { v: "color" },
-  tagline: { v: "color" },
+  rings: { v: "color" },
+  glass: { v: "mono", c: "#fff" },
 };
 
 /** every screen appears once: no repeats */
 const SLOW = ["dark", "words", "warm", "grid"];
-/** the drop: one 1/8 note each; the busier screens hold for two, and the cuts speed up towards the end */
+/** the drop: one 1/8 note each, most holding for two; the last few cut faster into "Hello World" */
 const FAST: [string, number][] = [
-  ["browser", 2], ["giant", 2], ["phone", 2], ["ring", 2], ["figma", 2], ["palette", 2],
-  ["dock", 2], ["star", 2], ["editor", 2], ["mesh", 2], ["split", 1], ["corners", 1], ["halftone", 1], ["stripes", 2],
-  ["zoom", 2], ["rings", 1], ["crop", 1], ["ghost", 1], ["tagline", 1], ["glow", 1],
+  ["browser", 2], ["thermal", 2], ["giant", 2], ["blueprint", 2], ["phone", 2], ["ripples", 2], ["ring", 2],
+  ["figma", 2], ["particles", 2], ["dock", 2], ["typography", 2], ["mesh", 2], ["zoom", 2], ["grass", 2],
+  ["halftone", 1], ["crop", 1], ["rings", 1], ["glass", 1],
 ];
 export const FRAMES: { at: number; screen: string }[] = [
   ...SLOW.map((screen, i) => ({ at: i * 0.4, screen })),

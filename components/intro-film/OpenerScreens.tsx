@@ -28,6 +28,42 @@ const IDE = [
   "export const ship = (idea) => build(design(idea));",
 ];
 
+
+/* seeded random, so the particles and grass are the same on every visit (and on the server) */
+function seeded(seed: number) {
+  let a = seed;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+/** a vortex of particles around the centre (viewBox 200 × 200), clear of the logo */
+const PARTICLES = (() => {
+  const r = seeded(7);
+  return Array.from({ length: 1600 }, () => {
+    const arm = Math.floor(r() * 3);
+    const d = 24 + Math.pow(r(), 1.3) * 110;
+    const a = arm * ((2 * Math.PI) / 3) + d * 0.035 + (r() - 0.5) * 0.55;
+    const hot = d < 60;
+    return { x: 100 + Math.cos(a) * d, y: 100 + Math.sin(a) * d, s: 0.25 + r() * (hot ? 1.1 : 0.7), c: hot ? (r() > 0.5 ? "#ffd2b0" : "#ff6a3d") : r() > 0.6 ? "#f50427" : "#ff5a36", o: 0.35 + r() * 0.65 };
+  });
+})();
+/** grass blades (viewBox 320 × 200) */
+const BLADES = (() => {
+  const r = seeded(11);
+  return Array.from({ length: 900 }, () => {
+    const x = r() * 330 - 5, h = 40 + r() * 150, lean = (r() - 0.5) * 50, w = 0.8 + r() * 1.8;
+    const g = Math.floor(70 + r() * 110);
+    return { d: `M${x.toFixed(1)} 205 Q${(x + lean * 0.3).toFixed(1)} ${(205 - h * 0.6).toFixed(1)} ${(x + lean).toFixed(1)} ${(205 - h).toFixed(1)} Q${(x + lean * 0.3 + w).toFixed(1)} ${(205 - h * 0.6).toFixed(1)} ${(x + w * 2).toFixed(1)} 205Z`, c: `rgb(${Math.floor(g * 0.35)},${g},${Math.floor(g * 0.3)})` };
+  });
+})();
+const TYPE_LINES = [
+  ["Product", "Design", "2019 — now"], ["Design systems", "AI", "Hyderabad"], ["Clarity", "over", "complexity"],
+  ["", "", ""], ["Research", "Prototype", "Ship"], ["Figma", "→", "Code"], ["n.", "Nishanth Silla", "Lead Product Designer"],
+];
+
 const Icon = {
   trend: <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6" /></svg>,
   spark: <svg viewBox="0 0 24 24"><path d="M12 2c.6 5 2.4 7.4 8 8-5.6.6-7.4 3-8 8-.6-5-2.4-7.4-8-8 5.6-.6 7.4-3 8-8z" /></svg>,
@@ -71,19 +107,6 @@ export default function OpenerScreens() {
           <text><textPath href="#opener-ring">DESIGN THAT SHIPS ✦ DESIGN THAT SHIPS ✦ DESIGN THAT SHIPS ✦</textPath></text>
         </svg>
       </div>
-      {/* 11 · a star, turning */}
-      <div className={`${o.s} ${o.dark}`} data-screen="star">
-        <svg className={o.star} viewBox="0 0 100 100"><path d="M50 0C54 34 66 46 100 50 66 54 54 66 50 100 46 66 34 54 0 50 34 46 46 34 50 0z" /></svg>
-      </div>
-      {/* 12 · the icon with colour in the corners */}
-      <div className={`${o.s} ${o.paper}`} data-screen="corners">
-        <div className={o.cornerA} /><div className={o.cornerB} />
-        <div className={o.tile} />
-        <span className={`${o.meta} ${o.tl}`}>brand / mark<br />2026</span>
-        <span className={`${o.meta} ${o.br}`}>n.<br />lowercase, folded</span>
-      </div>
-      {/* 13 · stripes */}
-      <div className={`${o.s} ${o.stripes}`} data-screen="stripes"><div className={o.disc} /></div>
       {/* 14 · a dock of tools */}
       <div className={`${o.s} ${o.orange}`} data-screen="dock">
         <div className={o.dock}><i>{Icon.spark}</i><i className={o.dockMe} /><i>{Icon.trend}</i></div>
@@ -127,17 +150,6 @@ export default function OpenerScreens() {
         <div className={o.figSelBox}><i /><i /><i /><i /><span>961 × 563</span></div>
         <svg className={o.figCursor} viewBox="0 0 16 16"><path d="M1 1 L14 6.5 L8 8 L6.5 14 Z" /></svg>
       </div>
-      {/* 18 · a code editor, full screen, the logo in its preview */}
-      <div className={`${o.s} ${o.ide}`} data-screen="editor">
-        <div className={o.ideTop}><i /><i /><i /><span>Logo.tsx — portfolio</span></div>
-        <div className={o.ideTree}>
-          <span>▾ components</span><span>&nbsp;&nbsp;▾ site</span><span className={o.ideOn}>&nbsp;&nbsp;&nbsp;&nbsp;Logo.tsx</span><span>&nbsp;&nbsp;&nbsp;&nbsp;Header.tsx</span><span>&nbsp;&nbsp;▸ intro-film</span><span>▸ app</span><span>▸ lib</span><span>▸ public</span>
-        </div>
-        <pre className={o.ideCode}>{IDE.map((l, i) => (
-          <span key={i}><em>{String(i + 1).padStart(2, " ")}</em> {l}{"\n"}</span>
-        ))}</pre>
-        <div className={o.idePreview}><span>localhost:3000</span></div>
-      </div>
       {/* 19 · zoom: the canvas zooms in and out under the cursor */}
       <div className={`${o.s} ${o.zoom}`} data-screen="zoom">
         <div className={o.zoomDots} />
@@ -150,15 +162,6 @@ export default function OpenerScreens() {
       {/* gradients: warm, a blue sky with an orange-red sunrise, a dark glow */}
       <div className={`${o.s} ${o.warm}`} data-screen="warm" />
       <div className={`${o.s} ${o.mesh}`} data-screen="mesh" />
-      <div className={`${o.s} ${o.glow}`} data-screen="glow" />
-      <div className={`${o.s} ${o.paper}`} data-screen="palette">
-        <div className={o.palette}>
-          {[["#0d0d0d", "0D0D0D"], ["#f50427", "F50427"], ["#ff5a36", "FF5A36"], ["#efe3d3", "EFE3D3"], ["#f6f5f2", "F6F5F2"]].map(([c, h]) => (
-            <i key={h} style={{ background: c }}><span>{h}</span></i>
-          ))}
-        </div>
-      </div>
-      <div className={`${o.s} ${o.split}`} data-screen="split" />
       <div className={`${o.s} ${o.dark}`} data-screen="halftone"><div className={o.halftone} /></div>
       <div className={`${o.s} ${o.sand}`} data-screen="rings"><div className={o.rings} /></div>
       <div className={`${o.s} ${o.paper}`} data-screen="crop">
@@ -166,8 +169,37 @@ export default function OpenerScreens() {
         <span className={`${o.meta} ${o.tl}`}>n. / print</span>
         <span className={`${o.meta} ${o.br}`}>100%</span>
       </div>
-      <div className={`${o.s} ${o.paper}`} data-screen="ghost"><Logo id="opener-ghost" mono="currentColor" className={o.ghost} /></div>
-      <div className={`${o.s} ${o.dark}`} data-screen="tagline"><span className={o.tagline}><b>design</b> that ships.</span></div>
+
+      {/* thermal: a heat map, hottest where the logo is */}
+      <div className={`${o.s} ${o.thermal}`} data-screen="thermal"><span className={`${o.meta} ${o.tl} ${o.onDark}`}>ir / 36.6°</span></div>
+      {/* blueprint: the logo's construction, drawn on a blueprint grid */}
+      <div className={`${o.s} ${o.blueprint}`} data-screen="blueprint">
+        <div className={o.bpBox}><i /><i /><b>961</b><em>563</em></div>
+        <span className={`${o.meta} ${o.tl}`}>DWG. N-01<br />SCALE 1:1</span>
+        <span className={`${o.meta} ${o.br}`}>n. / construction</span>
+      </div>
+      {/* water ripples spreading from the logo */}
+      <div className={`${o.s} ${o.water}`} data-screen="ripples"><div className={o.ripples} /></div>
+      {/* particles in a vortex */}
+      <div className={`${o.s} ${o.dark}`} data-screen="particles">
+        <svg className={o.particles} viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice">
+          {PARTICLES.map((p, i) => <circle key={i} cx={p.x.toFixed(2)} cy={p.y.toFixed(2)} r={p.s.toFixed(2)} fill={p.c} opacity={p.o.toFixed(2)} />)}
+        </svg>
+      </div>
+      {/* typography lines: a Swiss-style type grid with a gap for the logo */}
+      <div className={`${o.s} ${o.paper}`} data-screen="typography">
+        <div className={o.typeLines}>
+          {TYPE_LINES.map((l, i) => <div key={i} className={i === 3 ? o.typeGap : undefined}>{l.map((w, j) => <span key={j}>{w}</span>)}</div>)}
+        </div>
+      </div>
+      {/* refracted glass: colour seen through fluted glass */}
+      <div className={`${o.s} ${o.glassBg}`} data-screen="glass"><div className={o.glass} /></div>
+      {/* grass */}
+      <div className={`${o.s} ${o.grassBg}`} data-screen="grass">
+        <svg className={o.grass} viewBox="0 0 320 200" preserveAspectRatio="xMidYMax slice">
+          {BLADES.map((b, i) => <path key={i} d={b.d} fill={b.c} />)}
+        </svg>
+      </div>
 
       {/* the logo: one size, dead centre, on every screen */}
       <div className={o.logo} data-ologo>

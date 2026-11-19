@@ -313,85 +313,12 @@ place(pad([midi(n) for n in [53, 60, 64, 67, 69, 76]], 1.4, 0.06, 0.1, 1.0, 2800
 # (the level-clear jingle plays separately as the website settles)
 
 # ---------- master ----------
-def master(left, right):
-    mix = np.stack([left, right])
-    mix = np.stack([band(mix[0], lo=28), band(mix[1], lo=28)])
-    mix = np.tanh(mix * 1.1) / np.tanh(1.1)
-    fade = int(1.2 * SR)
-    mix[:, -fade:] *= np.linspace(1, 0, fade) ** 2
-    return mix * (0.89 / np.abs(mix).max())
-
-
-mix = master(L, R)
-
-
-# ---------- the playful layer (opener version only) ----------
-# After the opener's big beat, the score on its own starts soft and sparse and the
-# energy drops. With the opener on, a bouncy 120 BPM groove runs under the whole
-# film instead: kick, claps, off-beat hats, a shaker, a bouncing bass and a marimba,
-# on the score's own chords. Times are film seconds (components/intro-film/timeline.ts).
-PL, PR = np.zeros(len(L)), np.zeros(len(L))
-
-
-def put(sig, t, gain=1.0, pan=0.0):
-    i = int(t * SR)
-    if i >= len(PL):
-        return
-    sig = sig[: len(PL) - i]
-    a = (pan + 1) * np.pi / 4
-    PL[i : i + len(sig)] += sig * gain * np.cos(a)
-    PR[i : i + len(sig)] += sig * gain * np.sin(a)
-
-
-def clap(gain=0.3):
-    n = int(0.22 * SR)
-    noise = band(rng.standard_normal(n), lo=1000, hi=6500)
-    e = np.zeros(n)
-    for k, off in enumerate([0, 0.01, 0.02]):
-        i = int(off * SR)
-        e[i:] += env(n - i, 0.0005, 0.006 if k < 2 else 0.06)
-    return noise * e * gain
-
-
-def shaker(gain=0.05):
-    n = int(0.06 * SR)
-    return band(rng.standard_normal(n), lo=5000, hi=12000) * env(n, 0.008, 0.015) * gain
-
-
-def marimba(f, gain=0.12, dur=0.35):
-    t = tt(dur)
-    s = np.sin(2 * np.pi * f * t) + 0.35 * np.sin(2 * np.pi * f * 4 * t) * np.exp(-t * 40)
-    return s * env(len(t), 0.001, dur / 5) * gain
-
-
-# sections: (start, end, level). Full energy through the story; lighter under the
-# ASCII screen; out just before the click, so the reveal still lands.
-SECTIONS = [(0.0, 3.4, 0.7), (3.4, 31.2, 1.0), (31.2, 33.5, 0.55), (33.5, 36.85, 0.9)]
-BASS_PAT = [0, 0, 12, 0, 7, 0, 12, 7]                      # bouncing 8ths on the bar's root
-ARP = [0, 3, 7, 10, 12, 10, 7, 3]                         # marimba, minor-7 shapes
-for t0, t1, lvl in SECTIONS:
-    step, t = int(round(t0 / 0.25)), t0
-    while t < t1 - 1e-6:
-        bar = int(t // 2) % 4
-        chord, root = PROG[bar]
-        root = root + 12                                   # bass an octave up: bouncy, not boomy
-        s8 = step % 8                                      # 8 steps of 0.25 s per 2 s bar
-        if s8 % 2 == 0:
-            put(kick(0.55 * lvl), t)                       # four on the floor
-        if s8 in (2, 6):
-            put(clap(0.3 * lvl), t, pan=0.05)              # claps on 2 and 4
-        if s8 % 2 == 1:
-            put(hat(0.07 * lvl, 0.09), t, pan=0.3)         # off-beat open-ish hats
-        put(shaker(0.045 * lvl), t + 0.125, pan=-0.35)     # 16th shaker
-        put(shaker(0.03 * lvl), t, pan=-0.35)
-        put(bass(midi(root + BASS_PAT[s8]), 0.22 * lvl, 0.22), t)
-        if lvl >= 0.9 and s8 in (0, 3, 5, 6):
-            put(marimba(midi(chord[0] + 12 + ARP[(step // 2) % 8] % 12), 0.1 * lvl), t, pan=0.25 - 0.5 * ((step // 3) % 2))
-        t += 0.25
-        step += 1
-# a small fill into the click, then silence until the reveal
-for k in range(6):
-    put(clap(0.08 + 0.03 * k), 36.4 + k * 0.08, pan=0.1)
+mix = np.stack([L, R])
+mix = np.stack([band(mix[0], lo=28), band(mix[1], lo=28)])
+mix = np.tanh(mix * 1.1) / np.tanh(1.1)
+fade = int(1.2 * SR)
+mix[:, -fade:] *= np.linspace(1, 0, fade) ** 2
+mix *= 0.89 / np.abs(mix).max()
 
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -410,8 +337,8 @@ def write(mix, name):
 
 # the film's score on its own (used when lib/introConfig.ts INTRO_OPENER is off)
 write(mix, "intro-film")
-# the logo opener's track first, then the score with the playful layer (INTRO_OPENER on; compose_intro_montage.py)
+# the logo opener's track first, then the same score (INTRO_OPENER on; compose_intro_montage.py)
 from compose_intro_montage import splice  # noqa: E402
 
-write(splice(master(L + PL, R + PR)), "intro-film-opener")
+write(splice(mix), "intro-film-opener")
 print("wrote", OUT / "intro-film.{mp3,ogg}", OUT / "intro-film-opener.{mp3,ogg}")
