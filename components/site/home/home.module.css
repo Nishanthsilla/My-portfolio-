@@ -420,3 +420,22 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 /* a tall panel on a phone scrolls from its top instead of being cut off above */
 .journey[data-mode="touch"] .panel { align-items: safe center; }
 .journey[data-mode="touch"] .panel .panelInner { padding-top: 40px; padding-bottom: 72px; }
+
+/* ---------------- Panel 1: the standing photo + the bold headline over his feet ---------------- */
+.heroPanel { position: relative; overflow: hidden; align-items: flex-end; }
+/* laptop: he stands on the right; the headline (left) only reaches his shoes */
+.heroPhoto {
+  position: absolute; z-index: 0; right: max(4vw, calc((100vw - var(--max, 1280px)) / 2)); bottom: 3vh; height: min(86vh, 1000px); width: auto;
+  filter: drop-shadow(2.4vh 2.2vh 2.6vh rgba(40, 30, 20, 0.2)); pointer-events: none; user-select: none;
+}
+.heroInner { position: relative; z-index: 1; padding-bottom: clamp(56px, 9vh, 96px); }
+.heroHeadline { font-weight: 800; letter-spacing: -0.05em; line-height: 0.95; max-width: 9.6em; font-size: clamp(42px, 6.4vw, 104px); }
+.heroHeadline::first-line { font-style: italic; }
+/* phone: he stands at the top, centred; the headline sits right below, over his shoes */
+@media (max-width: 760px) {
+  .heroPanel { flex-direction: column; align-items: stretch; justify-content: flex-end; }
+  .heroPhoto { position: relative; right: auto; bottom: auto; align-self: center; height: clamp(260px, calc(100svh - 430px), 560px); width: auto; margin: 0 0 calc(clamp(260px, calc(100svh - 430px), 560px) * -0.12); }
+  .heroInner { padding-top: 0 !important; padding-bottom: 40px; }
+  .heroHeadline { font-size: clamp(34px, 10vw, 52px); max-width: none; margin-top: 0; }
+}
+

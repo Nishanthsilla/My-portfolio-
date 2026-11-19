@@ -23,9 +23,12 @@ export default function StoryPanels() {
   return (
     <>
     {/* 1 — introduction */}
-    <div className={h.panel} data-snap aria-roledescription="slide" aria-label="1 of 5">
-      <div className={h.panelInner}>
-        <h1 className={h.headline}>
+    <div className={`${h.panel} ${h.heroPanel}`} data-snap aria-roledescription="slide" aria-label="1 of 5">
+      {/* Nishanth, standing, seen from above; the headline overlaps his feet */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className={h.heroPhoto} src="/images/about/hero-standing.webp" alt="Nishanth Silla, seen from above, in a navy t-shirt and sunglasses" width={647} height={1100} fetchPriority="high" />
+      <div className={`${h.panelInner} ${h.heroInner}`}>
+        <h1 className={`${h.headline} ${h.heroHeadline}`}>
           {st.hello.headline.before}
           <em>{st.hello.headline.em}</em>
           {st.hello.headline.after}
