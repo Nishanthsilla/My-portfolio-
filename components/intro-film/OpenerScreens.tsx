@@ -258,6 +258,15 @@ export default function OpenerScreens() {
       <div className={`${o.s} ${o.dark}`} data-screen="codebg">
         <pre className={o.codeBg}>{[...CODE_BG, ...CODE_BG, ...CODE_BG, ...CODE_BG, ...CODE_BG].join("\n")}</pre>
       </div>
+      {/* kinetic type: the words slam in, one from each side and one from below; the full stop opens the next scene */}
+      <div className={`${o.s} ${o.typeRed}`} data-screen="type">
+        <div className={o.kin}>
+          <span className={o.k1}>DESIGN</span>
+          <span className={o.k2}>THAT</span>
+          <span className={o.k3}>SHIPS<i data-operiod /></span>
+        </div>
+        <span className={`${o.meta} ${o.tl} ${o.onDark}`}>n. / manifesto</span>
+      </div>
       {/* a toggle, clicked: it turns red (the cursor and the click come from montage.ts) */}
       <div className={`${o.s} ${o.cream}`} data-screen="toggle">
         <div className={o.toggle}><i /><b /></div>
@@ -274,6 +283,9 @@ export default function OpenerScreens() {
         <i className={o.dot} data-odot />
       </div>
       <div className={o.portal} data-oportal />
+      {/* the visible edge of a scene opening out of the dot, and the dot bursting into particles */}
+      <div className={o.edge} data-oedge />
+      <div className={o.burst} data-oburst>{Array.from({ length: 18 }, (_, i) => <i key={i} />)}</div>
       <div className={o.ring} data-oring><i /><i /><i /><i /><i /><i /><i /><i /></div>
       <svg className={o.cursor} data-ocursor viewBox="0 0 16 16"><path d="M1 1 L14 6.5 L8 8 L6.5 14 Z" /></svg>
     </>
