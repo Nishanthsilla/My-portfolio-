@@ -25,7 +25,8 @@ type Variant = "color" | "mono" | "dim";
 const LOGO: Record<string, { v: Variant; c?: string }> = {
   dark: { v: "dim", c: "#3a3a3a" },
   words: { v: "mono", c: "#fff" },
-  warm: { v: "mono", c: "#fff" },
+  bauhaus: { v: "color" },
+  bars: { v: "color" },
   grid: { v: "color" },
   browser: { v: "color" },
   thermal: { v: "mono", c: "#fff" },
@@ -48,12 +49,12 @@ const LOGO: Record<string, { v: Variant; c?: string }> = {
 };
 
 /** every screen appears once: no repeats */
-const SLOW = ["dark", "words", "warm", "grid"];
+const SLOW = ["dark", "words", "bauhaus", "grid"];
 /** the drop: one 1/8 note each, most holding for two; the last few cut faster into "Hello World" */
 const FAST: [string, number][] = [
   ["browser", 2], ["thermal", 2], ["giant", 2], ["blueprint", 2], ["phone", 2], ["ripples", 2], ["ring", 2],
   ["figma", 2], ["particles", 2], ["dock", 2], ["topo", 2], ["mesh", 2], ["zoom", 2], ["codebg", 2],
-  ["halftone", 1], ["crop", 1], ["rings", 1], ["glass", 1],
+  ["bars", 1], ["crop", 1], ["rings", 1], ["glass", 1],
 ];
 export const FRAMES: { at: number; screen: string }[] = [
   ...SLOW.map((screen, i) => ({ at: i * 0.4, screen })),
@@ -70,7 +71,6 @@ const FLUID: Record<string, string[]> = {
   mesh: ["#03051a", "#0a1fb8", "#1f63ff", "#8fd0ff", "#ffb06a"],
   glass: ["#3a0402", "#a80f0a", "#f5361c", "#ff9a2e", "#fff0c0"],
   dark: ["#030303", "#0b0b0d", "#17161a", "#2a0e0e", "#5a1410"],
-  phone: ["#050505", "#140607", "#3a0a0c", "#7a0f12", "#c4161a"],
   ring: ["#8f0012", "#c8001f", "#f50427", "#ff3d2e", "#ff7a4a"],
 };
 
@@ -137,6 +137,12 @@ export class Montage {
       el.style.setProperty(`--r${i}`, ((lm * 1.5 + i / 3) % 1).toFixed(3));
     }
     el.style.setProperty("--pulse", Math.abs(Math.sin(lm * 16)).toFixed(3));
+    // the stepped colour bars: each column rises and falls, in steps
+    if (f.screen === "bars")
+      el.querySelectorAll<HTMLElement>("i").forEach((c, i) => {
+        const v = 0.27 + 0.16 * Math.sin(lm * 14 + i * 0.55) * (0.5 + ((i * 7) % 5) / 10); // stays below the logo
+        c.style.setProperty("--h", (Math.round(v * 12) / 12).toFixed(3));
+      });
     // a liquid background for the gradient screens (it keeps flowing across the whole opener)
     const fl = FLUID[f.screen];
     if (this.fluid && this.fluidCanvas && fl) {

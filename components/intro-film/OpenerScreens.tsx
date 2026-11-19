@@ -39,34 +39,24 @@ function seeded(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-/** white stipple particles (viewBox 200 × 200): a starfield, a dotted terrain and a glowing sphere with rays */
-const STIPPLE = (() => {
+/** a particle flow field (viewBox 200 × 200): white dots streaming across in curving lanes, around the centre */
+const FLOW = (() => {
   const r = seeded(7);
-  const pts: { x: number; y: number; s: number; o: number; k: "star" | "land" | "orb" | "ray" }[] = [];
-  for (let i = 0; i < 260; i++) pts.push({ x: r() * 200, y: r() * 200, s: 0.12 + r() * 0.25, o: 0.15 + r() * 0.5, k: "star" });
-  // terrain: rows of dots along waves, denser and bigger towards the front
-  for (let k = 0; k < 22; k++) {
-    const y0 = 118 + k * k * 0.16, step = 0.9 + k * 0.08;
-    for (let x = -10; x < 210; x += step * (0.6 + r() * 0.8)) {
-      const y = y0 + Math.sin(x * 0.045 + k * 0.7) * (2 + k * 0.25) + Math.sin(x * 0.11 - k) * 1.2;
-      pts.push({ x, y, s: 0.12 + k * 0.012 + r() * 0.1, o: 0.25 + r() * 0.6, k: "land" });
+  const lanes: { d: number[][]; o: number }[] = [];
+  for (let k = 0; k < 34; k++) {
+    const y0 = (k + 0.5) * (200 / 34), amp = 4 + r() * 10, f = 0.02 + r() * 0.025, ph = r() * 6.28;
+    const pts: number[][] = [];
+    for (let x = -10; x < 420; x += 1.1 + r() * 1.6) {
+      // lanes bend away from the centre, leaving the logo clear
+      const dy = y0 - 100, push = Math.exp(-(((x % 200) - 100) ** 2) / 900) * Math.sign(dy || 1) * Math.max(0, 22 - Math.abs(dy)) * 0.9;
+      pts.push([x, y0 + Math.sin(x * f + ph) * amp + push, 0.12 + r() * 0.3]);
     }
+    lanes.push({ d: pts, o: 0.25 + r() * 0.65 });
   }
-  // the sphere: dots on its surface, brightest at the rim
-  for (let i = 0; i < 900; i++) {
-    const u = r() * 2 - 1, t = r() * Math.PI * 2, rim = Math.sqrt(1 - u * u);
-    const R = 17 + (r() - 0.5) * 1.2;
-    pts.push({ x: 100 + Math.cos(t) * rim * R, y: 100 + u * R, s: 0.14 + r() * 0.2, o: 0.2 + 0.7 * Math.pow(1 - Math.abs(Math.sin(t) * rim), 2), k: "orb" });
-  }
-  // light rays
-  for (const [ang, len] of [[-1.15, 70], [-0.35, 46], [2.2, 38]]) {
-    for (let i = 0; i < 160; i++) {
-      const d = 18 + Math.pow(r(), 1.6) * len, w = (r() - 0.5) * (1.4 - d / (len + 18));
-      pts.push({ x: 100 + Math.cos(ang) * d - Math.sin(ang) * w, y: 100 + Math.sin(ang) * d + Math.cos(ang) * w, s: 0.12 + r() * 0.18, o: 0.3 + r() * 0.7, k: "ray" });
-    }
-  }
-  return pts;
+  return lanes;
 })();
+/** stepped colour bars: columns of stepped colour, like an equalizer */
+const BARS = Array.from({ length: 24 }, (_, i) => ({ ph: i * 0.55, amp: 0.5 + ((i * 7) % 5) / 10 }));
 /** topographic contour lines from a smooth random height field (viewBox 160 × 100), via marching squares */
 const TOPO = (() => {
   const r = seeded(23);
@@ -216,9 +206,15 @@ export default function OpenerScreens() {
 
       {/* minimal screens: one idea each */}
       {/* gradients: warm, a blue sky with an orange-red sunrise, a dark glow */}
-      <div className={`${o.s} ${o.warm}`} data-screen="warm" />
+      {/* Bauhaus: bold shapes in his colours, sliding and turning around the logo */}
+      <div className={`${o.s} ${o.paper}`} data-screen="bauhaus">
+        <div className={o.bh}><i /><i /><i /><i /><i /><i /></div>
+      </div>
       <div className={`${o.s} ${o.mesh}`} data-screen="mesh" />
-      <div className={`${o.s} ${o.dark}`} data-screen="halftone"><div className={o.halftone} /></div>
+      {/* stepped colour bars, rising and falling like an equalizer */}
+      <div className={`${o.s} ${o.paper}`} data-screen="bars">
+        <div className={o.bars}>{BARS.map((b, i) => <i key={i} style={{ ["--ph" as string]: b.ph, ["--amp" as string]: b.amp }}><b /><b /><b /><b /></i>)}</div>
+      </div>
       <div className={`${o.s} ${o.sand}`} data-screen="rings"><div className={o.rings} /></div>
       <div className={`${o.s} ${o.paper}`} data-screen="crop">
         <div className={o.crop}><i /><i /><i /><i /></div>
@@ -243,18 +239,15 @@ export default function OpenerScreens() {
       {/* white stipple: a dotted terrain, a starfield, and a sphere of light around the logo */}
       <div className={`${o.s} ${o.dark}`} data-screen="particles">
         <svg className={o.particles} viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice">
-          {(["star", "land", "orb", "ray"] as const).map((kind) => (
-            <g key={kind} className={o[`st_${kind}`]}>
-              {STIPPLE.filter((p) => p.k === kind).map((p, i) => <circle key={i} cx={p.x.toFixed(2)} cy={p.y.toFixed(2)} r={p.s.toFixed(2)} fill="#fff" opacity={p.o.toFixed(2)} />)}
-              {kind === "land" && STIPPLE.filter((p) => p.k === kind).map((p, i) => <circle key={`b${i}`} cx={(p.x + 220).toFixed(2)} cy={p.y.toFixed(2)} r={p.s.toFixed(2)} fill="#fff" opacity={p.o.toFixed(2)} />)}
-            </g>
-          ))}
+          <g className={o.flowLanes}>
+            {FLOW.map((l, k) => l.d.map((p, i) => <circle key={`${k}-${i}`} cx={p[0].toFixed(1)} cy={p[1].toFixed(1)} r={p[2].toFixed(2)} fill="#fff" opacity={l.o.toFixed(2)} />))}
+          </g>
         </svg>
       </div>
       {/* topographic contour lines */}
       <div className={`${o.s} ${o.dark}`} data-screen="topo">
         <svg className={o.topo} viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">
-          {TOPO.map((d, i) => <path key={i} d={d} />)}
+          {TOPO.map((d, i) => <path key={i} d={d} pathLength={1} style={{ ["--i" as string]: i }} />)}
         </svg>
         <div className={o.topoClear} />
         <span className={`${o.meta} ${o.tl}`}>17.38° N · 78.48° E</span>

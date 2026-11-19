@@ -295,7 +295,8 @@
   background-image: linear-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
   background-size: calc(var(--L) * 0.25) calc(var(--L) * 0.25); background-position: calc(var(--m) * -36vmin) calc(var(--m) * 18vmin);
 }
-.topo path { stroke-dasharray: 3 2; stroke-dashoffset: calc(var(--m) * -60); }
+/* the contour lines draw themselves in, level by level */
+.topo path { stroke-dasharray: 1 1; stroke-dashoffset: calc(1 - clamp(0, var(--m) * 4 - var(--i, 0) * 0.012, 1)); }
 .topo { transform: translate(calc(var(--m) * -14vmin), calc(var(--m) * 5vmin)); }
 .halftone {
   -webkit-mask-image: repeating-linear-gradient(110deg, #000 0, rgba(0, 0, 0, 0.15) calc(var(--L) * 0.6), #000 calc(var(--L) * 1.2)), radial-gradient(circle at center, transparent calc(var(--L) * 1.1), #000 75%) !important;
@@ -350,3 +351,25 @@
 }
 /* crop marks: a dot grid drifting behind */
 .s[data-screen="crop"]::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(0, 0, 0, 0.18) 1px, transparent 1.4px); background-size: calc(var(--L) * 0.12) calc(var(--L) * 0.12); background-position: calc(var(--m) * 60vmin) calc(var(--m) * -30vmin); }
+
+/* Bauhaus: bold shapes sliding and turning around the logo */
+.bh { position: absolute; inset: 0; }
+.bh i { position: absolute; display: block; }
+.bh i:nth-child(1) { left: 6%; top: 8%; width: 30vmin; aspect-ratio: 1; border-radius: 50%; background: #f50427; transform: translate(calc(var(--m) * 30vmin), calc(var(--m) * 8vmin)); }
+.bh i:nth-child(2) { left: 10%; bottom: -2%; width: 34vmin; aspect-ratio: 2 / 1; border-radius: 34vmin 34vmin 0 0; background: #ff5a36; transform: translateY(calc(var(--m) * -12vmin)); }
+.bh i:nth-child(3) { right: 9%; top: 16%; width: 22vmin; aspect-ratio: 1; background: #111; transform: rotate(calc(12deg + var(--m) * 140deg)); }
+.bh i:nth-child(4) { right: -1%; top: -1%; width: 24vmin; aspect-ratio: 1; border-radius: 0 0 0 100%; background: #ff5a36; transform: scale(calc(0.8 + var(--m) * 0.6)); transform-origin: 100% 0; }
+.bh i:nth-child(5) { right: 20%; bottom: 14%; width: 12vmin; aspect-ratio: 1; border-radius: 50%; background: #111; transform: translate(calc(var(--m) * -36vmin), calc(var(--m) * -6vmin)); }
+.bh i:nth-child(6) { left: 0; right: 0; bottom: 30%; height: 3vmin; background: #f50427; transform: translateX(calc(-100% + var(--m) * 250%)); }
+
+/* stepped colour bars (heights set per frame in montage.ts) */
+.bars { position: absolute; inset: 0; display: flex; align-items: flex-end; }
+.bars i { flex: 1; display: flex; flex-direction: column-reverse; height: calc(var(--h, 0.4) * 100%); }
+.bars b { flex: 1; }
+.bars b:nth-child(1) { background: #f50427; }
+.bars b:nth-child(2) { background: #ff5a36; }
+.bars b:nth-child(3) { background: #ffb38a; }
+.bars b:nth-child(4) { background: #f6e2cf; }
+
+/* the particle flow field streams across */
+.flowLanes { transform: translateX(calc(var(--m) * -320px)); }
