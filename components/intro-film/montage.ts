@@ -13,6 +13,7 @@
  * scroll, the ring turns, the stripes run, the zoom breathes.
  */
 import { INTRO_OPENER } from "@/lib/introConfig";
+import { FluidBg } from "./fluid";
 
 /** off (lib/introConfig.ts INTRO_OPENER = false): no opener, the film runs exactly as before */
 export const MONTAGE = { at: 0, dur: INTRO_OPENER ? 8 : 0 } as const;
@@ -62,13 +63,28 @@ export const FRAMES: { at: number; screen: string }[] = [
   }, []),
 ];
 
+/** the screens with a liquid background (fluid.ts): five colours each, dark → light */
+const FLUID: Record<string, string[]> = {
+  warm: ["#7a0b06", "#d4160e", "#ff4a1f", "#ff8a4a", "#ffd2b0"],
+  thermal: ["#0b0630", "#4a0c8f", "#c4126b", "#ff5a1f", "#ffd23a"],
+  mesh: ["#03051a", "#0a1fb8", "#1f63ff", "#8fd0ff", "#ffb06a"],
+  glass: ["#3a0402", "#a80f0a", "#f5361c", "#ff9a2e", "#fff0c0"],
+};
+
 export class Montage {
+  private fluid: FluidBg | null = null;
+  private fluidCanvas: HTMLCanvasElement | null = null;
   private box: HTMLElement;
   private screens = new Map<string, HTMLElement>();
   private logo: HTMLElement;
   private current = -2;
 
   constructor(root: HTMLElement) {
+    this.fluidCanvas = root.querySelector<HTMLCanvasElement>("[data-ofluid]");
+    if (this.fluidCanvas) {
+      const f = new FluidBg(this.fluidCanvas);
+      if (f.ok) this.fluid = f;
+    }
     this.box = root.querySelector<HTMLElement>("[data-montage]")!;
     this.box.querySelectorAll<HTMLElement>("[data-screen]").forEach((s) => this.screens.set(s.dataset.screen!, s));
     this.logo = this.box.querySelector<HTMLElement>("[data-ologo]")!;
@@ -80,6 +96,7 @@ export class Montage {
   }
 
   layout() {
+    if (this.fluid) this.fluid.resize(this.box.clientWidth || innerWidth, this.box.clientHeight || innerHeight);
     const w = this.box.clientWidth || innerWidth, h = this.box.clientHeight || innerHeight;
     this.box.style.setProperty("--L", `${Math.min(w, h) * LOGO_SIZE}px`);
     this.current = -2;
@@ -106,7 +123,14 @@ export class Montage {
       else this.logo.setAttribute("data-mono", "");
       this.logo.style.color = lv.c ?? "";
     }
-    // motion inside the screen (the scrolling words, the turning ring, the zoom…): --m is time on screen
+    // motion inside the screen: --m is time on screen
     el.style.setProperty("--m", (m - f.at).toFixed(3));
+    // a liquid background for the gradient screens (it keeps flowing across the whole opener)
+    const fl = FLUID[f.screen];
+    if (this.fluid && this.fluidCanvas && fl) {
+      this.fluid.draw(fl, 3 + m * 2.6);
+      this.fluidCanvas.style.display = "block";
+      el.setAttribute("data-fluid", "");
+    } else if (this.fluidCanvas) this.fluidCanvas.style.display = "none";
   }
 }
