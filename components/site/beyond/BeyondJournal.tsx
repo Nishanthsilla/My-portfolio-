@@ -1,11 +1,12 @@
 import Link from "next/link";
 import site from "@/components/site/site.module.css";
 import j from "@/components/site/beyond/journal.module.css";
-import { explorations, forma25Parts, type Exploration } from "@/lib/site/about";
+import { explorations, forma25Parts, deskOrganizerParts, type Exploration } from "@/lib/site/about";
 
 /** Project-specific details, only where Nishanth has supplied them. */
 const DETAILS: Record<string, { k: string; v: string }[]> = {
   "forma-25": forma25Parts,
+  "desk-organizer": deskOrganizerParts,
 };
 
 function Slot({ e, n }: { e: Exploration; n: number }) {
@@ -85,6 +86,14 @@ export default function BeyondJournal({ inSheet = false }: { inSheet?: boolean }
                     <img className={j.image} src="/images/beyond/forma-25/photography-sm.webp" alt="FORMA 25 on a photographer in the mountains, with the tripod holder" loading="lazy" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img className={j.image} src="/images/beyond/forma-25/travel-sm.webp" alt="FORMA 25 at the airport, with the shoe pod attached" loading="lazy" />
+                  </div>
+                )}
+                {e.slug === "desk-organizer" && (
+                  <div className={j.pair}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img className={j.image} src="/images/beyond/desk-organizer/exploded-sm.webp" alt="Exploded assembly of the desk organizer" loading="lazy" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img className={j.image} src="/images/beyond/desk-organizer/tray-sm.webp" alt="The anti-fall tray with raised edges" loading="lazy" />
                   </div>
                 )}
               </article>
