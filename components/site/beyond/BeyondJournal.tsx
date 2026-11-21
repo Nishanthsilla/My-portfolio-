@@ -1,11 +1,11 @@
 import Link from "next/link";
 import site from "@/components/site/site.module.css";
 import j from "@/components/site/beyond/journal.module.css";
-import { explorations, modular01, type Exploration } from "@/lib/site/about";
+import { explorations, forma25Parts, type Exploration } from "@/lib/site/about";
 
 /** Project-specific details, only where Nishanth has supplied them. */
 const DETAILS: Record<string, { k: string; v: string }[]> = {
-  "modular-01": modular01.parts,
+  "forma-25": forma25Parts,
 };
 
 function Slot({ e, n }: { e: Exploration; n: number }) {
@@ -74,15 +74,17 @@ export default function BeyondJournal({ inSheet = false }: { inSheet?: boolean }
                     )}
                     {e.href && (
                       <Link className={j.more} href={e.href}>
-                        Read the concept <span aria-hidden="true">→</span>
+                        Read the case study <span aria-hidden="true">→</span>
                       </Link>
                     )}
                   </div>
                 </div>
-                {e.slug === "modular-01" && (
+                {e.slug === "forma-25" && (
                   <div className={j.pair}>
-                    <Slot e={{ ...e, visual: { kind: "slot", need: "MODULAR 01 — modules and attachment detail" } }} n={2} />
-                    <Slot e={{ ...e, visual: { kind: "slot", need: "MODULAR 01 — core + expansion configuration" } }} n={3} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img className={j.image} src="/images/beyond/forma-25/photography-sm.webp" alt="FORMA 25 on a photographer in the mountains, with the tripod holder" loading="lazy" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img className={j.image} src="/images/beyond/forma-25/travel-sm.webp" alt="FORMA 25 at the airport, with the shoe pod attached" loading="lazy" />
                   </div>
                 )}
               </article>

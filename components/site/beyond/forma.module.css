@@ -1,0 +1,86 @@
+/* CARRY / RE:FORM — FORMA 25 case study */
+.topRow { display: flex; align-items: center; gap: 14px; margin-top: 40px; }
+.kicker { font: 500 13px/1 var(--mono); letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
+.tagline { margin: 8px 0 0; font-size: clamp(22px, 2.6vw, 34px); font-weight: 540; letter-spacing: -0.02em; color: #ff6a1a; }
+.meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin: 40px 0 0; padding-top: 20px; border-top: 1px solid var(--line); }
+.meta dt { font: 500 11.5px/1.3 var(--mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.meta dd { margin: 6px 0 0; font-size: 15px; line-height: 1.45; }
+.hero { margin-top: 48px; }
+.num { display: block; margin-bottom: 14px; font: 500 13px/1 var(--mono); color: #ff6a1a; letter-spacing: 0.06em; }
+.prose { display: grid; gap: 16px; }
+
+/* images: click to enlarge */
+.fig { margin: 0; }
+.fig figcaption { margin-top: 12px; font: 500 12.5px/1.5 var(--mono); color: var(--muted); }
+.zoomBtn { position: relative; display: block; width: 100%; padding: 0; border: 0; border-radius: 16px; overflow: hidden; background: #ece9e4; cursor: zoom-in; }
+.zoomBtn img { display: block; width: 100%; height: auto; transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1); }
+.zoomBtn:hover img { transform: scale(1.02); }
+.zoomBtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.zoomHint { position: absolute; right: 12px; bottom: 12px; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: rgba(20, 20, 20, 0.72); color: #fff; opacity: 0; transition: opacity 200ms; }
+.zoomHint svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+.zoomBtn:hover .zoomHint, .zoomBtn:focus-visible .zoomHint { opacity: 1; }
+.wide { margin-top: 40px; }
+
+/* cards */
+.cards4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 32px; }
+.card { padding: 22px; border-radius: 14px; background: #fff; border: 1px solid var(--line); display: grid; gap: 8px; align-content: start; }
+.card b { font-size: 17px; font-weight: 560; }
+.card p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted); }
+.callout { margin: 32px 0 0; padding-left: 18px; border-left: 3px solid #ff6a1a; font-size: clamp(18px, 1.6vw, 21px); line-height: 1.5; max-width: 34em; }
+
+/* challenge */
+.hmw { margin: 28px 0 32px; padding: 32px; border-radius: 18px; background: #151515; color: #fff; font-size: clamp(22px, 2.4vw, 32px); line-height: 1.3; letter-spacing: -0.02em; font-weight: 500; max-width: 26em; }
+.checks { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 24px; }
+.checks li { position: relative; padding-left: 24px; font-size: 16px; line-height: 1.5; }
+.checks li::before { content: ""; position: absolute; left: 0; top: 0.45em; width: 10px; height: 10px; border-radius: 3px; background: #ff6a1a; }
+
+/* usage */
+.usage { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 24px; margin-top: 32px; }
+.useCase { display: grid; gap: 8px; }
+.useCase b { margin-top: 8px; font-size: 20px; font-weight: 560; }
+.useCase p { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--muted); max-width: 30em; }
+.insight { margin: 40px 0 0; padding: 26px 28px; border-radius: 16px; background: #fff3ea; font-size: clamp(18px, 1.7vw, 22px); line-height: 1.45; max-width: 34em; }
+.insight span { display: block; margin-bottom: 8px; font: 500 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: #c2410c; }
+
+/* the four systems */
+.systems { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 20px; }
+.system { padding: 22px; border-radius: 14px; background: #fff; border: 1px solid var(--line); display: grid; gap: 10px; align-content: start; }
+.sysNum { font: 500 12px/1 var(--mono); color: #ff6a1a; }
+.system b { font-size: 17px; font-weight: 560; }
+.system ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14.5px; line-height: 1.45; }
+.system p { margin: 4px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+
+/* decisions */
+.decisions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; margin-top: 24px; }
+.decision { padding: 24px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 40px 1fr; gap: 6px 12px; }
+.decision span { grid-row: span 2; font: 500 13px/1.6 var(--mono); color: #ff6a1a; }
+.decision h3 { margin: 0; font-size: 19px; font-weight: 560; letter-spacing: -0.01em; }
+.decision p { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--muted); }
+
+/* material */
+.matGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 32px 64px; margin-top: 32px; }
+.palette { display: grid; gap: 24px; }
+.palette b { display: block; margin-top: 12px; font-size: 17px; font-weight: 560; }
+.palette p { margin: 4px 0 0; font-size: 15px; line-height: 1.5; color: var(--muted); }
+.swatches { display: flex; gap: 8px; }
+.swatches i { width: 56px; height: 56px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.08); }
+.materials { margin: 14px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; }
+.materials li { padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 15.5px; }
+.note { margin: 16px 0 0; font-size: 14px; line-height: 1.55; color: var(--muted); font-style: italic; }
+
+/* ecosystem & outcome */
+.modes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.modes span { padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-size: 15px; }
+.outcome { margin-top: 56px; padding: clamp(28px, 4vw, 48px); border-radius: 20px; background: #151515; color: #f2f0eb; }
+.outcome p { margin: 16px 0 0; font-size: clamp(17px, 1.5vw, 20px); line-height: 1.55; max-width: 38em; color: #d8d4ce; }
+.outcome .sign { margin-top: 28px; font-size: clamp(26px, 3vw, 40px); font-weight: 560; letter-spacing: -0.02em; color: #ff6a1a; }
+
+@media (max-width: 900px) {
+  .meta, .cards4, .systems { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .checks { grid-template-columns: 1fr 1fr; }
+  .decisions, .matGrid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .meta, .cards4, .systems, .usage, .checks, .materials { grid-template-columns: 1fr; }
+  .hmw { padding: 24px; }
+}

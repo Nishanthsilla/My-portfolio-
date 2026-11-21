@@ -160,7 +160,7 @@ export const TOPICS: Topic[] = [
     id: "beyond",
     q: "What are his side projects?",
     keys: ["side project", "side projects", "beyond the interface", "explorations", "3d", "3d printing", "printing", "physical", "modular", "backpack", "product design", "hardware", "experiments", "ideas"],
-    answer: `Beyond the screen he explores physical products and prototypes. MODULAR 01 is a concept for a modular backpack: a 25L core bag, a detachable 10–15L expansion, and movable external modules. He also explores product ideas through 3D printing — physical prototypes, CAD and product-form explorations.`,
+    answer: `Beyond the screen he explores physical products and prototypes. CARRY / RE:FORM — FORMA 25 is his concept for a modular backpack: a 25L core with interchangeable external modules, internal organizers, a detachable 10–15L expansion layer and a shoe pod, so one bag adapts to photography, trekking, travel or everyday use. He also explores product ideas through 3D printing — physical prototypes, CAD and product-form explorations.`,
     links: [{ label: "Open Beyond the Interface", href: "/beyond" }],
     next: ["hobbies", "photography", "process"],
   },

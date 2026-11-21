@@ -67,13 +67,12 @@ export type Exploration = {
 /** Beyond the Interface — add new ideas here; the page grid picks them up. */
 export const explorations: Exploration[] = [
   {
-    slug: "modular-01",
-    title: "MODULAR 01",
+    slug: "forma-25",
+    title: "CARRY / RE:FORM — FORMA 25",
     status: "Concept",
-    // [brief]
-    summary: "A modular backpack: a 25L core bag, a detachable 10–15L expansion, and movable external modules that attach to either side.",
-    href: "/beyond/modular-01",
-    visual: { kind: "slot", need: "MODULAR 01 hero visual or sketch" },
+    summary: "A configurable backpack that adapts to your activity, your needs and the way you move. One core. Different journeys.",
+    href: "/beyond/forma-25",
+    visual: { kind: "photo", src: "/images/beyond/forma-25/hero.webp" },
   },
   {
     slug: "3d-printing",
@@ -107,16 +106,11 @@ export const photography = {
   folderPick: [1, 4, 11, 13, 16, 20],
 };
 
-/** MODULAR 01 — the concept as described by Nishanth [brief]. */
-export const modular01 = {
-  title: "MODULAR 01",
-  status: "Concept" as ExploreStatus,
-  line: "A modular backpack system: one core bag, an expansion, and modules you can move.",
-  parts: [
-    { k: "Core", v: "A 25L core bag." },
-    { k: "Expansion", v: "A detachable 10–15L expansion." },
-    { k: "Modules", v: "Movable external modules that can attach to either side." },
-    { k: "Attachment", v: "A combination of rails, straps and snap-based attachment systems." },
-    { k: "Ecosystem", v: "A modular ecosystem where users can purchase individual modules or ready-made kits." },
-  ],
-};
+/** FORMA 25 at a glance (the Beyond folder); the full case study is lib/site/forma25.ts. */
+export const forma25Parts = [
+  { k: "Core", v: "A 25L backpack: top access, full-side opening, a suspended laptop sleeve (up to 16\")." },
+  { k: "External modules", v: "Tripod holder, bottle holder, utility pouch, quick-access pocket: they switch sides." },
+  { k: "Internal organizers", v: "Camera cube, clothing, tech and toiletry organizers." },
+  { k: "Expansion", v: "A detachable 10–15L layer and a separate shoe pod: about 35–40L in all." },
+  { k: "Kits", v: "Creator, Explorer, Travel and Everyday, or buy modules one by one." },
+];
