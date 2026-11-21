@@ -120,19 +120,33 @@ export function Prioritization() {
   );
 }
 
-/** Visual · the workflow, 1 → 7 */
+/** Visual · the workflow, 1 → 7, as one flowchart: three phases (where → why → act) */
 export function Workflow() {
-  const steps = ["Monitor overall organisational health", "Identify critical and underperforming entities", "Go to the relevant management level", "Investigate one entity's performance", "Understand meeting quality, risks and blockers", "Review AI insights and recommended actions", "Prioritise follow-up"];
+  const phases = [
+    { k: "Where", c: f.pSee, steps: ["Monitor overall health", "Spot critical entities", "Pick the management level"] },
+    { k: "Why", c: f.pWhy, steps: ["Investigate one entity", "Meeting quality, risks & blockers", "AI insights & actions"] },
+    { k: "Act", c: f.pAct, steps: ["Prioritise follow-up"] },
+  ];
+  let n = 0;
   return (
-    <ol className={f.flow}>
-      {steps.map((s, i) => (
-        <li key={s} className={i < 3 ? f.flowSee : i < 6 ? f.flowWhy : f.flowAct}>
-          <span>{String(i + 1).padStart(2, "0")}</span>
-          <b>{s}</b>
-        </li>
+    <div className={f.chart} role="img" aria-label="Workflow: 1 Monitor overall health, 2 Spot critical entities, 3 Pick the management level, 4 Investigate one entity, 5 Meeting quality, risks and blockers, 6 AI insights and actions, 7 Prioritise follow-up">
+      {phases.map((ph) => (
+        <div key={ph.k} className={`${f.phase} ${ph.c}`} style={{ flex: ph.steps.length }}>
+          <span className={f.phaseK}>{ph.k}</span>
+          <div className={f.nodes}>
+            {ph.steps.map((st) => {
+              n += 1;
+              return (
+                <div key={st} className={f.node}>
+                  <span className={f.dot}>{n}</span>
+                  <b>{st}</b>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       ))}
-      <li className={f.flowKey} aria-hidden="true"><i className={f.flowSee} /> Where <i className={f.flowWhy} /> Why <i className={f.flowAct} /> Action</li>
-    </ol>
+    </div>
   );
 }
 

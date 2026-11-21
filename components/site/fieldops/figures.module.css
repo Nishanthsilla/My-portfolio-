@@ -73,20 +73,26 @@
 .pcell { aspect-ratio: 1.1; display: grid; place-items: center; border-radius: 4px; font: 500 clamp(8px, 0.85vw, 12px)/1 var(--font-geist-sans); font-variant-numeric: tabular-nums; }
 .pfade { opacity: 0.32; }
 
-/* workflow */
-.flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; counter-reset: s; }
-.flow li { position: relative; padding: 18px 16px; border-radius: 14px; background: #fff; border: 1px solid var(--line); display: grid; gap: 10px; align-content: start; }
-.flow li:not(.flowKey):not(:nth-last-child(2))::after { content: "→"; position: absolute; right: -10px; top: 50%; transform: translate(50%, -50%); z-index: 1; width: 20px; height: 20px; display: grid; place-items: center; font-size: 13px; color: var(--muted); background: var(--bg, #faf9f6); border-radius: 50%; }
-.flow li span { font: 500 12px/1 var(--mono); }
-.flow li b { font-size: 15px; font-weight: 560; line-height: 1.35; }
-.flowSee { border-top: 3px solid #3014bd !important; }
-.flowSee span { color: #3014bd; }
-.flowWhy { border-top: 3px solid #ec7f42 !important; }
-.flowWhy span { color: #b4501b; }
-.flowAct { border-top: 3px solid #2e6b40 !important; }
-.flowAct span { color: #2e6b40; }
-.flowKey { grid-column: 1 / -1; flex-direction: row; display: flex !important; gap: 10px; align-items: center; padding: 6px 0 0 !important; border: 0 !important; background: none !important; font: 500 12.5px/1 var(--mono); color: var(--muted); }
-.flowKey i { display: inline-block; width: 18px; height: 0; border-top-width: 3px !important; border-top-style: solid !important; margin-left: 10px; }
+/* workflow: one row, three phases; a line runs through all seven steps */
+.chart { display: flex; gap: 10px; padding: clamp(20px, 3vw, 32px); border-radius: 20px; background: #fff; border: 1px solid var(--line); }
+.phase { min-width: 0; display: grid; gap: 14px; align-content: start; --c: #3014bd; --t: #f4f3fe; }
+.pSee { --c: #3014bd; --t: #f1effe; }
+.pWhy { --c: #d9672e; --t: #fdeee5; }
+.pAct { --c: #2e6b40; --t: #e6f2ea; }
+.phaseK { justify-self: start; padding: 5px 12px; border-radius: 99px; background: var(--t); color: var(--c); font: 600 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; }
+.nodes { position: relative; display: flex; }
+.nodes::before { content: ""; position: absolute; left: 0; right: -10px; top: 17px; height: 2px; background: var(--c); opacity: 0.35; }
+.pAct .nodes::before { right: 50%; }
+.node { position: relative; flex: 1; min-width: 0; display: grid; justify-items: center; gap: 12px; padding: 0 6px; text-align: center; }
+.dot { position: relative; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; background: var(--c); color: #fff; font: 600 14px/1 var(--font-geist-sans); box-shadow: 0 0 0 5px #fff; }
+.node b { font-size: 14px; font-weight: 520; line-height: 1.35; color: #1d1d22; }
+@media (max-width: 760px) {
+  .chart { flex-direction: column; gap: 22px; }
+  .nodes { flex-direction: column; gap: 14px; }
+  .nodes::before { left: 17px; right: auto; top: 0; bottom: 0; width: 2px; height: auto; }
+  .pAct .nodes::before { display: none; }
+  .node { display: flex; justify-items: start; align-items: center; text-align: left; padding: 0; }
+}
 
 /* live demo */
 .live { display: grid; gap: 14px; }

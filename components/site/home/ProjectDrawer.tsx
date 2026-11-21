@@ -32,9 +32,18 @@ export default function ProjectDrawer({ project: p, mode, onMode, onProject, onC
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
     panel.current?.querySelector<HTMLElement>("[data-first]")?.focus();
+    // lock the page behind without overflow:hidden (it un-sticks the homepage's
+    // pinned frame, and the homepage would vanish behind the panel)
     const html = document.documentElement;
-    const prev = html.style.overflow;
-    html.style.overflow = "hidden";
+    html.dataset.drawer = "1";
+    const block = (e: Event) => e.preventDefault();
+    const blockKeys = (e: KeyboardEvent) => {
+      if ([" ", "PageDown", "PageUp", "ArrowDown", "ArrowUp", "Home", "End"].includes(e.key) && !(e.target as HTMLElement)?.closest?.("input, textarea, [contenteditable]")) e.preventDefault();
+    };
+    const layerEl = panel.current?.parentElement;
+    layerEl?.addEventListener("wheel", block, { passive: false });
+    layerEl?.addEventListener("touchmove", block, { passive: false });
+    addEventListener("keydown", blockKeys);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
     };
@@ -61,7 +70,10 @@ export default function ProjectDrawer({ project: p, mode, onMode, onProject, onC
     return () => {
       removeEventListener("keydown", onKey);
       removeEventListener("message", onMsg);
-      html.style.overflow = prev;
+      delete html.dataset.drawer;
+      layerEl?.removeEventListener("wheel", block);
+      layerEl?.removeEventListener("touchmove", block);
+      removeEventListener("keydown", blockKeys);
       opener?.focus?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
