@@ -113,7 +113,7 @@ export default function Journey({
       // pausing near the start of a scene (or the end of the wide work scene) settles onto it
       const settle = () => {
         // never while a full-screen layer is open over the page (the wall, a folder sheet)
-        if (document.documentElement.style.overflow === "hidden") return;
+        if (document.documentElement.style.overflow === "hidden" || document.documentElement.dataset.drawer) return;
         const vw = fr.clientWidth;
         const p = scrollY - top;
         if (p <= 1 || p >= dist - 1) return;

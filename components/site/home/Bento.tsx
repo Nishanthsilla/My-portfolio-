@@ -110,7 +110,7 @@ function Tile({ p, size, tone }: { p: Project; size: TileSize; tone: number }) {
     return (
       <a
         style={style}
-        className={`${cls} ${large ? "cursor-target" : ""}`}
+        className={`${cls} cursor-target`}
         data-cursor-label={`Open on ${p.external.label}`}
         href={p.external.href}
         target="_blank"
@@ -122,7 +122,7 @@ function Tile({ p, size, tone }: { p: Project; size: TileSize; tone: number }) {
     );
   // the whole tile opens the brief overview; "Read full case study" goes straight to the full story
   return (
-    <div style={style} className={`${cls} ${h.stretchTile} ${large ? "cursor-target" : ""}`} data-cursor-label="View project">
+    <div style={style} className={`${cls} ${h.stretchTile} cursor-target`} data-cursor-label="View project">
       {body}
       <Link className={h.stretch} href={overviewHref(p)} aria-label={`${p.title} — project overview`} />
       <Link className={h.tileCta} href={caseStudyHref(p)}>

@@ -113,12 +113,12 @@ function Tile({ p, size, tone, open }: { p: Project; size: TileSize; tone: numbe
   const style = { ["--tone" as string]: TONES[tone % TONES.length] };
   if (p.external)
     return (
-      <a style={style} className={`${cls} ${large ? "cursor-target" : ""}`} data-cursor-label={`Open on ${p.external.label}`} href={p.external.href} target="_blank" rel="noopener noreferrer" aria-label={`${p.title} — opens on ${p.external.label}`}>
+      <a style={style} className={`${cls} cursor-target`} data-cursor-label={`Open on ${p.external.label}`} href={p.external.href} target="_blank" rel="noopener noreferrer" aria-label={`${p.title} — opens on ${p.external.label}`}>
         {body}
       </a>
     );
   return (
-    <div style={style} className={`${cls} ${h.stretchTile} ${large ? "cursor-target" : ""}`} data-cursor-label="View project">
+    <div style={style} className={`${cls} ${h.stretchTile} cursor-target`} data-cursor-label="View project">
       {body}
       <button type="button" className={h.stretch} onClick={() => open("simple")} aria-label={`${p.title} — open`} />
       <button type="button" className={h.tileCta} onClick={() => open("deep")}>
