@@ -79,8 +79,8 @@ export const TOPICS: Topic[] = [
     id: "salespulze",
     q: "What did he do on SalesPulze?",
     keys: ["salespulze", "sales pulze", "salespulse", "heat map", "heatmap", "sales"],
-    answer: `SalesPulze is Covasant's flagship product (2026). Nishanth led end-to-end UX for this agentic AI platform, which clears sales workflow bottlenecks at org scale — with AI-surfaced insights and automated follow-ups that stay reviewable.`,
-    links: [{ label: "Open SalesPulze", href: "/work/salespulze-heat-map" }],
+    answer: `SalesPulze is Covasant's flagship product (2026). Nishanth led end-to-end UX for this agentic AI platform, which clears sales workflow bottlenecks at org scale — with AI-surfaced insights and automated follow-ups that stay reviewable. His case study, Field Operations Health, turns meeting intelligence into a hierarchical heatmap that shows leadership which teams need attention, and why.`,
+    links: [{ label: "Field Operations Health", href: "/work/salespulze-heat-map" }],
     next: ["mao", "ai", "covasant"],
   },
   {
