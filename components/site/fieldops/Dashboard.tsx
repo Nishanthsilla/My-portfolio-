@@ -16,6 +16,9 @@ import d from "./fieldops.module.css";
  */
 type Mode = "cover" | "live";
 
+/** when the summary counts start in the cover (keep in step with .chip in fieldops.module.css) */
+const COUNT_AT = 1450;
+
 function useInView<T extends Element>(once = true) {
   const ref = useRef<T>(null);
   const [seen, setSeen] = useState(false);
@@ -23,12 +26,32 @@ function useInView<T extends Element>(once = true) {
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver((e) => {
-      if (e[0].isIntersecting) { setSeen(true); if (once) io.disconnect(); }
-    }, { threshold: 0.25 });
+      if (e[0].isIntersecting && e[0].boundingClientRect.height > 0) { setSeen(true); if (once) io.disconnect(); }
+    }, { threshold: 0.2 });
     io.observe(el);
     return () => io.disconnect();
   }, [once]);
   return [ref, seen] as const;
+}
+
+/**
+ * true once the page can actually be seen. Inside the project drawer the page
+ * sits in an iframe that stays hidden until it has loaded (then fades in over
+ * 240ms), so the cover waits for that; on its own page it's ready at once.
+ */
+function useVisibleNow() {
+  const [ok, setOk] = useState(false);
+  useEffect(() => {
+    let framed = false;
+    try { framed = window.self !== window.top; } catch { framed = true; }
+    if (!framed) { setOk(true); return; }
+    let t = 0;
+    const go = () => { t = window.setTimeout(() => setOk(true), 280); };
+    if (document.readyState === "complete") go();
+    else window.addEventListener("load", go, { once: true });
+    return () => { window.removeEventListener("load", go); clearTimeout(t); };
+  }, []);
+  return ok;
 }
 
 /** counts up to `to` once `go` is true (or shows it at once with reduced motion) */
@@ -59,6 +82,7 @@ export default function Dashboard({ mode = "live", sort: sortProp, selected: sel
   className?: string;
 }) {
   const [ref, seen] = useInView<HTMLDivElement>();
+  const visible = useVisibleNow();
   const [sortState, setSort] = useState<"natural" | "worst">("natural");
   const [hoverState, setHover] = useState<number | null>(null);
   const [selState, setSel] = useState<number | null>(null);
@@ -66,7 +90,7 @@ export default function Dashboard({ mode = "live", sort: sortProp, selected: sel
   const hover = hoverProp !== undefined ? hoverProp : hoverState;
   const selected = selectedProp !== undefined ? selectedProp : selState;
   const live = mode === "live";
-  const play = mode === "cover" ? seen : true;
+  const play = mode === "cover" ? seen && visible : true;
 
   const cells = useMemo(() => (sort === "worst" ? [...CELLS].sort((a, b) => a.score - b.score || a.n - b.n) : CELLS), [sort]);
   const tip = hover != null ? CELLS.find((c) => c.n === hover) : null;
@@ -106,13 +130,13 @@ export default function Dashboard({ mode = "live", sort: sortProp, selected: sel
         {/* summary bar */}
         <div className={d.summary}>
           <span className={d.viewing}>You are viewing <b>All India</b> → <span>Level 7</span> → TSM</span>
-          <span className={d.chip}><b><CountUp to={SUMMARY.entities} go={play} delay={mode === "cover" ? 2450 : 0} /></b> entities</span>
+          <span className={d.chip}><b><CountUp to={SUMMARY.entities} go={play} delay={mode === "cover" ? COUNT_AT : 0} /></b> entities</span>
           {ORDER.map((st, i) => (
             <span key={st} className={d.chip} style={{ background: STATUS[st].chipBg, color: STATUS[st].chipFg, ["--i" as string]: i }}>
-              <CountUp to={count(st)} go={play} delay={mode === "cover" ? 2450 + i * 90 : 0} /> {STATUS[st].label}
+              <CountUp to={count(st)} go={play} delay={mode === "cover" ? COUNT_AT + i * 70 : 0} /> {STATUS[st].label}
             </span>
           ))}
-          <span className={d.overall}><i /> Overall Score <b><CountUp to={SUMMARY.overall} go={play} delay={mode === "cover" ? 2450 : 0} /></b> · {SUMMARY.overallStatus}</span>
+          <span className={d.overall}><i /> Overall Score <b><CountUp to={SUMMARY.overall} go={play} delay={mode === "cover" ? COUNT_AT : 0} /></b> · {SUMMARY.overallStatus}</span>
         </div>
 
         {/* heatmap */}
@@ -134,7 +158,7 @@ export default function Dashboard({ mode = "live", sort: sortProp, selected: sel
               type="button"
               tabIndex={live ? 0 : -1}
               className={`${d.cell} ${selected === c.n ? d.cellSel : ""} ${selected != null && selected !== c.n ? d.cellDim : ""}`}
-              style={{ background: STATUS[c.status].bg, color: STATUS[c.status].fg, ["--i" as string]: i }}
+              style={{ background: STATUS[c.status].bg, color: STATUS[c.status].fg, ["--i" as string]: i, ["--w" as string]: (i % 22) + Math.floor(i / 22) * 2 }}
               aria-label={`TSM entity ${c.n}: score ${c.score}, ${STATUS[c.status].label}`}
               onMouseEnter={() => live && hoverProp === undefined && setHover(c.n)}
               onFocus={() => live && hoverProp === undefined && setHover(c.n)}
