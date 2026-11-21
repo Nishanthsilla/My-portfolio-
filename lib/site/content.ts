@@ -307,7 +307,7 @@ export type SocialLink = { id: string; label: string; href: string; preview?: { 
 /** GitHub, X and Substack are not listed: no profiles exist yet. */
 export const socials: SocialLink[] = [
   { id: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/in/nishanth-silla" },
-  { id: "instagram", label: "Instagram", href: "https://www.instagram.com/thisisnishanthsilla/" },
+  { id: "instagram", label: "Instagram", href: "https://www.instagram.com/yaa.its_nishanth/" },
   { id: "behance", label: "Behance", href: "https://www.behance.net/nishanthsilla" },
   { id: "medium", label: "Medium", href: "https://medium.com/@nishanthsilla2000" },
   { id: "webflow", label: "Webflow portfolio", href: "https://nishanth.webflow.io/" },
