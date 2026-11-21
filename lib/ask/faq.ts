@@ -7,6 +7,7 @@
  *   keys      words or phrases that point to this topic (lowercase; a phrase scores more than a word)
  *   answer    what's said (plain text; blank line = new paragraph)
  *   more      optional: said for "tell me more" right after this answer
+ *   simple    optional (projects): the plain-language version, for "explain X" / "simply" / "like I'm 5"
  *   links     optional buttons under the answer
  *   next      follow-up questions offered as chips (topic ids)
  */
@@ -20,6 +21,8 @@ export type Topic = {
   keys: string[];
   answer: string;
   more?: string;
+  /** optional: the project explained simply, for "explain it simply / like I'm five / how does it work" */
+  simple?: string;
   links?: { label: string; href: string }[];
   next: string[];
 };
@@ -62,6 +65,11 @@ export const TOPICS: Topic[] = [
     q: "What is Self-Ready?",
     keys: ["self ready", "self-ready", "selfready", "shelf", "retail", "product imagery", "image review", "blocklist", "on-device index", "device model", "recognition"],
     answer: `Self-Ready turns product imagery into device-ready recognition data. It brings image ingestion, processing, human validation, product data management and device readiness into one connected operational experience.\n\nNishanth was Lead Product Designer, responsible for end-to-end product design.`,
+    simple: `In simple words: shops use devices that recognise their products from photos. Self-Ready is the tool that gets those product photos ready for the devices.
+
+The problem: AI labels the photos, but it sometimes gets them wrong, and a wrong label means a device recognises the wrong product.
+
+What Nishanth did: he designed the whole flow as Lead Product Designer, from bringing photos in, to people checking each label with a simple Confirm or Reject, to sending the checked data to devices.`,
     more: `The key lesson: AI output should not automatically be treated as reliable product data. Image Review is built around one decision — does this label belong to this product? — with a direct Confirm or Reject, and the Blocklist keeps exceptions and decision history separate.`,
     links: [{ label: "Open Self-Ready", href: "/work/self-ready/case-study" }],
     next: ["ambient", "ai", "process"],
@@ -71,6 +79,11 @@ export const TOPICS: Topic[] = [
     q: "What is Ambient AI?",
     keys: ["ambient", "ambient ai", "agent configuration", "device configuration", "skill registry", "workflow builder", "management portal", "pre-flight", "deployment", "devices"],
     answer: `Ambient AI makes AI agent and device configuration easier through one connected platform. It brings agent configuration, skill management, workflow creation, orchestration and device deployment into a central interface, rather than relying on phone-based configuration, which was harder to manage.\n\nNishanth was Lead Product Designer, responsible for end-to-end product design.`,
+    simple: `In simple words: Ambient AI is one control panel for setting up AI assistants and the devices they run on.
+
+The problem: setup used to happen on a phone, which got hard to manage.
+
+What Nishanth did: as Lead Product Designer he designed one place to do it all: describe what the assistant should do, give it skills, connect them in a visual workflow, check for problems before going live, and send it to devices.`,
     more: `The Agent workspace uses a split-screen model: a conversational entry point on the left and the configuration workspace on the right. Skills and workflows connect in a visual Workflow Builder, a pre-flight validation stage highlights blockers and warnings, and published versions stay separate from editable drafts.`,
     links: [{ label: "Open Ambient AI", href: "/work/ambient-ai/case-study" }],
     next: ["selfready", "mao", "ai"],
@@ -80,6 +93,11 @@ export const TOPICS: Topic[] = [
     q: "What did he do on SalesPulze?",
     keys: ["salespulze", "sales pulze", "salespulse", "heat map", "heatmap", "sales"],
     answer: `SalesPulze is Covasant's flagship product (2026). Nishanth led end-to-end UX for this agentic AI platform, which clears sales workflow bottlenecks at org scale — with AI-surfaced insights and automated follow-ups that stay reviewable. His case study, Field Operations Health, turns meeting intelligence into a hierarchical heatmap that shows leadership which teams need attention, and why.`,
+    simple: `In simple words: SalesPulze listens to a company's sales meetings and uses AI to find what needs attention.
+
+The problem: leaders had all this meeting data, but couldn't see at a glance which teams were struggling without reading report after report.
+
+What Nishanth did: he designed Field Operations Health, a heatmap where every box is one person or team, coloured from red (needs help now) to green (doing well). Leaders spot the red boxes first, then click one to see the meetings, problems and suggested next steps behind it.`,
     links: [{ label: "Field Operations Health", href: "/work/salespulze-heat-map" }],
     next: ["mao", "ai", "covasant"],
   },
@@ -88,14 +106,37 @@ export const TOPICS: Topic[] = [
     q: "What is MAO?",
     keys: ["mao", "multi-agent", "multi agent", "orchestrator"],
     answer: `MAO — the Multi-Agent Orchestrator (Covasant, 2026) — covers how users assign tasks, watch execution status and step in when human input is needed, with intervention points, confidence indicators and approval flows.`,
+    simple: `In simple words: MAO lets several AI agents work on a job together while a person stays in charge.
+
+The problem: when AI does things on its own, people need to see what it's doing and be able to step in.
+
+What Nishanth did: he designed how you hand tasks to the agents, watch their progress, see how confident they are, and approve or step in when a human decision is needed.`,
     links: [{ label: "Open MAO", href: "/work/mao" }],
     next: ["ai", "salespulze", "designsystem"],
+  },
+  {
+    id: "thriving",
+    q: "What is Thriving Springs?",
+    keys: ["thriving", "thriving springs", "springs", "e-learning", "elearning", "lms", "learning app", "learning platform", "gamified", "gamification", "frontline"],
+    answer: `Thriving Springs is an AI-driven, gamified learning platform (2024–25). Nishanth was Lead UX Designer and led a team of 5 across UI/UX, motion and branding, designing skill-based learning that adapts to frontline workers, which drove a 6% rise in engagement in the first month.`,
+    simple: `In simple words: Thriving Springs is a learning app for frontline workers that feels a bit like a game.
+
+The problem: training is easy to ignore when it's the same for everyone.
+
+What Nishanth did: he led a team of 5 to design lessons that adapt to each worker, with game-like rewards, and engagement rose 6% in the first month.`,
+    links: [{ label: "Open Thriving Springs", href: "/work/thriving-springs-e-learning" }],
+    next: ["salespulze", "designsystem", "projects"],
   },
   {
     id: "designsystem",
     q: "Has he built design systems?",
     keys: ["design system", "design systems", "component library", "components", "tokens", "covasant design system", "ryzeup design system"],
     answer: `Yes. At Covasant he built a scalable design system and component library for the whole product suite, to speed up design-to-dev handoff and keep products consistent.\n\nBefore that he created the Ryzeup Design System with accessibility built in from day one, and contributed to the Disprz Design System.`,
+    simple: `In simple words: a design system is a shared set of building blocks (buttons, forms, colours and the rules for using them) that every product in a company uses.
+
+The problem: without one, each product looks and behaves a little differently, and every screen gets designed and built from scratch.
+
+What Nishanth did: at Covasant he built that shared library for the whole product suite, so designers and developers reuse the same pieces, hand-offs are faster, and the products feel like one family.`,
     links: [{ label: "Open Covasant Design System", href: "/work/covasant-design-system" }],
     next: ["process", "skills", "projects"],
   },
@@ -209,6 +250,10 @@ export const TOPICS: Topic[] = [
 
 export const GREETING = /^(hi|hey|hello|hola|yo|namaste|good (morning|afternoon|evening)|sup|hii+)\b[\s!.?]*$/i;
 export const THANKS = /^(thanks|thank you|thx|ty|cool|great|nice|awesome|ok|okay)\b[\s!.?]*$/i;
-export const MORE = /\b(more|elaborate|explain|details?|go on|continue|expand)\b/i;
+export const MORE = /\b(more|elaborate|details?|go on|continue|expand|deeper)\b/i;
+/** "explain it simply": explain, simple, easy, like I'm five, how does it work, what does it do… */
+export const SIMPLE = /\b(explain|simple|simply|simpler|easy|easily|eli5|layman|plain (english|words)|in short|break(ing)? (it )?down|dumb (it )?down|like i'?m (5|five|a kid)|how does (it|this|that|.{1,30}) work|what does (it|this|that|.{1,30}) do|understand)\b/i;
+/** the topics that are projects (they have a simple version) */
+export const PROJECT_TOPICS = ["selfready", "ambient", "salespulze", "mao", "thriving", "designsystem"];
 export const SUGGESTED = ["focus", "projects", "ai"];
 export const topicById = (id: string) => TOPICS.find((t) => t.id === id);

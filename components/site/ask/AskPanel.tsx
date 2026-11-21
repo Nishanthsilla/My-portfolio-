@@ -177,6 +177,9 @@ export default function AskPanel({ face }: { face: string | null }) {
   const asked = new Set(msgs.filter((m) => m.role === "user").map((m) => m.content));
   const lastMsg = msgs[msgs.length - 1];
   const followUps = !busy && lastMsg?.role === "assistant" ? (lastMsg.next ?? []).map((id) => topicById(id)?.q).filter((q): q is string => !!q && !asked.has(q)) : [];
+  // after a project's answer, offer the plain-language version (until it's been given)
+  const lastT = !busy && lastMsg?.role === "assistant" && lastMsg.topic ? topicById(lastMsg.topic) : undefined;
+  if (lastT?.simple && lastMsg?.content !== lastT.simple) followUps.unshift("Explain it simply");
 
   return (
     <>

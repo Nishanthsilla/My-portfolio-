@@ -6,7 +6,7 @@
  *   · anything else → off-topic (the panel answers with a "nope" GIF)
  */
 import { contact } from "@/lib/site/content";
-import { GREETING, MORE, SUGGESTED, THANKS, TOPICS, topicById, type Topic } from "./faq";
+import { GREETING, MORE, PROJECT_TOPICS, SIMPLE, SUGGESTED, THANKS, TOPICS, topicById, type Topic } from "./faq";
 
 export type Reply =
   | { kind: "answer"; text: string; links?: Topic["links"]; next: string[]; topic?: string }
@@ -73,6 +73,13 @@ export function respond(question: string, lastTopic?: string): Reply {
   if (last && MORE.test(q) && best.s < 3) {
     if (last.more) return { kind: "answer", text: last.more, links: last.links, next: last.next, topic: last.id };
     return { kind: "answer", text: "That's the short version — these go deeper:", next: last.next, topic: last.id };
+  }
+
+  // "explain X simply": the plain-language version of a project
+  if (SIMPLE.test(q) && !/\b(more|deeper|details?|elaborate)\b/.test(q)) {
+    const proj = best.s >= 2 && best.t.simple ? best.t : !best.s || best.s < 2 ? (last?.simple ? last : undefined) : undefined;
+    if (proj?.simple) return { kind: "answer", text: proj.simple, links: proj.links, next: proj.next, topic: proj.id };
+    if (best.s < 2 || best.t.id === "projects") return { kind: "answer", text: "Happy to explain any of his projects in simple words. Which one?", next: PROJECT_TOPICS.slice(0, 4) };
   }
 
   if (best.s >= 2) return { kind: "answer", text: best.t.answer, links: best.t.links, next: best.t.next, topic: best.t.id };
