@@ -18,6 +18,11 @@ const TONES = [
   "linear-gradient(180deg, #F8CDB0 0%, #E07A57 100%)",
   "linear-gradient(170deg, #9C8BF5 0%, #3B2B95 100%)",
 ];
+/** a project that needs its own backdrop (it sets off its cover) */
+const TONE_FOR: Record<string, string> = {
+  // deep plum and wine: the Critical red box glows on it
+  "salespulze-heat-map": "radial-gradient(120% 90% at 50% 30%, #6B1E3E 0%, #3A0F22 55%, #1C0711 100%)",
+};
 const SHOWN = 6;
 const size = (slug: string): TileSize => bento.find((b) => b.slug === slug)?.size ?? "small";
 
@@ -110,7 +115,7 @@ function Tile({ p, size, tone, open }: { p: Project; size: TileSize; tone: numbe
     </>
   );
   const cls = `${h.tile} ${large ? h.large : h.small}`;
-  const style = { ["--tone" as string]: TONES[tone % TONES.length] };
+  const style = { ["--tone" as string]: TONE_FOR[p.slug] ?? TONES[tone % TONES.length] };
   if (p.external)
     return (
       <a style={style} className={`${cls} cursor-target`} data-cursor-label={`Open on ${p.external.label}`} href={p.external.href} target="_blank" rel="noopener noreferrer" aria-label={`${p.title} — opens on ${p.external.label}`}>

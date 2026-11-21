@@ -105,7 +105,7 @@ function Tile({ p, size, tone }: { p: Project; size: TileSize; tone: number }) {
     </>
   );
   const cls = `${h.tile} ${large ? h.large : h.small}`;
-  const style = { ["--tone" as string]: TONES[tone % TONES.length] };
+  const style = { ["--tone" as string]: (p.slug === "salespulze-heat-map" ? "radial-gradient(120% 90% at 50% 30%, #6B1E3E 0%, #3A0F22 55%, #1C0711 100%)" : undefined) ?? TONES[tone % TONES.length] };
   if (p.external)
     return (
       <a
