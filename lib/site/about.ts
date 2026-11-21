@@ -96,7 +96,7 @@ export const photography = {
   subtitle: "Frames, places and moments.",
   // [webflow]
   note: "I work full-time as a product designer, but I've also taken on the role of events photographer. This has enabled me to delve into business management and handle various aspects of my clients' events.",
-  instagram: "https://www.instagram.com/thisisnishanthsilla/",
+  instagram: "https://www.instagram.com/yaa.its_nishanth/",
   /** All photographs from the Webflow portfolio, in their original order. */
   photos: Array.from({ length: 23 }, (_, i) => {
     const n = String(i + 1).padStart(2, "0");

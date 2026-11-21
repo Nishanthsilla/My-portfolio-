@@ -101,7 +101,7 @@ export default function Journey({
       };
       const paint = () => {
         raf = 0;
-        current += (target - current) * 0.18;
+        current += (target - current) * (paging ? 0.5 : 0.18);
         if (Math.abs(target - current) < 0.4) current = target;
         tr.style.transform = `translate3d(${(-current).toFixed(1)}px,0,0)`;
         pick(current);
@@ -148,6 +148,93 @@ export default function Journey({
         if (!el) return;
         scrollTo({ top: top + Math.min(dist, el.offsetLeft), behavior: smooth ? "smooth" : ("instant" as ScrollBehavior) });
       };
+
+      /* ---------- one scroll = one page ----------
+       * A wheel or trackpad gesture (or ↓ / ↑, Page Down / Up, Space) moves exactly one
+       * page: the start of the next panel or scene. The rest of that gesture (trackpad
+       * momentum) is swallowed, so a flick never skips a page or stops between two.
+       * Wide scenes (the work strip) are stepped through a screen at a time. */
+      const stops = () => {
+        const vw = fr.clientWidth;
+        const raw: number[] = [0, dist];
+        tr.querySelectorAll<HTMLElement>("[data-snap]").forEach((el) => raw.push(Math.min(dist, el.offsetLeft)));
+        tr.querySelectorAll<HTMLElement>("[data-snap-end]").forEach((el) => raw.push(Math.min(dist, Math.max(0, el.offsetLeft + el.offsetWidth - vw))));
+        const pts = [...new Set(raw.map((x) => Math.round(x)))].sort((x, y) => x - y).filter((x, i, arr) => i === 0 || x - arr[i - 1] > 4);
+        // a gap wider than a screen gets in-between stops, a screen (less a little) apart
+        const out: number[] = [];
+        pts.forEach((x, i) => {
+          if (i) {
+            const prev = pts[i - 1], gap = x - prev;
+            if (gap > vw * 1.1) {
+              const n = Math.ceil(gap / (vw * 0.85));
+              for (let k = 1; k < n; k++) out.push(Math.round(prev + (gap * k) / n));
+            }
+          }
+          out.push(x);
+        });
+        return out;
+      };
+      let paging = false, lastWheel = 0, anim = 0;
+      const blocked = () => {
+        const html = document.documentElement;
+        return html.style.overflow === "hidden" || !!html.dataset.drawer || html.classList.contains("intro-lock");
+      };
+      const stepTo = (dirn: 1 | -1) => {
+        const p = scrollY - top;
+        const list = stops();
+        const next = dirn > 0 ? list.find((x) => x > p + 3) : [...list].reverse().find((x) => x < p - 3);
+        if (next === undefined) return false;
+        paging = settling = true;
+        const from = scrollY, to = top + next, t0 = performance.now(), dur = 720;
+        cancelAnimationFrame(anim);
+        const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+        const tick = (now: number) => {
+          const k = Math.min(1, (now - t0) / dur);
+          scrollTo({ top: from + (to - from) * ease(k), behavior: "instant" as ScrollBehavior });
+          if (k < 1) anim = requestAnimationFrame(tick);
+          else {
+            // stay locked until the rest of this gesture has died away
+            const wait = () => {
+              if (performance.now() - lastWheel > 220) { paging = false; settling = false; }
+              else window.setTimeout(wait, 60);
+            };
+            wait();
+          }
+        };
+        anim = requestAnimationFrame(tick);
+        return true;
+      };
+      const inJourney = () => {
+        const p = scrollY - top;
+        return p >= -2 && p <= dist + 2;
+      };
+      const onWheel = (e: WheelEvent) => {
+        if (e.defaultPrevented || blocked() || e.ctrlKey) return; // the wall / gallery scroll themselves; pinch-zoom stays
+        const dy = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+        if (!inJourney()) return;
+        const p = scrollY - top;
+        const dirn = dy > 0 ? 1 : -1;
+        // past the ends of the journey, the page scrolls as usual
+        if ((dirn > 0 && p >= dist - 2) || (dirn < 0 && p <= 2)) { if (!paging) return; }
+        e.preventDefault();
+        lastWheel = performance.now();
+        if (paging || Math.abs(dy) < 2) return;
+        stepTo(dirn);
+      };
+      const onKey = (e: KeyboardEvent) => {
+        if (blocked() || !inJourney() || e.altKey || e.ctrlKey || e.metaKey) return;
+        const t = e.target as HTMLElement | null;
+        if (t?.closest?.("input, textarea, select, [contenteditable], [role=dialog]")) return;
+        const down = ["ArrowDown", "PageDown", "ArrowRight"].includes(e.key) || (e.key === " " && !e.shiftKey);
+        const up = ["ArrowUp", "PageUp", "ArrowLeft"].includes(e.key) || (e.key === " " && e.shiftKey);
+        if (!down && !up) return;
+        if (e.key.startsWith("Arrow") && t?.closest?.("button, a, [role=tab], [role=slider]") && (e.key === "ArrowLeft" || e.key === "ArrowRight")) return;
+        e.preventDefault();
+        if (!paging) stepTo(down ? 1 : -1);
+      };
+      addEventListener("wheel", onWheel, { passive: false });
+      addEventListener("keydown", onKey);
+
       const ro = new ResizeObserver(() => {
         measure();
         onScroll();
@@ -163,6 +250,9 @@ export default function Journey({
         cancelAnimationFrame(raf);
         window.clearTimeout(idle);
         removeEventListener("scroll", onScroll);
+        removeEventListener("wheel", onWheel);
+        removeEventListener("keydown", onKey);
+        cancelAnimationFrame(anim);
         sec.style.height = "";
         sec.style.removeProperty("--jw");
         tr.style.transform = "";
