@@ -75,6 +75,14 @@ export const explorations: Exploration[] = [
     visual: { kind: "photo", src: "/images/beyond/forma-25/hero.webp" },
   },
   {
+    slug: "desk-organizer",
+    title: "Modular Hanging Desk Organizer",
+    status: "Concept",
+    summary: "A modular hanging storage organizer designed to use the unused space beneath a desk.",
+    href: "/beyond/desk-organizer",
+    visual: { kind: "photo", src: "/images/beyond/desk-organizer/hero-sm.webp" },
+  },
+  {
     slug: "3d-printing",
     title: "3D printing & physical experiments",
     status: "Status to confirm",
@@ -113,4 +121,13 @@ export const forma25Parts = [
   { k: "Internal organizers", v: "Camera cube, clothing, tech and toiletry organizers." },
   { k: "Expansion", v: "A detachable 10–15L layer and a separate shoe pod: about 35–40L in all." },
   { k: "Kits", v: "Creator, Explorer, Travel and Everyday, or buy modules one by one." },
+];
+
+/** Desk organizer at a glance (the Beyond folder); the full case study is lib/site/deskOrganizer.ts. */
+export const deskOrganizerParts = [
+  { k: "Mount", v: "Hooks over the desk edge, so the storage sits beneath the tabletop." },
+  { k: "Trays", v: "Removable trays that can be repositioned at different heights." },
+  { k: "Ledges", v: "Internal sliding ledges, about 0.5 in, on both inner walls support and guide the trays." },
+  { k: "Headphone peg", v: "A detachable peg in one dedicated exterior hole, independent of the trays." },
+  { k: "Target load", v: "3–5 kg (a design target, not yet validated)." },
 ];
