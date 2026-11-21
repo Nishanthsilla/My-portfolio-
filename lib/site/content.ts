@@ -37,7 +37,7 @@ export type Project = {
     | { kind: "visual"; id: VisualId }
     | { kind: "image"; src: string; alt: string; fit?: "cover" | "contain"; bg?: string }
     /** an animated product-UI cover (Self-Ready) */
-    | { kind: "scene"; id: "self-ready" }
+    | { kind: "scene"; id: "self-ready" | "field-ops" }
     /** no visual yet: a designed "ADD IMAGE HERE" cover */
     | { kind: "placeholder"; need: string };
   /** facts that still need Nishanth's confirmation, shown with a marker */
@@ -68,18 +68,23 @@ export const projects: Project[] = [
   {
     slug: "salespulze-heat-map",
     category: "product-strategy",
-    title: "SalesPulze — Heat Map",
+    title: "SalesPulze — Field Operations Health",
     eyebrow: "Agentic AI · Sales platform",
     org: "Covasant",
     year: "2026",
     role: "Lead Product Designer",
     description:
-      "End-to-end UX for an agentic AI platform that clears sales workflow bottlenecks at org scale, with AI-surfaced insights and automated follow-ups that stay reviewable.",
-    tags: ["Flagship · Lead", "AI insights", "Follow-up orchestration"],
+      "From scattered sales intelligence to an organisation-wide view of operational health: a hierarchical heatmap that shows leadership who needs attention, and why.",
+    tags: ["Flagship · Lead", "Data visualisation", "Information architecture"],
     contribution: [
       "SalesPulze (flagship product): Led end-to-end UX for an Agentic AI platform that tackles sales workflow bottlenecks and customer engagement problems at org scale, helping sales teams close faster with AI-surfaced insights and automated follow-up orchestration.",
     ],
-    preview: { kind: "visual", id: "sales" },
+    preview: { kind: "scene", id: "field-ops" },
+    featured: {
+      overview: "/work/salespulze-heat-map",
+      caseStudy: "/work/salespulze-heat-map/case-study",
+      tags: ["Product Design", "Data visualisation"],
+    },
     source: "site",
   },
   {
