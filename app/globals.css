@@ -23,6 +23,6 @@ html[data-embed] main { padding-top: 8px; }
 /* dark theme: page background behind everything, and a soft cross-fade when switching */
 html[data-theme="dark"], html[data-theme="dark"] body { background: #0d0d0f; color-scheme: dark; }
 html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after { transition: background-color 400ms ease, color 400ms ease, border-color 400ms ease !important; }
-/* the theme switch's ink bleed (ThemeToggle.tsx + inkMask.ts draw the mask frame by frame) */
+/* the theme switch's ink bleed: the new page is clipped to the traced ink outline (ThemeToggle.tsx + inkMask.ts) */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
-html.ink-on::view-transition-new(root) { -webkit-mask-image: var(--ink-mask); mask-image: var(--ink-mask); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; mask-mode: luminance; }
+html.ink-on::view-transition-new(root) { clip-path: var(--ink-clip, inset(0 0 100% 0)); }
