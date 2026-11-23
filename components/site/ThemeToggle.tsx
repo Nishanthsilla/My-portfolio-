@@ -1,16 +1,65 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import { InkMask } from "./inkMask";
 import s from "./site.module.css";
 
 const KEY = "nishanth.theme";
+const DUR = 1300;
+const FRAMES = 48;
+const ease = (x: number) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
 
-/** Light / dark switch. The choice is remembered; the page is themed before paint by the script in app/layout.tsx. */
+type StartVT = (cb: () => void) => { ready: Promise<void>; finished: Promise<void> };
+type Baked = { key: string; urls: string[]; imgs: HTMLImageElement[]; used?: boolean };
+
+/** the theme lives on <html data-theme>; this follows it */
+const subscribe = (cb: () => void) => {
+  const mo = new MutationObserver(cb);
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  return () => mo.disconnect();
+};
+const isDark = () => document.documentElement.dataset.theme === "dark";
+
+/** Light / dark switch with an ink-bleed transition. The choice is remembered; the page is themed before paint by the script in app/layout.tsx. */
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(false);
+  const dark = useSyncExternalStore(subscribe, isDark, () => false);
   const btn = useRef<HTMLButtonElement>(null);
-  useEffect(() => setDark(document.documentElement.dataset.theme === "dark"), []);
+  const baked = useRef<Baked | null>(null);
+  const baking = useRef<string | null>(null);
+
+  /** where the ink starts (the toggle), and the screen it covers */
+  const origin = () => {
+    const r = btn.current!.getBoundingClientRect();
+    const ox = (r.left + r.width / 2) / innerWidth, oy = (r.top + r.height / 2) / innerHeight;
+    return { ox, oy, key: `${innerWidth}x${innerHeight}:${ox.toFixed(3)}:${oy.toFixed(3)}` };
+  };
+
+  /** prepares the frames in the background, ready for the next click */
+  const prepare = useCallback(() => {
+    if (!btn.current || !(document as Document & { startViewTransition?: StartVT }).startViewTransition) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const { ox, oy, key } = origin();
+    if ((baked.current?.key === key && !baked.current.used) || baking.current === key) return;
+    const ink = new InkMask(innerWidth, innerHeight, 480);
+    if (!ink.ok) return;
+    baking.current = key;
+    ink.bake(ox, oy, FRAMES, ease, () => baking.current === key).then((done) => {
+      if (baking.current === key) baking.current = null;
+      if (!done) return;
+      baked.current?.urls.forEach((u) => URL.revokeObjectURL(u));
+      baked.current = { key, ...done };
+    });
+  }, []);
+
+  useEffect(() => {
+    const ric = (window as { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+    const idle = (cb: () => void) => (ric ? ric(cb, { timeout: 3000 }) : window.setTimeout(cb, 1500));
+    idle(prepare);
+    let t = 0;
+    const onResize = () => { clearTimeout(t); t = window.setTimeout(() => idle(prepare), 600); };
+    addEventListener("resize", onResize);
+    return () => { removeEventListener("resize", onResize); clearTimeout(t); };
+  }, [prepare]);
 
   const flip = () => {
     const next = !dark;
@@ -20,30 +69,31 @@ export default function ThemeToggle() {
       try { localStorage.setItem(KEY, next ? "dark" : "light"); } catch {}
       // pages open in the project panel follow along
       document.querySelectorAll("iframe").forEach((f) => { try { f.contentDocument?.documentElement.setAttribute("data-theme", next ? "dark" : "light"); } catch {} });
-      setDark(next);
     };
-    const vt = (document as Document & { startViewTransition?: (cb: () => void) => { ready: Promise<void>; finished: Promise<void> } }).startViewTransition;
-    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!vt || still) {
-      // fallback: a soft cross-fade
+    const fade = () => {
       root.classList.add("theme-anim");
       apply();
       window.setTimeout(() => root.classList.remove("theme-anim"), 450);
-      return;
+    };
+    const vt = (document as Document & { startViewTransition?: StartVT }).startViewTransition;
+    if (!vt || matchMedia("(prefers-reduced-motion: reduce)").matches) return fade();
+
+    const { ox, oy, key } = origin();
+    let frameAt: (k: number) => string;
+    if (baked.current?.key === key && !baked.current.used) {
+      baked.current.used = true;
+      const urls = baked.current.urls;
+      frameAt = (k) => urls[Math.min(urls.length - 1, Math.round(k * (urls.length - 1)))];
+    } else {
+      // not prepared yet (e.g. a click straight after loading): draw it live
+      const ink = new InkMask(innerWidth, innerHeight, 560);
+      if (!ink.ok) return fade();
+      frameAt = (k) => ink.frame(ox, oy, ease(k));
     }
-    const ink = new InkMask(innerWidth, innerHeight);
-    if (!ink.ok) {
-      root.classList.add("theme-anim");
-      apply();
-      window.setTimeout(() => root.classList.remove("theme-anim"), 450);
-      return;
-    }
-    // the ink starts at the toggle and bleeds across the page
-    const r = btn.current!.getBoundingClientRect();
-    const ox = (r.left + r.width / 2) / innerWidth, oy = (r.top + r.height / 2) / innerHeight;
-    const DUR = 1350;
-    const ease = (x: number) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
-    root.style.setProperty("--ink-mask", `url(${ink.frame(ox, oy, 0)})`);
+
+    let last = "";
+    const set = (url: string) => { if (url !== last) { root.style.setProperty("--ink-mask", `url(${url})`); last = url; } };
+    set(frameAt(0));
     root.classList.add("ink-on");
     const t = vt.call(document, apply);
     t.ready.then(() => {
@@ -52,16 +102,21 @@ export default function ThemeToggle() {
       const t0 = performance.now();
       const step = (now: number) => {
         const k = Math.min(1, (now - t0) / DUR);
-        root.style.setProperty("--ink-mask", `url(${ink.frame(ox, oy, ease(k))})`);
+        set(frameAt(k));
         if (k < 1) requestAnimationFrame(step);
       };
       requestAnimationFrame(step);
     }).catch(() => {});
-    t.finished.finally(() => { root.classList.remove("ink-on"); root.style.removeProperty("--ink-mask"); });
+    t.finished.finally(() => {
+      root.classList.remove("ink-on");
+      root.style.removeProperty("--ink-mask");
+      // played frames don't stay decoded, so a fresh set (with a new ink shape) is prepared for the next switch
+      window.setTimeout(prepare, 150);
+    });
   };
 
   return (
-    <button ref={btn} type="button" className={`${s.themeBtn} cursor-target`} onClick={flip} aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} aria-pressed={dark} title={dark ? "Light theme" : "Dark theme"}>
+    <button ref={btn} type="button" className={`${s.themeBtn} cursor-target`} onClick={flip} onPointerEnter={prepare} aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} aria-pressed={dark} title={dark ? "Light theme" : "Dark theme"}>
       <svg viewBox="0 0 24 24" aria-hidden="true">
         {dark ? (
           <g><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" /></g>
