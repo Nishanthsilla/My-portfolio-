@@ -6,11 +6,12 @@ import s from "./site.module.css";
 
 const KEY = "nishanth.theme";
 const DUR = 1300;
-const FRAMES = 48;
+const FRAMES = 60;
 const ease = (x: number) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
+const HIDDEN = "inset(0 0 100% 0)";
 
 type StartVT = (cb: () => void) => { ready: Promise<void>; finished: Promise<void> };
-type Baked = { key: string; urls: string[]; imgs: HTMLImageElement[]; used?: boolean };
+type Baked = { key: string; frames: string[] };
 
 /** the theme lives on <html data-theme>; this follows it */
 const subscribe = (cb: () => void) => {
@@ -27,33 +28,31 @@ export default function ThemeToggle() {
   const baked = useRef<Baked | null>(null);
   const baking = useRef<string | null>(null);
 
-  /** where the ink starts (the toggle), and the screen it covers */
+  /** where the ink starts (the toggle). The key ignores the screen height: on phones it changes as the address bar slides, and the outline is scaled to fit. */
   const origin = () => {
     const r = btn.current!.getBoundingClientRect();
     const ox = (r.left + r.width / 2) / innerWidth, oy = (r.top + r.height / 2) / innerHeight;
-    return { ox, oy, key: `${innerWidth}x${innerHeight}:${ox.toFixed(3)}:${oy.toFixed(3)}` };
+    return { ox, oy, key: `${innerWidth}:${Math.round(r.left / 8)}:${Math.round(r.top / 8)}` };
   };
 
-  /** prepares the frames in the background, ready for the next click */
+  /** traces the outlines in the background, ready for the next click (a new ink shape each time) */
   const prepare = useCallback(() => {
     if (!btn.current || !(document as Document & { startViewTransition?: StartVT }).startViewTransition) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const { ox, oy, key } = origin();
-    if ((baked.current?.key === key && !baked.current.used) || baking.current === key) return;
-    const ink = new InkMask(innerWidth, innerHeight, 480);
+    if (baked.current?.key === key || baking.current === key) return;
+    const ink = new InkMask(innerWidth, innerHeight);
     if (!ink.ok) return;
     baking.current = key;
-    ink.bake(ox, oy, FRAMES, ease, () => baking.current === key).then((done) => {
+    ink.bake(ox, oy, FRAMES, ease, () => baking.current === key).then((frames) => {
       if (baking.current === key) baking.current = null;
-      if (!done) return;
-      baked.current?.urls.forEach((u) => URL.revokeObjectURL(u));
-      baked.current = { key, ...done };
+      if (frames) baked.current = { key, frames };
     });
   }, []);
 
   useEffect(() => {
     const ric = (window as { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
-    const idle = (cb: () => void) => (ric ? ric(cb, { timeout: 3000 }) : window.setTimeout(cb, 1500));
+    const idle = (cb: () => void) => (ric ? ric(cb, { timeout: 1200 }) : window.setTimeout(cb, 800));
     idle(prepare);
     let t = 0;
     const onResize = () => { clearTimeout(t); t = window.setTimeout(() => idle(prepare), 600); };
@@ -80,20 +79,19 @@ export default function ThemeToggle() {
 
     const { ox, oy, key } = origin();
     let frameAt: (k: number) => string;
-    if (baked.current?.key === key && !baked.current.used) {
-      baked.current.used = true;
-      const urls = baked.current.urls;
-      frameAt = (k) => urls[Math.min(urls.length - 1, Math.round(k * (urls.length - 1)))];
+    const ready = baked.current?.key === key ? baked.current : null;
+    if (ready) {
+      baked.current = null;
+      frameAt = (k) => ready.frames[Math.min(ready.frames.length - 1, Math.round(k * (ready.frames.length - 1)))];
     } else {
-      // not prepared yet (e.g. a click straight after loading): draw it live
-      const ink = new InkMask(innerWidth, innerHeight, 560);
+      // not prepared yet (a click straight after loading): trace it live
+      const ink = new InkMask(innerWidth, innerHeight);
       if (!ink.ok) return fade();
       frameAt = (k) => ink.frame(ox, oy, ease(k));
     }
-
     let last = "";
-    const set = (url: string) => { if (url !== last) { root.style.setProperty("--ink-mask", `url(${url})`); last = url; } };
-    set(frameAt(0));
+    const set = (v: string) => { if (v !== last) { root.style.setProperty("--ink-clip", v); last = v; } };
+    set(HIDDEN);
     root.classList.add("ink-on");
     const t = vt.call(document, apply);
     t.ready.then(() => {
@@ -109,8 +107,7 @@ export default function ThemeToggle() {
     }).catch(() => {});
     t.finished.finally(() => {
       root.classList.remove("ink-on");
-      root.style.removeProperty("--ink-mask");
-      // played frames don't stay decoded, so a fresh set (with a new ink shape) is prepared for the next switch
+      root.style.removeProperty("--ink-clip");
       window.setTimeout(prepare, 150);
     });
   };
