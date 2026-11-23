@@ -41,10 +41,10 @@ export class InkMask {
   private gl: WebGLRenderingContext | null = null;
   private u: Record<string, WebGLUniformLocation | null> = {};
 
-  constructor(w: number, h: number) {
+  constructor(w: number, h: number, size = 720) {
     this.canvas = document.createElement("canvas");
     // a fraction of the screen size: soft enough to be fast, sharp enough to read as ink
-    const k = Math.min(1, 720 / Math.max(w, h));
+    const k = Math.min(1, size / Math.max(w, h));
     this.canvas.width = Math.round(w * k);
     this.canvas.height = Math.round(h * k);
     try {
@@ -73,12 +73,40 @@ export class InkMask {
     }
   }
 
-  /** origin in 0..1 of the screen; returns the frame as an image URL for mask-image */
-  frame(ox: number, oy: number, p: number) {
+  private draw(ox: number, oy: number, p: number) {
     const gl = this.gl!;
     gl.uniform2f(this.u.o, ox, oy);
     gl.uniform1f(this.u.p, p);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  /** origin in 0..1 of the screen; returns the frame as an image URL for mask-image */
+  frame(ox: number, oy: number, p: number) {
+    this.draw(ox, oy, p);
     return this.canvas.toDataURL("image/jpeg", 0.85);
+  }
+
+  /**
+   * Prepares the whole bleed ahead of time (in small slices, so the page stays
+   * responsive): n frames, evenly spaced in time, already decoded, so playing
+   * them back costs the browser almost nothing.
+   */
+  async bake(ox: number, oy: number, n: number, ease: (x: number) => number, alive: () => boolean) {
+    const urls: string[] = [];
+    const imgs: HTMLImageElement[] = [];
+    for (let i = 0; i < n; i++) {
+      if (!alive()) break;
+      this.draw(ox, oy, ease(i / (n - 1)));
+      const blob = await new Promise<Blob | null>((res) => this.canvas.toBlob(res, "image/jpeg", 0.88));
+      if (!blob) break;
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.src = url;
+      try { await img.decode(); } catch {}
+      urls.push(url);
+      imgs.push(img);
+      if (i % 4 === 3) await new Promise((r) => setTimeout(r, 0));
+    }
+    return urls.length === n ? { urls, imgs } : (urls.forEach((u) => URL.revokeObjectURL(u)), null);
   }
 }
