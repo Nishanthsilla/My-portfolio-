@@ -23,7 +23,7 @@
 
 /* cards */
 .cards4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 32px; }
-.card { padding: 22px; border-radius: 14px; background: #fff; border: 1px solid var(--line); display: grid; gap: 8px; align-content: start; }
+.card { padding: 22px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); display: grid; gap: 8px; align-content: start; }
 .card b { font-size: 17px; font-weight: 560; }
 .card p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted); }
 .callout { margin: 32px 0 0; padding-left: 18px; border-left: 3px solid #ff6a1a; font-size: clamp(18px, 1.6vw, 21px); line-height: 1.5; max-width: 34em; }
@@ -44,7 +44,7 @@
 
 /* the four systems */
 .systems { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 20px; }
-.system { padding: 22px; border-radius: 14px; background: #fff; border: 1px solid var(--line); display: grid; gap: 10px; align-content: start; }
+.system { padding: 22px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); display: grid; gap: 10px; align-content: start; }
 .sysNum { font: 500 12px/1 var(--mono); color: #ff6a1a; }
 .system b { font-size: 17px; font-weight: 560; }
 .system ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14.5px; line-height: 1.45; }
@@ -70,7 +70,7 @@
 
 /* ecosystem & outcome */
 .modes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.modes span { padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-size: 15px; }
+.modes span { padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 15px; }
 .outcome { margin-top: 56px; padding: clamp(28px, 4vw, 48px); border-radius: 20px; background: #151515; color: #f2f0eb; }
 .outcome p { margin: 16px 0 0; font-size: clamp(17px, 1.5vw, 20px); line-height: 1.55; max-width: 38em; color: #d8d4ce; }
 .outcome .sign { margin-top: 28px; font-size: clamp(26px, 3vw, 40px); font-weight: 560; letter-spacing: -0.02em; color: #ff6a1a; }

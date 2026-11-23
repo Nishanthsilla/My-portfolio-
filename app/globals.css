@@ -19,3 +19,7 @@ html { scrollbar-gutter: stable; }
 html[data-embed] header.bar, html[data-embed] footer, html[data-embed] [data-intro-film], html[data-embed] [data-intro-loader] { display: none !important; }
 html[data-embed] main { padding-top: 8px; }
 
+
+/* dark theme: page background behind everything, and a soft cross-fade when switching */
+html[data-theme="dark"], html[data-theme="dark"] body { background: #0d0d0f; color-scheme: dark; }
+html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after { transition: background-color 400ms ease, color 400ms ease, border-color 400ms ease !important; }

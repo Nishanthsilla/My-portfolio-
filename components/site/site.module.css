@@ -76,6 +76,28 @@
 .btnSecondary:hover { border-color: #cfccc5; background: #fdfdfb; }
 .btnSmall { height: 36px; padding: 0 var(--s2); font-size: 14px; }
 
+/* ---------- dark theme: the same tokens, night values ---------- */
+:global(html[data-theme="dark"]) .site {
+  --bg: #0d0d0f;
+  --ink: #edebe6;
+  --muted: #8f8c86;
+  --line: #26262b;
+  --surface: #151518;
+  --tile: #1b1b1f;
+  --accent: #ff5a47;
+  --accent-press: #ff6f5e;
+  --accent-ink: #ff7d6d;
+  color-scheme: dark;
+}
+.themeBtn {
+  order: 99; display: inline-grid; place-items: center; width: 36px; height: 36px; margin-left: 4px; flex: none;
+  border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer;
+  transition: transform var(--t-hover) var(--ease), border-color var(--t-hover) var(--ease);
+}
+.themeBtn:hover { border-color: var(--ink); transform: rotate(-12deg); }
+.themeBtn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 640px) { .themeBtn { width: 44px; height: 44px; } }
+
 /* ---------- header (keeps .bar .wrap .mark i for the intro film's landing dot) ---------- */
 .header {
   position: sticky !important; top: 0; z-index: 40;
