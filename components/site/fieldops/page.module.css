@@ -1,8 +1,8 @@
 /* page-level pieces of the Field Operations Health case study */
 .topRow { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
-.switch { display: inline-flex; padding: 4px; border-radius: 999px; background: #efede8; border: 1px solid var(--line); }
+.switch { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--tile); border: 1px solid var(--line); }
 .switch a { padding: 9px 18px; border-radius: 999px; font-size: 14.5px; font-weight: 500; color: var(--muted); transition: background 200ms, color 200ms; }
-.switch a[aria-current="page"] { background: var(--ink); color: #fff; }
+.switch a[aria-current="page"] { background: var(--ink); color: var(--bg); }
 .switch a:not([aria-current="page"]):hover { color: var(--ink); }
 :global(html[data-embed]) .switch { display: none; }
 
@@ -41,3 +41,5 @@
   .users, .exploreItem { grid-template-columns: 1fr; }
   .switch a { padding: 8px 14px; }
 }
+
+:global(html[data-theme="dark"]) .cover { background: linear-gradient(180deg, #1a1a1e 0%, #141417 100%); }

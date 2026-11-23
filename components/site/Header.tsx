@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { uiSound } from "@/lib/sound/ui";
 import { LogoN } from "./Logo";
+import ThemeToggle from "./ThemeToggle";
 import s from "./site.module.css";
 
 /**
@@ -86,6 +87,7 @@ export default function Header() {
             </Link>
           ))}
         </nav>
+        <ThemeToggle />
       </div>
     </header>
   );
