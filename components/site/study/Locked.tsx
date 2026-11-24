@@ -43,7 +43,7 @@ export default function Locked({ id, replica, width, height, label, priority }: 
   );
 }
 
-function AskModal({ onClose }: { onClose: () => void }) {
+export function AskModal({ onClose }: { onClose: () => void }) {
   const access = useAccess();
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

@@ -2,6 +2,8 @@ import Link from "next/link";
 import AnimatedContent from "@/components/site/reactbits/AnimatedContent";
 import site from "@/components/site/site.module.css";
 import type { Block, Study } from "@/lib/site/studies/types";
+import { screenFile } from "./assets";
+import Catalogue from "./Catalogue";
 import { Flowchart, Screen } from "./Media";
 import s from "./study.module.css";
 
@@ -212,6 +214,23 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
           </div>
         </Reveal>
       </section>
+
+      {/* 11 all platform screens (confidential client work: recreations, real ones on request) */}
+      {st.screens.some((x) => x.locked) && (
+        <section className={`${site.container} ${s.section}`} aria-labelledby="all-screens">
+          <Reveal className={s.diagramHead}>
+            <Label n="10">The platform</Label>
+            <h2 id="all-screens" className={s.h2}>See all platform screenshots</h2>
+            <p className={s.p}>Every screen from the real {st.title} platform. It&rsquo;s client work, so the real screens are shared on request.</p>
+          </Reveal>
+          <Catalogue
+            items={st.screens.filter((x) => x.locked).flatMap((x) => {
+              const f = screenFile(st.slug, x.id);
+              return f ? [{ id: x.id, label: x.need.split(" — ")[0], caption: x.caption, replica: f.src, width: f.width, height: f.height }] : [];
+            })}
+          />
+        </section>
+      )}
 
       {/* next */}
       <nav className={`${site.container} ${s.next}`} aria-label="More work">

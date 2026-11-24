@@ -197,3 +197,26 @@
 .askSend:disabled { opacity: 0.6; }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 @media (max-width: 600px) { .lockBtn, .lockTag { left: 8px; bottom: 8px; height: 32px; padding: 0 11px; font-size: 12px; } }
+
+/* ---------- "See all platform screenshots" (Catalogue.tsx) ---------- */
+.cat { position: relative; margin-top: 32px; overflow: hidden; border-radius: 16px; }
+.cat:has(.catShut) { min-height: 380px; }
+.catGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.catItem { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.catItem figcaption { font-size: 13.5px; color: var(--muted); }
+.catItem figcaption b { color: var(--ink); font-weight: 500; }
+/* locked: the screens are blurred past reading (at any zoom) and the request sits in the middle */
+.catShut { pointer-events: none; user-select: none; }
+.catShut .catItem .frame { filter: blur(18px) saturate(0.7); transform: scale(1.04); }
+.catShut .catItem figcaption { filter: blur(4px); }
+.catShut .catItem .frame img { image-rendering: auto; }
+.catGate {
+  position: absolute; z-index: 3; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(480px, calc(100% - 32px));
+  display: flex; flex-direction: column; align-items: center; gap: 10px; height: auto; text-align: center; padding: 28px 26px 24px; border-radius: 20px;
+  background: var(--surface, #fff); border: 1px solid var(--line); box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.4);
+}
+.catGate b { display: block; font-size: 19px; line-height: 1.3; letter-spacing: -0.01em; }
+.catGate p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 15px; }
+.catGate .askSend { padding: 0 26px; margin-top: 6px; }
+@media (max-width: 900px) { .catGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .catGrid { gap: 12px; } .catGate { padding: 22px 18px; } }
