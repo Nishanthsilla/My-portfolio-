@@ -1,92 +1,122 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Stage, ease, easeInOut, prog, useLoop } from "../selfready/engine";
+import { Stage, ease, easeInOut, lerp, prog, useLoop } from "../selfready/engine";
 import s from "./ambient.module.css";
 
 /**
- * Ambient AI cover (illustrative): an agent configured in the Control Plane on
- * a laptop travels down a connection to a handheld device and goes live there.
- * 9 s loop: connect → pack the agent → travel → install → ready.
+ * Ambient AI cover (illustrative), after node-canvas builders: a prompt builds
+ * a workflow on the canvas node by node, the wires draw and data flows, the
+ * pre-flight check passes, then Publish folds the flow into a bundle that flies
+ * into the handheld, where the same steps run. 11 s loop.
  */
-const STEPS = ["Label Reader", "Stock Lookup", "Fill the screen"];
+const PROMPT = "Build a receiving workflow";
+const NODES = [
+  { k: "Trigger", t: "“receive delivery”", c: "#f59e0b" },
+  { k: "Skill", t: "Label Reader", c: "#6d5cf0" },
+  { k: "Skill", t: "Stock Lookup", c: "#6d5cf0" },
+  { k: "Control", t: "Fill the screen", c: "#0ea5e9" },
+];
 
 export default function AgentPush() {
-  const D = 9;
-  const { ref, t } = useLoop(D, 6.6);
+  const D = 11;
+  const { ref, t } = useLoop(D, 7.4);
   const box = useBox(ref);
-  const tall = box.h > box.w * 0.7;
-  const out = prog(t, 8.2, 8.9);
-  const link = ease(prog(t, 0.4, 1.3)) * (1 - out);               // the cable draws in
-  const packed = ease(prog(t, 1.6, 2.2));                          // the agent card lifts off the screen
-  const travel = easeInOut(prog(t, 2.4, 4.6));                     // along the cable
-  const install = prog(t, 4.6, 6.0);                               // the device installs it
-  const ready = t > 6.0 && out < 0.5;
-  const steps = STEPS.map((_, i) => ease(prog(t, 4.8 + i * 0.35, 5.2 + i * 0.35)) * (1 - out));
+  const tall = box.h > box.w * 0.75;
+  const out = prog(t, 10.2, 10.9);
 
-  // geometry (stage 760 × 420): laptop screen on the left, device on the right
-  const W = tall ? 520 : 760, H = tall ? 560 : 420;
-  const L = tall ? { x: 40, y: 40, w: 440, h: 250 } : { x: 30, y: 60, w: 430, h: 262 };
-  const P = tall ? { x: 200, y: 356, w: 120, h: 190 } : { x: 588, y: 92, w: 132, h: 236 };
-  const from = tall ? { x: L.x + L.w / 2, y: L.y + L.h + 26 } : { x: L.x + L.w + 8, y: L.y + L.h / 2 + 20 };
-  const to = tall ? { x: P.x + P.w / 2, y: P.y - 4 } : { x: P.x - 4, y: P.y + P.h / 2 };
-  const mid = tall ? { x: from.x + 80, y: (from.y + to.y) / 2 } : { x: (from.x + to.x) / 2, y: from.y + 60 };
-  const q = (k: number) => ({ x: (1 - k) ** 2 * from.x + 2 * (1 - k) * k * mid.x + k * k * to.x, y: (1 - k) ** 2 * from.y + 2 * (1 - k) * k * mid.y + k * k * to.y });
-  const pos = q(travel);
-  const onScreen = packed < 1 || travel === 0;
-  const agentA = (travel > 0 && travel < 1 ? 1 : 0) * (1 - out);
+  // geometry
+  const W = tall ? 520 : 820, H = tall ? 660 : 440;
+  const C = tall ? { x: 16, y: 16, w: 488, h: 360 } : { x: 16, y: 16, w: 560, h: 408 };
+  const P = tall ? { x: 170, y: 392, w: 180, h: 256 } : { x: 630, y: 70, w: 160, h: 290 };
+  const nodePos = (i: number) =>
+    tall ? { x: C.x + 24 + (i % 2) * 230, y: C.y + 92 + Math.floor(i / 2) * 120 } : { x: C.x + 26 + (i % 2) * 270, y: C.y + 96 + Math.floor(i / 2) * 150 };
+  const NW = tall ? 210 : 240, NH = 74;
+
+  const typed = Math.round(PROMPT.length * prog(t, 0.3, 1.5));
+  const nodeIn = (i: number) => ease(prog(t, 1.7 + i * 0.45, 2.1 + i * 0.45));
+  const wire = (i: number) => ease(prog(t, 2.0 + i * 0.45, 2.5 + i * 0.45));
+  const flow = t > 3.6 && t < 6.2;
+  const check = ease(prog(t, 4.0, 4.4));
+  const press = t > 5.05 && t < 5.25;
+  const fold = easeInOut(prog(t, 5.3, 6.0));            // nodes gather into a bundle
+  const fly = easeInOut(prog(t, 6.0, 7.1));             // bundle flies to the device
+  const run = prog(t, 7.1, 9.6);                        // steps run on the device
+  const live = t > 9.0 && out < 0.5;
+  const fade = 1 - out;
+
+  const centre = { x: C.x + C.w / 2, y: C.y + C.h / 2 + 10 };
+  const target = { x: P.x + P.w / 2, y: P.y + P.h / 2 };
+  const bundle = { x: lerp(centre.x, target.x, fly), y: lerp(centre.y, target.y, fly) - Math.sin(fly * Math.PI) * 40 };
+
+  const wires = [0, 1, 2].map((i) => {
+    const a = nodePos(i), b = nodePos(i + 1);
+    const ax = a.x + NW, ay = a.y + NH / 2, bx = b.x, by = b.y + NH / 2;
+    // row → next column, or wrap to the next row
+    if (i % 2 === 0) return `M${ax} ${ay} C${ax + 30} ${ay} ${bx - 30} ${by} ${bx} ${by}`;
+    return `M${a.x + NW / 2} ${a.y + NH} C${a.x + NW / 2} ${a.y + NH + 40} ${b.x + NW / 2} ${b.y - 40} ${b.x + NW / 2} ${b.y}`;
+  });
 
   return (
     <div ref={ref} className={s.wrap}>
       <div style={{ width: box.h ? Math.min(box.w, box.h * (W / H)) : "100%", margin: "0 auto" }}>
-        <Stage w={W} h={H} label="Illustrative Ambient AI: an agent configured in the Control Plane on a laptop travels over the connection to a handheld device and goes live there.">
-          {/* laptop */}
-          <div className={s.laptop} style={{ left: L.x, top: L.y, width: L.w, height: L.h }}>
-            <div className={s.screen}>
-              <div className={s.side}><i /><b /><b /><b className={s.on} /><b /><b /></div>
-              <div className={s.main}>
-                <p className={s.k}>Agents</p>
-                <div className={s.agent} style={{ opacity: onScreen ? 1 - packed * 0.65 : 0.35, transform: `translateY(${-packed * 6}px)` }}>
-                  <span className={s.dot}>✦</span>
-                  <div><b>Receiving agent</b><span>3 skills · v2.4.0</span></div>
-                  <em className={ready ? s.live : packed > 0.5 ? s.sending : ""}>{ready ? "Live on device" : packed > 0.5 ? "Sending…" : "Ready to push"}</em>
-                </div>
-                <div className={s.ghost} /><div className={s.ghost} style={{ width: "70%" }} />
-                <span className={`${s.push} ${t > 1.45 && t < 1.65 ? s.pressed : ""}`}>Push to device</span>
-              </div>
+        <Stage w={W} h={H} label="Illustrative Ambient AI: a prompt builds a workflow on a canvas, the checks pass, and publishing sends it to a handheld device where the steps run.">
+          {/* canvas */}
+          <div className={s.canvas} style={{ left: C.x, top: C.y, width: C.w, height: C.h, opacity: fade }}>
+            <div className={s.cbar}>
+              <i /><i /><i />
+              <b>Goods Receipt</b>
+              <span className={s.prompt}>✦ {PROMPT.slice(0, typed)}<em className={typed < PROMPT.length ? s.caret : ""} /></span>
+              <span className={`${s.publish} ${press ? s.pressed : ""} ${t > 5.25 ? s.done : ""}`}>{t > 5.25 ? "Published" : "Publish"}</span>
             </div>
-            <div className={s.base} />
+            <div className={s.check} style={{ opacity: check * (1 - fold) }}>✓ Pre-flight · 0 issues</div>
           </div>
 
-          {/* the connection */}
-          <svg className={s.wire} width={W} height={H} aria-hidden="true">
-            <path d={`M${from.x} ${from.y} Q${mid.x} ${mid.y} ${to.x} ${to.y}`} fill="none" stroke="#d9d6ff" strokeWidth={4} strokeLinecap="round" pathLength={1} strokeDasharray={`${link} 1`} />
-            <path d={`M${from.x} ${from.y} Q${mid.x} ${mid.y} ${to.x} ${to.y}`} fill="none" stroke="#6d5cf0" strokeWidth={4} strokeLinecap="round" pathLength={1} strokeDasharray={`${travel * link} 1`} />
-            {link > 0.98 && <circle cx={from.x} cy={from.y} r={5} fill="#6d5cf0" />}
-            {link > 0.98 && <circle cx={to.x} cy={to.y} r={5} fill={ready ? "#22c55e" : "#6d5cf0"} />}
+          <svg className={s.wire} width={W} height={H} aria-hidden="true" style={{ opacity: (1 - fold) * fade }}>
+            {wires.map((d, i) => (
+              <g key={i}>
+                <path d={d} fill="none" stroke="#cfcaf8" strokeWidth={2.5} pathLength={1} strokeDasharray={`${wire(i)} 1`} />
+                {flow && <path d={d} fill="none" stroke="#6d5cf0" strokeWidth={2.5} pathLength={1} strokeDasharray="0.06 0.14" strokeDashoffset={-((t * 0.6) % 1)} />}
+              </g>
+            ))}
           </svg>
 
-          {/* the travelling agent */}
-          <div className={s.packet} style={{ left: pos.x, top: pos.y, opacity: agentA, transform: `translate(-50%, -50%) scale(${0.9 + 0.1 * Math.sin(travel * Math.PI)})` }}>
-            <span className={s.dot}>✦</span> Receiving agent
+          {NODES.map((n, i) => {
+            const p = nodePos(i), a = nodeIn(i);
+            const x = lerp(p.x, centre.x - NW / 2, fold), y = lerp(p.y, centre.y - NH / 2, fold);
+            return (
+              <div key={n.t} className={s.node} style={{ left: x, top: y, width: NW, opacity: a * (1 - fly > 0 ? 1 - prog(t, 5.8, 6.05) : 0) * fade, transform: `scale(${(0.9 + 0.1 * a) * (1 - 0.4 * fold)})` }}>
+                <span className={s.nk} style={{ background: n.c }}>{n.k}</span>
+                <b>{n.t}</b>
+                <i className={s.portL} /><i className={s.portR} />
+              </div>
+            );
+          })}
+
+          {/* the published bundle */}
+          <div className={s.bundle} style={{ left: bundle.x, top: bundle.y, opacity: prog(t, 5.7, 5.95) * (1 - prog(t, 7.0, 7.2)), transform: `translate(-50%, -50%) scale(${1 - 0.35 * fly})` }}>
+            <span>✦</span><div><b>Goods Receipt</b><em>v2.4 · 4 steps</em></div>
           </div>
 
           {/* device */}
-          <div className={s.phone} style={{ left: P.x, top: P.y, width: P.w, height: P.h }}>
+          <div className={s.phone} style={{ left: P.x, top: P.y, width: P.w, height: P.h, transform: `scale(${1 + 0.04 * Math.sin(prog(t, 7.0, 7.4) * Math.PI)})` }}>
             <div className={s.pscreen}>
-              <div className={s.pbar}><span className={link > 0.98 ? s.conn : ""}>{link > 0.98 ? "● Connected" : "○ Searching"}</span></div>
-              {install > 0 && !ready && (
-                <div className={s.installing}>
-                  <span>Installing</span>
-                  <i><b style={{ width: `${install * 100}%` }} /></i>
+              <div className={s.pbar}><span className={s.conn}>● Handheld H53</span></div>
+              {t < 7.1 || out > 0.5 ? (
+                <div className={s.idle}>Waiting for a workflow…</div>
+              ) : (
+                <div className={s.psteps}>
+                  {NODES.map((n, i) => {
+                    const st = prog(run, i / NODES.length, (i + 0.8) / NODES.length);
+                    return (
+                      <div key={n.t} className={st >= 1 ? s.stepDone : st > 0 ? s.stepRun : ""} style={{ opacity: Math.min(1, prog(t, 7.1 + i * 0.12, 7.4 + i * 0.12)) }}>
+                        <em>{st >= 1 ? "✓" : i + 1}</em>{n.t}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
-              <div className={s.psteps}>
-                {STEPS.map((x, i) => (
-                  <div key={x} style={{ opacity: steps[i], transform: `translateY(${(1 - steps[i]) * 6}px)` }}><em>{i + 1}</em>{x}</div>
-                ))}
-              </div>
-              {ready && <div className={s.ready}>✓ Agent live</div>}
+              {live && <div className={s.ready}>✓ Live on device</div>}
             </div>
           </div>
         </Stage>
