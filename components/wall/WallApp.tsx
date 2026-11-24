@@ -9,10 +9,11 @@ import { GIFS, StickerArt, stickerById } from "@/lib/wall/stickers";
 import { LIMITS, type PublicNote } from "@/lib/wall/types";
 import { addMine, loadDraft, loadLayout, loadMine, pruneMine, saveDraft, saveLayout, type MyNote, type Spot } from "@/lib/wall/local";
 import ElasticSticker from "./ElasticSticker";
+import PromptBar from "./PromptBar";
+import { Gif01Icon, Note01Icon, StickerIcon, TextFontIcon } from "@hugeicons/core-free-icons";
 import { sfx } from "@/lib/sound/engine";
 import { uiSound } from "@/lib/sound/ui";
 import NoteCard from "./NoteCard";
-import SideEyeEditor from "./SideEyeEditor";
 import SideEyeMonkey from "./SideEyeMonkey";
 import Celebration from "./Celebration";
 import w from "./wall.module.css";
@@ -745,30 +746,51 @@ export default function WallApp({
               {error && <p className={w.error} role="alert">{error}</p>}
             </div>
           )}
-          <div className={w.promptBox}>
-            <SideEyeEditor bare signature value={line} onChange={setLine} max={LIMITS.message + LIMITS.name + 4} label="Your note, then @ and your name" placeholder="Write something…  @your name" autoFocus={!embedded} />
-            <div className={w.promptRow}>
-              {gifsOn && (
-                <button type="button" className={w.gifTool} aria-expanded={panel === "sticker" && tab === "gifs"} onClick={() => { setTab("gifs"); setPanel((p) => (p === "sticker" && tab === "gifs" ? null : "sticker")); }} aria-label="Add a GIF" title="Add a GIF">
-                  GIF
+          <PromptBar
+            className={w.pbar}
+            width={2000}
+            radius={18}
+            maxRows={3}
+            tokens={false}
+            value={line}
+            onValueChange={setLine}
+            maxLength={LIMITS.message + LIMITS.name + 4}
+            placeholder="Write something…  @your name"
+            ariaLabel="Your note, then @ and your name"
+            sendLabel="Add a note"
+            canSend={valid && !busy}
+            onSend={toPlace}
+            sources={[
+              ...(gifsOn ? [{ key: "gif", name: "GIF", description: "Search GIPHY", icon: Gif01Icon }] : []),
+              { key: "icon", name: "Animated icon", description: "A moving sticker", icon: StickerIcon },
+              { key: "note", name: "Note", description: "Shape and colour", icon: Note01Icon },
+              { key: "font", name: "Handwriting", description: "Pick a pen", icon: TextFontIcon },
+            ]}
+            onSource={(row) => {
+              if (row.key === "gif" || row.key === "icon") {
+                setTab(row.key === "gif" ? "gifs" : "animated");
+                setPanel("sticker");
+              } else setPanel(row.key as "note" | "font");
+            }}
+            tools={
+              <>
+                {gifsOn && (
+                  <button type="button" className={`prompt-bar__pick ${w.gifPick}`} data-on={panel === "sticker" && tab === "gifs" ? "" : undefined} onMouseDown={(e) => e.preventDefault()} onClick={() => { setTab("gifs"); setPanel((p) => (p === "sticker" && tab === "gifs" ? null : "sticker")); }} aria-label="Add a GIF" title="Add a GIF">
+                    GIF
+                  </button>
+                )}
+                <button type="button" className="prompt-bar__tool" data-on={panel === "sticker" && (tab === "animated" || !gifsOn) ? "" : undefined} onMouseDown={(e) => e.preventDefault()} onClick={() => { setTab("animated"); setPanel((p) => (p === "sticker" && tab === "animated" ? null : "sticker")); }} aria-label="Choose an animated icon" title="Animated icon">
+                  <StickerArt id={draft.sticker} size={20} />
                 </button>
-              )}
-              <button type="button" className={w.tool} aria-expanded={panel === "sticker" && (tab === "animated" || !gifsOn)} onClick={() => { setTab("animated"); setPanel((p) => (p === "sticker" && tab === "animated" ? null : "sticker")); }} aria-label="Choose an animated icon" title="Animated icon">
-                <StickerArt id={draft.sticker} size={24} />
-              </button>
-              <button type="button" className={w.tool} aria-expanded={panel === "note"} onClick={() => setPanel((p) => (p === "note" ? null : "note"))} aria-label="Choose the note's shape and colour" title="Note">
-                <span className={w.toolSwatch} style={{ ["--paper" as string]: paperOf(draft.color) }} />
-              </button>
-              <button type="button" className={w.tool} aria-expanded={panel === "font"} onClick={() => setPanel((p) => (p === "font" ? null : "font"))} aria-label="Choose the handwriting" title="Font">
-                <span style={{ fontFamily: FONTS.find((f) => f.id === draft.font)?.family, fontSize: 17 }}>Aa</span>
-              </button>
-              <span className={w.promptSpacer} />
-              <button type="button" className={w.addNote} onClick={toPlace} disabled={!valid || busy} title={valid ? "Pick it up and stick it on the wall" : "Write a few words, then @ and your name"}>
-                Add a note
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-              </button>
-            </div>
-          </div>
+                <button type="button" className="prompt-bar__tool" data-on={panel === "note" ? "" : undefined} onMouseDown={(e) => e.preventDefault()} onClick={() => setPanel((p) => (p === "note" ? null : "note"))} aria-label="Choose the note's shape and colour" title="Note">
+                  <span className={w.toolSwatch} style={{ ["--paper" as string]: paperOf(draft.color) }} />
+                </button>
+                <button type="button" className="prompt-bar__tool" data-on={panel === "font" ? "" : undefined} onMouseDown={(e) => e.preventDefault()} onClick={() => setPanel((p) => (p === "font" ? null : "font"))} aria-label="Choose the handwriting" title="Handwriting">
+                  <span style={{ fontFamily: FONTS.find((f) => f.id === draft.font)?.family, fontSize: 15 }}>Aa</span>
+                </button>
+              </>
+            }
+          />
           {/* spam trap: hidden from people, filled in by bots */}
           <input className={w.honey} tabIndex={-1} autoComplete="off" aria-hidden="true" value={honey} onChange={(e) => setHoney(e.target.value)} name="website" />
           {captcha && siteKey && <div className="cf-turnstile" data-sitekey={siteKey} data-callback="__wallCaptcha" data-theme="light" />}
