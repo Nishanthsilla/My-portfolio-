@@ -11,6 +11,7 @@
 .pressed { transform: scale(0.92); }
 .check { position: absolute; right: 14px; bottom: 14px; padding: 7px 12px; border-radius: 9px; background: #e7f6ec; color: #15803d; font-size: 12px; font-weight: 700; }
 .wire { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.canvas .node { z-index: 1; }
 .node { position: absolute; height: 74px; padding: 12px 14px; border-radius: 13px; background: #fff; box-shadow: 0 10px 24px -14px rgba(20, 18, 40, 0.45), 0 0 0 1px #ececf3; display: grid; gap: 6px; align-content: center; transform-origin: center; }
 .node b { font-size: 14.5px; letter-spacing: -0.01em; }
 .nk { width: max-content; padding: 2px 8px; border-radius: 5px; color: #fff; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
