@@ -409,43 +409,12 @@ img.monkeyArt { width: 96px; height: 96px; object-fit: cover; border-radius: 12p
    ===================================================================== */
 .prompt.promptCard {
   top: 50%; bottom: auto; transform: translate(-50%, -50%); width: min(560px, calc(100% - 24px));
-  padding: 14px 14px 12px; border-radius: 22px; background: rgba(255, 255, 255, 0.93); border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 10px; border-radius: 22px; background: rgba(12, 12, 14, 0.9); border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2);
-  box-shadow: 0 40px 80px -36px rgba(34, 34, 34, 0.45), 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   animation: cardIn 360ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes cardIn { from { opacity: 0; transform: translate(-50%, calc(-50% + 14px)) scale(0.98); } }
-.cardHead { display: flex; align-items: center; gap: 10px; padding: 0 2px 2px; }
-.cardClose { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(0, 0, 0, 0.05); color: #3a3733; cursor: pointer; transition: background 160ms; }
-.cardClose:hover { background: rgba(0, 0, 0, 0.1); }
-.cardTitle { font: 600 14px/1 var(--font-geist-sans), Arial, sans-serif; color: #2a2724; }
-.promptCard .promptBox, .promptCard .pop { background: #fff; border: 1px solid #e7e2d9; color: #1f1d1a; box-shadow: 0 14px 30px -24px rgba(34, 34, 34, 0.4); }
-.promptCard .promptBox:focus-within { border-color: #d6cec1; box-shadow: 0 0 0 4px rgba(255, 73, 56, 0.08); }
-.promptCard .editorBare .editorMirror { color: #1f1d1a; }
-.promptCard .editorBare .editorField { caret-color: #1f1d1a; }
-.promptCard .editorBare .editorField::placeholder { color: #a49d92; -webkit-text-fill-color: #a49d92; }
-.promptCard .editorBare .flag { color: #d93a2b; }
-.promptCard .sig { color: #8a847a; }
-.promptCard .sigGhost { color: #bdb6ab; }
-.promptCard .tool, .promptCard .toolGhost { color: #4a4640; }
-.promptCard .tool:hover, .promptCard .toolGhost:hover, .promptCard .tool[aria-expanded="true"] { background: rgba(0, 0, 0, 0.05); }
-.promptCard .toolSwatch { box-shadow: inset 0 0 0 1.5px rgba(29, 27, 25, 0.25); }
-.promptCard .tabs { background: #f3efe8; }
-.promptCard .tab { color: #7a746b; }
-.promptCard .tab[aria-selected="true"] { background: #fff; color: #1f1d1a; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
-.promptCard .pop .trayItem { background: #f6f2ea; }
-.promptCard .pop .trayItem:hover { background: #efe9df; }
-.promptCard .pop .trayItem[aria-selected="true"] { background: #ffe9e5; border-color: #ff4938; }
-.promptCard .gifSearch { background: #f6f2ea; border-color: #e7e2d9; color: #1f1d1a; }
-.promptCard .gifSearch::placeholder { color: #a49d92; }
-.promptCard .gifEmpty, .promptCard .giphyCredit { color: #8a847a; }
-.promptCard .fontChip { background: #f6f2ea; border-color: #e7e2d9; color: #1f1d1a; }
-.promptCard .fontChip[aria-checked="true"] { border-color: #ff4938; background: #fff4f2; }
-.promptCard .shapeChip { background: #f6f2ea; color: #4a4640; }
-.promptCard .shapeChip[aria-checked="true"] { background: #fff4f2; }
-.promptCard .swatch { border-color: #fff; box-shadow: 0 0 0 1.5px #e3ddd2; }
-.promptCard .promptNotes .error { background: #fff1ef; border-color: #f3c4bd; color: #b3261e; }
-.promptCard .monkey { background: #fff; border-color: #f3c4bd; color: #222; }
 .addNote {
   flex: none; height: 38px; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px 0 18px; border-radius: 999px; border: 0;
   background: #ff4938; color: #fff; font: 600 14px/1 var(--font-geist-sans), Arial, sans-serif; cursor: pointer;
@@ -453,8 +422,7 @@ img.monkeyArt { width: 96px; height: 96px; object-fit: cover; border-radius: 12p
 }
 .addNote:hover { background: #e23a2a; }
 .addNote:active { transform: scale(0.96); }
-.addNote:disabled { background: #ebe6dd; color: #a49d92; cursor: not-allowed; }
-.prompt:not(.promptCard) .addNote:disabled { background: rgba(255, 255, 255, 0.1); color: #6b6b74; }
+.addNote:disabled { background: rgba(255, 255, 255, 0.1); color: #6b6b74; cursor: not-allowed; }
 
 /* placing: the note follows the cursor, a click sticks it */
 .scrollerPlacing, .scrollerPlacing * { cursor: none !important; }
@@ -479,27 +447,27 @@ img.monkeyArt { width: 96px; height: 96px; object-fit: cover; border-radius: 12p
 .board[data-gust="1"] .flap { animation: flapB 2.6s cubic-bezier(0.37, 0, 0.3, 1) var(--bd, 0s) both; }
 @keyframes flapA {
   0%, 100% { transform: none; }
-  14% { transform: rotate(calc(-3.2deg * var(--amp, 1))) skewY(calc(0.8deg * var(--amp, 1))); }
-  32% { transform: rotate(calc(2.2deg * var(--amp, 1))) skewY(calc(-0.5deg * var(--amp, 1))); }
-  50% { transform: rotate(calc(-1.5deg * var(--amp, 1))); }
-  68% { transform: rotate(calc(0.8deg * var(--amp, 1))); }
-  84% { transform: rotate(calc(-0.3deg * var(--amp, 1))); }
+  14% { transform: rotate(calc(-5deg * var(--amp, 1))) skewY(calc(1.2deg * var(--amp, 1))); }
+  32% { transform: rotate(calc(3.4deg * var(--amp, 1))) skewY(calc(-1.1deg * var(--amp, 1))); }
+  50% { transform: rotate(calc(-2.2deg * var(--amp, 1))); }
+  68% { transform: rotate(calc(1.2deg * var(--amp, 1))); }
+  84% { transform: rotate(calc(-0.4deg * var(--amp, 1))); }
 }
 @keyframes flapB {
   0%, 100% { transform: none; }
-  14% { transform: rotate(calc(-3.2deg * var(--amp, 1))) skewY(calc(0.8deg * var(--amp, 1))); }
-  32% { transform: rotate(calc(2.2deg * var(--amp, 1))) skewY(calc(-0.5deg * var(--amp, 1))); }
-  50% { transform: rotate(calc(-1.5deg * var(--amp, 1))); }
-  68% { transform: rotate(calc(0.8deg * var(--amp, 1))); }
-  84% { transform: rotate(calc(-0.3deg * var(--amp, 1))); }
+  14% { transform: rotate(calc(-5deg * var(--amp, 1))) skewY(calc(1.2deg * var(--amp, 1))); }
+  32% { transform: rotate(calc(3.4deg * var(--amp, 1))) skewY(calc(-1.1deg * var(--amp, 1))); }
+  50% { transform: rotate(calc(-2.2deg * var(--amp, 1))); }
+  68% { transform: rotate(calc(1.2deg * var(--amp, 1))); }
+  84% { transform: rotate(calc(-0.4deg * var(--amp, 1))); }
 }
 .breeze { position: absolute; inset: 0; z-index: 30; pointer-events: none; overflow: hidden; }
 .breeze i {
-  position: absolute; right: -40%; width: 34%; height: 1.5px; border-radius: 2px; opacity: 0;
-  background: linear-gradient(90deg, transparent, rgba(120, 112, 100, 0.28) 40%, rgba(120, 112, 100, 0.12) 80%, transparent);
+  position: absolute; right: -40%; width: 34%; height: 2px; border-radius: 2px; opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(110, 100, 86, 0.5) 40%, rgba(110, 100, 86, 0.2) 80%, transparent);
   animation: streak 2.2s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
-.breeze i:nth-child(even) { width: 22%; height: 1px; }
+.breeze i:nth-child(even) { width: 22%; height: 1.5px; }
 @keyframes streak {
   0% { opacity: 0; transform: translateX(0); }
   15% { opacity: 1; }
@@ -516,4 +484,16 @@ img.monkeyArt { width: 96px; height: 96px; object-fit: cover; border-radius: 12p
 .hintShort { display: none; }
 @media (max-width: 599px) { .hintLong { display: none; } .hintShort { display: inline; } .placeHint { white-space: nowrap; width: auto; } }
 /* the homepage strip moves under it: no live blur there (it costs every frame) */
-.wallEmbedded .prompt.promptCard { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(255, 255, 255, 0.97); animation: none; }
+.wallEmbedded .prompt.promptCard { backdrop-filter: none; -webkit-backdrop-filter: none; background: #121214; animation: none; }
+/* the expand button reads as a button, not decoration */
+.fabExpand { box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.06); }
+.fabWrite {
+  position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 25; display: inline-flex; align-items: center; gap: 8px;
+  height: 40px; padding: 0 18px 0 14px; border-radius: 999px; border: 0; background: #ff4938; color: #fff; cursor: pointer;
+  font: 600 14px/1 var(--font-geist-sans), Arial, sans-serif; box-shadow: 0 12px 26px -12px rgba(255, 73, 56, 0.7); transition: background 160ms, transform 120ms;
+}
+.fabWrite:hover { background: #e23a2a; }
+.fabWrite:active { transform: translateX(-50%) scale(0.96); }
+.promptCard .promptBox { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.08); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.promptCard .promptBox:focus-within { border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.04); }
+.promptCard .promptHint { color: #6b6b74; padding-top: 2px; }

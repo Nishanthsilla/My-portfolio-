@@ -368,7 +368,9 @@
 .nav { gap: 36px; }
 .navLink { font-size: 14.5px; letter-spacing: -0.005em; }
 @media (max-width: 640px) {
-  .headerRow { width: calc(100% - 24px) !important; padding: 0 5px 0 16px !important; justify-content: space-between; }
+  .headerRow { width: calc(100% - 24px) !important; padding: 0 5px 0 16px !important; justify-content: flex-start; gap: 8px !important; }
+  .headerRow > .logo { margin-right: auto; }
+  .headerRow .themeBtn { margin-left: 0; }
   .menuBtn { width: 38px; height: 38px; border: 0; background: rgba(255, 255, 255, 0.12); }
   .menuBtn span, .menuBtn span::before, .menuBtn span::after { background: #fff; }
   .menuBtn[aria-expanded="true"] span { background: transparent; }

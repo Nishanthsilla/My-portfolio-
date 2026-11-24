@@ -348,7 +348,7 @@ export default function WallApp({
   const autoStarted = useRef(false);
   useEffect(() => {
     // the full-screen wall opens with the composer in the middle (the notes behind it)
-    if (!restored || autoStarted.current) return;
+    if (!restored || autoStarted.current || !embedded) return; // homepage: open in the middle; full screen: for looking around
     autoStarted.current = true;
     start();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -372,6 +372,14 @@ export default function WallApp({
     setStep("browse");
     setError("");
   }, []);
+  // full screen: Esc puts the composer away (the homepage keeps it in the middle)
+  useEffect(() => {
+    if (embedded || step !== "compose") return;
+    const key = (e: KeyboardEvent) => e.key === "Escape" && cancel();
+    addEventListener("keydown", key);
+    return () => removeEventListener("keydown", key);
+  }, [embedded, step, cancel]);
+
   const msgFlags = useMemo(() => findFlags(message), [message]);
   const nameFlags = useMemo(() => findFlags(name), [name]);
   const flagged = msgFlags.length + nameFlags.length > 0;
@@ -491,7 +499,7 @@ export default function WallApp({
     const next = (ms: number) => {
       id = window.setTimeout(() => {
         if (!document.hidden) setGust((g) => g + 1);
-        next(5200 + Math.random() * 6500);
+        next(4200 + Math.random() * 4000);
       }, ms);
     };
     next(1800);
@@ -523,7 +531,14 @@ export default function WallApp({
             <path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7" />
           </svg>
         </button>
-      ) : (
+      ) : null}
+      {embedded && step === "browse" && (
+        <button type="button" className={w.fabWrite} onClick={start}>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+          Add a note
+        </button>
+      )}
+      {embedded ? null : (
         <>
           <button type="button" className={w.fabBack} onClick={close}>
             <span aria-hidden="true">←</span> Back to portfolio
@@ -531,7 +546,7 @@ export default function WallApp({
           {(mode === "offline" || mode === "unconfigured") && <p className={w.fabNote}>Posting isn&apos;t connected here yet</p>}
           {step === "browse" && (
             <div className={w.fabBar}>
-              <span className={w.fabHint}>Drag to look around · pick up any sticker to move it</span>
+              <span className={w.fabHint}>Drag to look around · pick up any sticker to move it · stickers: Noto Emoji, CC BY 4.0</span>
               {moved && (
                 <button type="button" className={w.btnLink} onClick={resetLayout} title="Put every sticker back where its writer left it">
                   Reset
@@ -665,14 +680,6 @@ export default function WallApp({
       {/* the composer: a minimal prompt bar — words on top, a slim row of tools below */}
       {step === "compose" && draft && seen && (
         <div className={`${w.prompt} ${w.promptCard}`} role="dialog" aria-label="Write your note">
-          {(
-            <div className={w.cardHead}>
-              <button type="button" className={w.cardClose} onClick={cancel} aria-label="Close the composer" title="Close">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
-              </button>
-              <span className={w.cardTitle}>Leave a note</span>
-            </div>
-          )}
           {panel === "sticker" && (
             <div className={w.pop}>
               <div className={w.tabs} role="tablist" aria-label="Sticker type">
@@ -760,7 +767,6 @@ export default function WallApp({
           {/* spam trap: hidden from people, filled in by bots */}
           <input className={w.honey} tabIndex={-1} autoComplete="off" aria-hidden="true" value={honey} onChange={(e) => setHoney(e.target.value)} name="website" />
           {captcha && siteKey && <div className="cf-turnstile" data-sitekey={siteKey} data-callback="__wallCaptcha" data-theme="light" />}
-          <p className={w.promptHint}>Write it, add it, then click where it should stick · stickers: Noto Emoji (CC BY 4.0)</p>
         </div>
       )}
     </div>
