@@ -26,3 +26,6 @@ html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after { transit
 /* the theme switch's ink bleed: the new page is clipped to the traced ink outline (ThemeToggle.tsx + inkMask.ts) */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 html.ink-on::view-transition-new(root) { clip-path: var(--ink-clip, inset(0 0 100% 0)); }
+/* the toggle is lifted above the ink, live, so its sun/moon animation is always visible */
+::view-transition-old(theme-toggle) { display: none; }
+::view-transition-new(theme-toggle) { animation: none; }
