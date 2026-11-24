@@ -746,7 +746,7 @@ export default function WallApp({
             </div>
           )}
           <div className={w.promptBox}>
-            <SideEyeEditor bare signature value={line} onChange={setLine} max={LIMITS.message + LIMITS.name + 4} label="Your note, then @ and your name" placeholder="Write something…  @your name" autoFocus />
+            <SideEyeEditor bare signature value={line} onChange={setLine} max={LIMITS.message + LIMITS.name + 4} label="Your note, then @ and your name" placeholder="Write something…  @your name" autoFocus={!embedded} />
             <div className={w.promptRow}>
               {gifsOn && (
                 <button type="button" className={w.gifTool} aria-expanded={panel === "sticker" && tab === "gifs"} onClick={() => { setTab("gifs"); setPanel((p) => (p === "sticker" && tab === "gifs" ? null : "sticker")); }} aria-label="Add a GIF" title="Add a GIF">
