@@ -60,7 +60,7 @@
 .stepHead { display: grid; gap: 12px; align-content: start; }
 .stepText .stepHead { position: sticky; top: 96px; }
 .stepN { font: 500 13px/1 var(--mono); color: var(--accent); letter-spacing: 0.02em; }
-.wide { display: grid; }
+.wide { display: grid; gap: clamp(28px, 4vw, 48px); }
 .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 2vw, 24px); }
 
 /* ---------- screenshots ---------- */
