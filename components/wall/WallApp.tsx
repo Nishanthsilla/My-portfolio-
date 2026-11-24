@@ -122,7 +122,7 @@ export default function WallApp({
     const i = line.lastIndexOf("@");
     return i < 0 ? { message: line.trim(), name: "" } : { message: line.slice(0, i).trim(), name: line.slice(i + 1).trim().slice(0, LIMITS.name) };
   }, [line]);
-  const [tab, setTab] = useState<"animated" | "gifs">("animated");
+  const [tab, setTab] = useState<"animated" | "gifs">("gifs"); // GIFs first (when the server has a GIPHY key)
   const [gifsOn, setGifsOn] = useState(false); // GIPHY search is available (server has a key)
   const [gifQ, setGifQ] = useState("");
   const [gifs, setGifs] = useState<{ id: string; title: string; src: string }[]>([]);
@@ -683,8 +683,8 @@ export default function WallApp({
           {panel === "sticker" && (
             <div className={w.pop}>
               <div className={w.tabs} role="tablist" aria-label="Sticker type">
-                <button type="button" role="tab" aria-selected={tab === "animated"} className={w.tab} onClick={() => setTab("animated")}>Animated</button>
                 {gifsOn && <button type="button" role="tab" aria-selected={tab === "gifs"} className={w.tab} onClick={() => setTab("gifs")}>GIFs</button>}
+                <button type="button" role="tab" aria-selected={tab === "animated" || !gifsOn} className={w.tab} onClick={() => setTab("animated")}>Animated icons</button>
               </div>
               {tab === "gifs" && gifsOn ? (
                 <>
@@ -748,7 +748,12 @@ export default function WallApp({
           <div className={w.promptBox}>
             <SideEyeEditor bare signature value={line} onChange={setLine} max={LIMITS.message + LIMITS.name + 4} label="Your note, then @ and your name" placeholder="Write something…  @your name" autoFocus />
             <div className={w.promptRow}>
-              <button type="button" className={w.tool} aria-expanded={panel === "sticker"} onClick={() => setPanel((p) => (p === "sticker" ? null : "sticker"))} aria-label="Choose a sticker" title="Sticker">
+              {gifsOn && (
+                <button type="button" className={w.gifTool} aria-expanded={panel === "sticker" && tab === "gifs"} onClick={() => { setTab("gifs"); setPanel((p) => (p === "sticker" && tab === "gifs" ? null : "sticker")); }} aria-label="Add a GIF" title="Add a GIF">
+                  GIF
+                </button>
+              )}
+              <button type="button" className={w.tool} aria-expanded={panel === "sticker" && (tab === "animated" || !gifsOn)} onClick={() => { setTab("animated"); setPanel((p) => (p === "sticker" && tab === "animated" ? null : "sticker")); }} aria-label="Choose an animated icon" title="Animated icon">
                 <StickerArt id={draft.sticker} size={24} />
               </button>
               <button type="button" className={w.tool} aria-expanded={panel === "note"} onClick={() => setPanel((p) => (p === "note" ? null : "note"))} aria-label="Choose the note's shape and colour" title="Note">
