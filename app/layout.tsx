@@ -34,7 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300;12..96,75..100,500;12..96,75..100,700;12..96,75..100,800&family=Unbounded:wght@700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300;12..96,75..100,500;12..96,75..100,700;12..96,75..100,800&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
         />
         {/* theme before paint: the visitor's choice, else light; inside the project panel, the parent page's theme */}
         <script
@@ -42,6 +42,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             __html: `try{var t=null;try{if(window.self!==window.top)t=parent.document.documentElement.getAttribute("data-theme")}catch(e){}t=t||localStorage.getItem("nishanth.theme")||"light";document.documentElement.setAttribute("data-theme",t)}catch(e){}`,
           }}
         />
+        {/* the "Scroll Right" badge's display font, cut down to just the letters it uses */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700&text=SCROLLIGHT&display=swap" />
         {/* Inside the project panel (an iframe on the homepage): no navbar, footer or intro, and links report back to the panel. */}
         <script
           dangerouslySetInnerHTML={{

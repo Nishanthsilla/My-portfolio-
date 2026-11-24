@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Logo from "@/components/site/Logo";
 import o from "./opener.module.css";
 
@@ -113,6 +116,12 @@ const Icon = {
 };
 
 export default function OpenerScreens() {
+  // the two densest pictures (thousands of dots and contour points) are drawn in the browser
+  // right after load instead of being baked into every page's HTML; their screens come
+  // several seconds into the reel, long after this
+  const [dense, setDense] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- mount the heavy SVGs once, after hydration
+  useEffect(() => setDense(true), []);
   return (
     <>
       {/* the liquid background (montage.ts / fluid.ts), under the screens that use it */}
@@ -240,14 +249,14 @@ export default function OpenerScreens() {
       <div className={`${o.s} ${o.dark}`} data-screen="particles">
         <svg className={o.particles} viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice">
           <g className={o.flowLanes}>
-            {FLOW.map((l, k) => l.d.map((p, i) => <circle key={`${k}-${i}`} cx={p[0].toFixed(1)} cy={p[1].toFixed(1)} r={p[2].toFixed(2)} fill="#fff" opacity={l.o.toFixed(2)} />))}
+            {dense && FLOW.map((l, k) => l.d.map((p, i) => <circle key={`${k}-${i}`} cx={p[0].toFixed(1)} cy={p[1].toFixed(1)} r={p[2].toFixed(2)} fill="#fff" opacity={l.o.toFixed(2)} />))}
           </g>
         </svg>
       </div>
       {/* topographic contour lines */}
       <div className={`${o.s} ${o.dark}`} data-screen="topo">
         <svg className={o.topo} viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">
-          {TOPO.map((d, i) => <path key={i} d={d} pathLength={1} style={{ ["--i" as string]: i }} />)}
+          {dense && TOPO.map((d, i) => <path key={i} d={d} pathLength={1} style={{ ["--i" as string]: i }} />)}
         </svg>
         <div className={o.topoClear} />
         <span className={`${o.meta} ${o.tl}`}>17.38° N · 78.48° E</span>
