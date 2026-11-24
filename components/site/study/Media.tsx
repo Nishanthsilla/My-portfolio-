@@ -1,5 +1,6 @@
 import type { Screen as ScreenT } from "@/lib/site/studies/types";
 import { diagramFiles, screenFile } from "./assets";
+import Locked from "./Locked";
 import Zoomable from "./Zoomable";
 import s from "./study.module.css";
 
@@ -12,7 +13,9 @@ export function Screen({ slug, screen, priority = false }: { slug: string; scree
   const [w, h] = (screen.ratio ?? "16:10").split(":").map(Number);
   return (
     <figure className={s.shot} data-screen={screen.id}>
-      {f ? (
+      {f && screen.locked ? (
+        <Locked id={screen.id} replica={f.src} width={f.width} height={f.height} label={screen.need.split(" — ")[0]} priority={priority} />
+      ) : f ? (
         <div className={s.frame}>
           <Zoomable src={f.src} alt={screen.need} width={f.width} height={f.height} label={screen.need.split(" — ")[0]} priority={priority} />
         </div>

@@ -47,7 +47,7 @@ const Reveal = ({ className, children }: { className?: string; children: React.R
   <AnimatedContent className={className} distance={16} duration={0.6}>{children}</AnimatedContent>
 );
 
-export default function CaseStudy({ study: st }: { study: Study }) {
+export default function CaseStudy({ study: st, media }: { study: Study; media?: React.ReactNode }) {
   const screen = (id: string) => st.screens.find((x) => x.id === id)!;
   return (
     <article className={s.study}>
@@ -69,7 +69,7 @@ export default function CaseStudy({ study: st }: { study: Study }) {
         </dl>
       </header>
       <div className={`${site.container} ${s.heroShot}`}>
-        <Screen slug={st.slug} screen={screen(st.hero)} priority />
+        {media ?? <Screen slug={st.slug} screen={screen(st.hero)} priority />}
       </div>
 
       {/* 02 overview */}

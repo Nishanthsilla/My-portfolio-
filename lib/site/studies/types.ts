@@ -18,6 +18,8 @@ export type Screen = {
   caption: string;
   /** placeholder ratio, e.g. "16:10"; a real image keeps its own ratio */
   ratio?: string;
+  /** client work: the file in screens/ is a recreation; the real screenshot is shown only to approved visitors */
+  locked?: boolean;
 };
 
 /** how a group of screenshots sits next to its text */

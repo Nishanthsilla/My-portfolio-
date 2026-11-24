@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import SiteShell from "@/components/site/SiteShell";
+import { HeroScene } from "@/components/site/selfready/Scenes";
 import Overview from "@/components/site/study/Overview";
 import { selfReadyStudy as st } from "@/lib/site/studies/selfReady";
 
@@ -8,7 +9,7 @@ export const metadata: Metadata = { title: `${st.title} — Nishanth Silla`, des
 export default function SelfReadyOverview() {
   return (
     <SiteShell>
-      <Overview study={st} back={{ href: "/?c=product-strategy#work", label: "Product Strategy" }} />
+      <Overview study={st} media={<HeroScene />} back={{ href: "/?c=product-strategy#work", label: "Product Strategy" }} />
     </SiteShell>
   );
 }
