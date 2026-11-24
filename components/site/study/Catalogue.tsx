@@ -14,7 +14,7 @@ function Pixelated({ src, width = 16, height = 9 }: { src: string; width?: numbe
     if (!c) return;
     const im = new Image();
     im.onload = () => {
-      const w = 28, h = Math.max(1, Math.round((w * im.naturalHeight) / im.naturalWidth));
+      const w = 64, h = Math.max(1, Math.round((w * im.naturalHeight) / im.naturalWidth));
       c.width = w;
       c.height = h;
       c.getContext("2d")?.drawImage(im, 0, 0, w, h);
