@@ -73,7 +73,7 @@ export default function Catalogue({ items }: { items: Item[] }) {
         <div className={s.catGate}>
           <span className={s.askIcon} aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></svg></span>
           <b>{access === "pending" ? "Access requested" : "The real screens are confidential"}</b>
-          <p>{access === "pending" ? "I'll look at your request soon. They open here on their own once I approve it." : "These are the real client screens, so they're locked. Ask for access and, once I approve it, they open right here."}</p>
+          <p>{access === "pending" ? "I'll look at your request soon. They open here on their own once I approve it." : "What you see above are recreations. Ask for access and, once I approve it, every real screen opens right here."}</p>
           {access !== "pending" && (
             <button type="button" className={s.askSend} onClick={() => setAsk(true)} disabled={access === "loading"}>Request access</button>
           )}
