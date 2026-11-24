@@ -17,6 +17,23 @@ export default function ScrollHint({ track }: { track: React.RefObject<HTMLEleme
   const [overUi, setOverUi] = useState(false);
   const [seen, setSeen] = useState(false); // the mouse badge waits for the first move
   const badge = useRef<HTMLDivElement>(null);
+  const [intro, setIntro] = useState(true); // the loader / intro film is playing over the page
+
+  // never while the loader or the intro film is up
+  useEffect(() => {
+    const busy = () => {
+      const html = document.documentElement;
+      if (html.classList.contains("intro-lock")) return true;
+      return [...document.querySelectorAll<HTMLElement>("[data-intro-film], [data-intro-loader]")].some((el) => {
+        const cs = getComputedStyle(el);
+        return cs.display !== "none" && cs.visibility !== "hidden" && Number(cs.opacity) > 0.05 && el.getBoundingClientRect().height > 0;
+      });
+    };
+    const check = () => setIntro(busy());
+    check();
+    const id = window.setInterval(check, 250);
+    return () => clearInterval(id);
+  }, []);
 
   // is the first screen still in view?
   useEffect(() => {
@@ -73,13 +90,13 @@ export default function ScrollHint({ track }: { track: React.RefObject<HTMLEleme
   }, [fine, seen]);
 
   // hide the system cursor on the first screen (not over links and buttons)
-  const hideCursor = fine && first && seen && !overUi;
+  const hideCursor = fine && first && seen && !overUi && !intro;
   useEffect(() => {
     document.documentElement.classList.toggle("scroll-hint-cursor", hideCursor);
     return () => document.documentElement.classList.remove("scroll-hint-cursor");
   }, [hideCursor]);
 
-  const show = first && (fine ? seen && !overUi : true);
+  const show = first && !intro && (fine ? seen && !overUi : true);
   const [host, setHost] = useState<HTMLElement | null>(null);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- the portal target exists only in the browser
   useEffect(() => setHost(document.body), []);
