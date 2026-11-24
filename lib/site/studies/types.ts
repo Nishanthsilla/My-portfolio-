@@ -43,11 +43,16 @@ export type Study = {
   challenge: { title: string; body: Block[]; question?: string };
   objective: { statement: string; lead: string; items: string[] };
   approach: Step[];
-  journey: Journey;
-  architecture: Architecture;
+  journey?: Journey;
+  architecture?: Architecture;
+  /** key design contributions: each a challenge, what I did, and the design objective */
+  contributions?: { t: string; challenge: string; approach: string[]; objective: string; shots?: { ids: string[]; layout: ShotLayout } }[];
   decisions: { t: string; d: string }[];
-  outcome: { lead: string; body: string[] };
+  /** headings for the decisions list (a two-column "decision / why it mattered" table when `why` is set) */
+  decisionsHead?: { title: string; lead?: string; why?: string; close?: string };
+  outcome: { lead: string; body: Block[]; note?: string };
   reflection: { quote: string; body: string[] };
+  closing?: { title: string; body: string };
   screens: Screen[];
   next: { slug: string; title: string; href: string };
 };

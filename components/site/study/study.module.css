@@ -216,3 +216,21 @@
 .catShut { mask-image: linear-gradient(to bottom, #000 55%, rgba(0, 0, 0, 0.25)); -webkit-mask-image: linear-gradient(to bottom, #000 55%, rgba(0, 0, 0, 0.25)); }
 @media (max-width: 900px) { .catGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .catGrid { gap: 12px; } .catGate { margin-top: -80px; padding: 22px 18px; } }
+
+/* ---------- key design contributions ---------- */
+.contribs { list-style: none; margin: 40px 0 0; padding: 0; display: grid; gap: 56px; }
+.contrib { display: grid; gap: 24px; padding-top: 32px; border-top: 1px solid var(--line); }
+.contribHead { display: grid; gap: 10px; }
+.contribBody { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.contribK { margin: 0 0 8px; font: 500 12px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+@media (max-width: 860px) { .contribBody { grid-template-columns: 1fr; gap: 20px; } }
+/* decisions as a two-column table */
+.decTable { width: 100%; margin-top: 32px; border-collapse: collapse; font-size: 16px; }
+.decTable th { text-align: left; padding: 0 16px 12px 0; font: 500 12px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--ink); }
+.decTable td { padding: 16px 16px 16px 0; border-bottom: 1px solid var(--line); line-height: 1.5; vertical-align: top; }
+.decTable td:first-child { width: 48%; font-weight: 500; }
+.decTable td:last-child { color: var(--muted); }
+.outcomeNote { margin: 24px 0 0; font-size: 14px; line-height: 1.55; color: var(--muted); font-style: italic; max-width: 48em; }
+/* closing statement */
+.closing { display: grid; gap: 16px; max-width: 46em; padding: clamp(28px, 4vw, 48px); border-radius: 20px; background: var(--tile, #f2f1ec); }
+.closingTitle { margin: 0; font-size: clamp(24px, 2.8vw, 36px); line-height: 1.2; letter-spacing: -0.02em; font-weight: 600; }

@@ -51,6 +51,9 @@ const Reveal = ({ className, children }: { className?: string; children: React.R
 
 export default function CaseStudy({ study: st, media }: { study: Study; media?: React.ReactNode }) {
   const screen = (id: string) => st.screens.find((x) => x.id === id)!;
+  // section numbers count only the sections this study has
+  let sec = 0;
+  const N = () => String(++sec).padStart(2, "0");
   return (
     <article className={s.study}>
       {/* 01 hero */}
@@ -78,7 +81,7 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
       <section className={`${site.container} ${s.section}`} aria-labelledby="overview">
         <Reveal className={s.split}>
           <div>
-            <Label n="01">Project</Label>
+            <Label n={N()}>Project</Label>
             <h2 id="overview" className={s.h2}>Overview</h2>
           </div>
           <div className={s.flow}><Blocks items={st.overview} lead /></div>
@@ -89,7 +92,7 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
       <section className={`${site.container} ${s.section}`} aria-labelledby="challenge">
         <Reveal className={s.split}>
           <div>
-            <Label n="02">The challenge</Label>
+            <Label n={N()}>The challenge</Label>
             <h2 id="challenge" className={s.h2}>{st.challenge.title}</h2>
           </div>
           <div className={s.flow}><Blocks items={st.challenge.body} /></div>
@@ -107,7 +110,7 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
       <section className={s.band} aria-labelledby="objective">
         <div className={site.container}>
           <Reveal>
-            <Label n="03">The design objective</Label>
+            <Label n={N()}>The design objective</Label>
             <h2 id="objective" className={s.bandTitle}>{st.objective.statement}</h2>
           </Reveal>
           <Reveal className={s.objectives}>
@@ -127,7 +130,7 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
       {/* 05 approach */}
       <section className={`${site.container} ${s.section}`} aria-labelledby="approach">
         <Reveal>
-          <Label n="04">Design approach</Label>
+          <Label n={N()}>Design approach</Label>
           <h2 id="approach" className={s.h2}>My approach</h2>
         </Reveal>
         <ol className={s.steps}>
@@ -156,31 +159,75 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
       </section>
 
       {/* 06 user journey */}
+      {st.journey && (
       <section className={`${site.container} ${s.section}`} aria-labelledby="journey">
         <Reveal className={s.diagramHead}>
-          <Label n="05">User journey</Label>
+          <Label n={N()}>User journey</Label>
           <h2 id="journey" className={s.h2}>{st.journey.title}</h2>
           <p className={s.p}>{st.journey.intro}</p>
         </Reveal>
         <Flowchart slug={st.slug} name="user_flow" fig="1" note={st.journey.note} alt={`${st.title} end-to-end user flow: ${st.journey.stages.map((g, i) => `${i + 1}. ${g.label} — ${g.steps.join(", ")}`).join("; ")}`} />
       </section>
+      )}
 
       {/* 07 architecture */}
+      {st.architecture && (
       <section className={`${site.container} ${s.section}`} aria-labelledby="architecture">
         <Reveal className={s.diagramHead}>
-          <Label n="06">Architecture</Label>
+          <Label n={N()}>Architecture</Label>
           <h2 id="architecture" className={s.h2}>{st.architecture.title}</h2>
           <p className={s.p}>{st.architecture.intro}</p>
         </Reveal>
         <Flowchart slug={st.slug} name="architecture" fig="2" note={st.architecture.note} alt={`${st.title} product architecture: ${st.architecture.layers.map((l) => `${l.label} — ${l.items.join(", ")}`).join("; ")}`} />
       </section>
+      )}
+
+      {/* key design contributions */}
+      {st.contributions && (
+        <section className={`${site.container} ${s.section}`} aria-labelledby="contributions">
+          <Reveal>
+            <Label n={N()}>Contributions</Label>
+            <h2 id="contributions" className={s.h2}>Key design contributions</h2>
+          </Reveal>
+          <ol className={s.contribs}>
+            {st.contributions.map((c, i) => (
+              <li key={c.t} className={s.contrib}>
+                <Reveal className={s.contribHead}>
+                  <span className={s.stepN}>{String(i + 1).padStart(2, "0")}</span>
+                  <h3 className={s.h3}>{c.t}</h3>
+                </Reveal>
+                <Reveal className={s.contribBody}>
+                  <div><p className={s.contribK}>The challenge</p><p className={s.p}>{c.challenge}</p></div>
+                  <div><p className={s.contribK}>My approach</p><ul className={s.list}>{c.approach.map((x) => <li key={x}>{x}</li>)}</ul></div>
+                  <div><p className={s.contribK}>Design objective</p><p className={s.p}>{c.objective}</p></div>
+                </Reveal>
+                {c.shots && (
+                  <div className={c.shots.layout === "pair" ? s.pair : s.wide}>
+                    {c.shots.ids.map((id) => <Screen key={id} slug={st.slug} screen={screen(id)} />)}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       {/* 08 decisions */}
       <section className={`${site.container} ${s.section}`} aria-labelledby="decisions">
         <Reveal>
-          <Label n="07">Decisions</Label>
-          <h2 id="decisions" className={s.h2}>Key design decisions</h2>
+          <Label n={N()}>Decisions</Label>
+          <h2 id="decisions" className={s.h2}>{st.decisionsHead?.title ?? "Key design decisions"}</h2>
+          {st.decisionsHead?.lead && <p className={s.p}>{st.decisionsHead.lead}</p>}
         </Reveal>
+        {st.decisionsHead?.why ? (
+          <Reveal>
+            <table className={s.decTable}>
+              <thead><tr><th>UX decision</th><th>{st.decisionsHead.why}</th></tr></thead>
+              <tbody>{st.decisions.map((d) => <tr key={d.t}><td>{d.t}</td><td>{d.d}</td></tr>)}</tbody>
+            </table>
+            {st.decisionsHead.close && <p className={s.p} style={{ marginTop: 20 }}>{st.decisionsHead.close}</p>}
+          </Reveal>
+        ) : (
         <ol className={s.decisions}>
           {st.decisions.map((d, i) => (
             <li key={d.t}>
@@ -190,14 +237,16 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
             </li>
           ))}
         </ol>
+        )}
       </section>
 
       {/* 09 outcome */}
       <section className={`${site.container} ${s.section}`} aria-labelledby="outcome">
         <Reveal className={s.outcome}>
-          <Label n="08">Outcome</Label>
+          <Label n={N()}>Outcome</Label>
           <h2 id="outcome" className={s.outcomeLead}>{st.outcome.lead}</h2>
-          <div className={s.outcomeBody}>{st.outcome.body.map((p) => <p key={p} className={s.p}>{p}</p>)}</div>
+          <div className={s.outcomeBody}><Blocks items={st.outcome.body} /></div>
+          {st.outcome.note && <p className={s.outcomeNote}>{st.outcome.note}</p>}
         </Reveal>
       </section>
 
@@ -205,7 +254,7 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
       <section className={`${site.container} ${s.section}`} aria-labelledby="reflection">
         <Reveal className={s.split}>
           <div>
-            <Label n="09">Reflection</Label>
+            <Label n={N()}>Reflection</Label>
             <h2 id="reflection" className={s.srOnly}>Reflection</h2>
           </div>
           <div className={s.flow}>
@@ -215,11 +264,21 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
         </Reveal>
       </section>
 
+      {/* closing statement */}
+      {st.closing && (
+        <section className={`${site.container} ${s.section}`} aria-labelledby="closing">
+          <Reveal className={s.closing}>
+            <h2 id="closing" className={s.closingTitle}>{st.closing.title}</h2>
+            <p className={s.p}>{st.closing.body}</p>
+          </Reveal>
+        </section>
+      )}
+
       {/* 11 all platform screens (confidential client work: recreations, real ones on request) */}
       {st.screens.some((x) => x.locked) && (
         <section className={`${site.container} ${s.section}`} aria-labelledby="all-screens">
           <Reveal className={s.diagramHead}>
-            <Label n="10">The platform</Label>
+            <Label n={N()}>The platform</Label>
             <h2 id="all-screens" className={s.h2}>See all platform screenshots</h2>
             <p className={s.p}>Every screen from the real {st.title} platform. It&rsquo;s client work, so the real screens are shared on request.</p>
           </Reveal>

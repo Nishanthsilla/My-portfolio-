@@ -77,14 +77,12 @@ What Nishanth did: he designed the whole flow as Lead Product Designer, from bri
   {
     id: "ambient",
     q: "What is Ambient AI?",
-    keys: ["ambient", "ambient ai", "agent configuration", "device configuration", "skill registry", "workflow builder", "management portal", "pre-flight", "deployment", "devices"],
-    answer: `Ambient AI makes AI agent and device configuration easier through one connected platform. It brings agent configuration, skill management, workflow creation, orchestration and device deployment into a central interface, rather than relying on phone-based configuration, which was harder to manage.\n\nNishanth was Lead Product Designer, responsible for end-to-end product design.`,
-    simple: `In simple words: Ambient AI is one control panel for setting up AI assistants and the devices they run on.
+    keys: ["ambient", "ambient ai", "control plane", "onboarding", "getting started", "guided tour", "spotlight", "enterprise ai platform", "navigation", "information architecture"],
+    answer: `Ambient AI is an enterprise AI platform that brings AI-powered capabilities into one connected product experience. The challenge was making a complex platform feel approachable, structured and easy to navigate, without losing the depth enterprise users need.\n\nNishanth was Lead Product Designer, focused on information architecture, interaction design, consistent UI patterns and guided onboarding.`,
+    simple: `In simple words: Ambient AI is a big enterprise AI platform with lots of features, and people didn't know where to start.
 
-The problem: setup used to happen on a phone, which got hard to manage.
-
-What Nishanth did: as Lead Product Designer he designed one place to do it all: describe what the assistant should do, give it skills, connect them in a visual workflow, check for problems before going live, and send it to devices.`,
-    more: `The Agent workspace uses a split-screen model: a conversational entry point on the left and the configuration workspace on the right. Skills and workflows connect in a visual Workflow Builder, a pre-flight validation stage highlights blockers and warnings, and published versions stay separate from editable drafts.`,
+What Nishanth did: organised the platform into clear sections, simplified busy screens, kept the patterns consistent, and designed an in-app "Getting Started" tour that spotlights the important parts so new users can find their way without reading documentation.`,
+    more: `The work covered three areas: information architecture (clear categories and predictable navigation), interface simplification (hierarchy, grouping and density), and guided onboarding (a Getting Started tour with contextual spotlights inside the Ambient AI Control Plane). No verified metrics are available, so none are claimed.`,
     links: [{ label: "Open Ambient AI", href: "/work/ambient-ai/case-study" }],
     next: ["selfready", "mao", "ai"],
   },
