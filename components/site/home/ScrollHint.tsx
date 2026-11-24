@@ -7,7 +7,7 @@ import h from "./home.module.css";
 /**
  * "Scroll right" — the homepage moves sideways, but people scroll down by habit.
  * While the first screen is in view a round badge (rotating text, an arrow
- * pointing right) says so: with a mouse it replaces the cursor (the normal
+ * a dancing duck in the middle) says so: with a mouse it replaces the cursor (the normal
  * cursor returns over links and buttons); on touch screens it rests in the
  * bottom-right corner. From the second screen on it's gone.
  */
@@ -95,10 +95,10 @@ export default function ScrollHint({ track }: { track: React.RefObject<HTMLEleme
             <textPath href="#scroll-hint-ring" startOffset="0" textLength="285" lengthAdjust="spacing">Scroll Right <tspan className={h.scrollHintStar}>✦</tspan> Scroll Right <tspan className={h.scrollHintStar}>✦</tspan></textPath>
           </text>
         </g>
-        <g className={h.scrollHintArrow}>
-          <path d="M38 60 H80 M66 46 L80 60 L66 74" />
-        </g>
       </svg>
+      {/* a dancing duck in the middle */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className={h.scrollHintDuck} src="/images/duck-dance.webp" alt="" width={58} height={70} decoding="async" />
     </div>,
     host,
   );
