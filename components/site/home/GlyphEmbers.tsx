@@ -94,6 +94,7 @@ export default function GlyphEmbers({ className, cell = 15, rise = 0.62 }: { cla
     const tick = (t: number) => {
       raf = requestAnimationFrame(tick);
       if (t - last < 33) return; // ~30 fps is plenty for embers
+      if ("paging" in document.documentElement.dataset) return; // hold still while the homepage slides
       const dt = Math.min(64, t - last);
       last = t;
       if (sparks.length < Math.max(8, cols / 3) && Math.random() < 0.35) {

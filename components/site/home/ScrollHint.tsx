@@ -51,13 +51,10 @@ export default function ScrollHint({ track }: { track: React.RefObject<HTMLEleme
     addEventListener("resize", kick);
     const fr = track.current?.parentElement;
     fr?.addEventListener("scroll", kick, { passive: true });
-    const mo = new MutationObserver(kick);
-    if (track.current) mo.observe(track.current, { attributes: true, attributeFilter: ["style"] });
     return () => {
       removeEventListener("scroll", kick);
       removeEventListener("resize", kick);
       fr?.removeEventListener("scroll", kick);
-      mo.disconnect();
       cancelAnimationFrame(raf);
     };
   }, [track]);
@@ -92,9 +89,17 @@ export default function ScrollHint({ track }: { track: React.RefObject<HTMLEleme
   // hide the system cursor on the first screen (not over links and buttons)
   const hideCursor = fine && first && seen && !overUi && !intro;
   useEffect(() => {
-    document.documentElement.classList.toggle("scroll-hint-cursor", hideCursor);
-    return () => document.documentElement.classList.remove("scroll-hint-cursor");
+    // swapping the cursor restyles the whole page, so it waits until a page slide has finished
+    const html = document.documentElement;
+    let id = 0;
+    const apply = () => {
+      if ("paging" in html.dataset) { id = window.setTimeout(apply, 60); return; }
+      html.classList.toggle("scroll-hint-cursor", hideCursor);
+    };
+    apply();
+    return () => clearTimeout(id);
   }, [hideCursor]);
+  useEffect(() => () => document.documentElement.classList.remove("scroll-hint-cursor"), []);
 
   const show = first && !intro && (fine ? seen && !overUi : true);
   const [host, setHost] = useState<HTMLElement | null>(null);

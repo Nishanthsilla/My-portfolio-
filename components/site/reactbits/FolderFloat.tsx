@@ -281,6 +281,12 @@ const FolderFloat: React.FC<FolderFloatProps> = ({
     const tick = (now: number) => {
       const s = world.current;
       if (!s.engine) return;
+      // hold still while the homepage slides between pages (and resume without a jump)
+      if (!s.drag && 'paging' in document.documentElement.dataset) {
+        s.last = 0;
+        s.raf = requestAnimationFrame(tick);
+        return;
+      }
       const dt = s.last ? Math.min(32, now - s.last) : 16;
       s.last = now;
       const t = (now - s.t0) / 1000;

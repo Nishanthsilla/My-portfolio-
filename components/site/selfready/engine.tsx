@@ -34,7 +34,8 @@ export function useLoop(duration: number, still: number) {
       if (!start) start = now - offset * 1000;
       const v = ((now - start) / 1000) % duration;
       // ~30 updates/s is plenty for UI-state animation and keeps React work low
-      if (now - last > 30) {
+      // ~30 updates/s; none while the homepage is sliding between pages (keeps the slide smooth)
+      if (now - last > 30 && !("paging" in document.documentElement.dataset)) {
         last = now;
         setT(v);
       }

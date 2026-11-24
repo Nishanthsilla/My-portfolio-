@@ -102,11 +102,17 @@ export default function Journey({
       };
       const paint = () => {
         raf = 0;
-        current += (target - current) * (paging ? 0.5 : 0.18);
+        current = paging ? target : current + (target - current) * 0.18;
         if (Math.abs(target - current) < 0.4) current = target;
         tr.style.transform = `translate3d(${(-current).toFixed(1)}px,0,0)`;
         pick(current);
         if (current !== target) raf = requestAnimationFrame(paint);
+      };
+      /** while a page step animates: move the track in the same frame as the scroll (no extra frame of delay) */
+      const paintNow = () => {
+        target = current = Math.min(dist, Math.max(0, scrollY - top));
+        tr.style.transform = `translate3d(${(-current).toFixed(1)}px,0,0)`;
+        pick(current);
       };
       const kick = () => {
         if (!raf) raf = requestAnimationFrame(paint);
@@ -175,7 +181,7 @@ export default function Journey({
         });
         return out;
       };
-      let paging = false, lastWheel = 0, anim = 0, queued: 0 | 1 | -1 = 0;
+      let paging = false, lastWheel = 0, lastMag = 0, anim = 0, queued: 0 | 1 | -1 = 0;
       const blocked = () => {
         const html = document.documentElement;
         return html.style.overflow === "hidden" || !!html.dataset.drawer || html.classList.contains("intro-lock");
@@ -186,29 +192,33 @@ export default function Journey({
         const next = dirn > 0 ? list.find((x) => x > p + 3) : [...list].reverse().find((x) => x < p - 3);
         if (next === undefined) return false;
         paging = settling = true;
-        const from = scrollY, to = top + next, t0 = performance.now(), dur = 620;
+        document.documentElement.dataset.paging = ""; // scene animations hold still while the page slides
+        const from = scrollY, to = top + next, t0 = performance.now(), dur = 560;
         cancelAnimationFrame(anim);
-        const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+        // ease-out: the page starts moving on the very next frame, then lands softly
+        const ease = (t: number) => 1 - Math.pow(1 - t, 4);
         const tick = (now: number) => {
           const k = Math.min(1, (now - t0) / dur);
           scrollTo({ top: from + (to - from) * ease(k), behavior: "instant" as ScrollBehavior });
+          paintNow();
           if (k < 1) anim = requestAnimationFrame(tick);
           else if (queued) {
             // a new swipe arrived while this page was sliding: go straight on to the next one
             const d = queued;
             queued = 0;
-            if (!stepTo(d)) { paging = false; settling = false; }
+            if (!stepTo(d)) { paging = false; settling = false; delete document.documentElement.dataset.paging; }
           } else {
             // stay locked until the rest of this gesture (trackpad momentum) has died away
             const wait = () => {
               if (queued) { const d = queued; queued = 0; if (stepTo(d)) return; }
-              if (performance.now() - lastWheel > 200) { paging = false; settling = false; }
+              if (performance.now() - lastWheel > 120) { paging = false; settling = false; delete document.documentElement.dataset.paging; }
               else window.setTimeout(wait, 50);
             };
             wait();
           }
         };
-        anim = requestAnimationFrame(tick);
+        // the first step happens right away, in the same frame as the wheel / key press
+        tick(t0 + 16);
         return true;
       };
       // the journey starts just below the top of the page: count that first bit as part of it, so the very first scroll moves a whole page
@@ -225,12 +235,14 @@ export default function Journey({
         // past the ends of the journey, the page scrolls as usual
         if ((dirn > 0 && p >= dist - 2) || (dirn < 0 && p <= 2)) { if (!paging) return; }
         e.preventDefault();
-        const now = performance.now(), gap = now - lastWheel;
+        const now = performance.now(), gap = now - lastWheel, mag = Math.abs(dy);
         lastWheel = now;
-        if (Math.abs(dy) < 2) return;
+        const rising = mag > 12 && mag > lastMag * 1.6; // trackpad momentum only decays, so a jump up is a new swipe
+        lastMag = mag;
+        if (mag < 2) return;
         if (paging) {
-          // momentum arrives every ~16 ms; a pause before this event means a fresh swipe: queue one more page
-          if (gap > 140 && !queued) queued = dirn;
+          // a pause before this event, or a clear rise in speed, means a fresh swipe: queue one more page
+          if ((gap > 120 || rising) && !queued) queued = dirn;
           return;
         }
         stepTo(dirn);
@@ -265,6 +277,7 @@ export default function Journey({
         window.clearTimeout(idle);
         removeEventListener("scroll", onScroll);
         removeEventListener("wheel", onWheel);
+        delete document.documentElement.dataset.paging;
         removeEventListener("keydown", onKey);
         cancelAnimationFrame(anim);
         sec.style.height = "";
@@ -274,7 +287,12 @@ export default function Journey({
     }
     if (mode === "touch") {
       // phones: a swipeable strip; the frame itself scrolls sideways
+      let still = 0;
       const onScroll = () => {
+        // while the strip is being swiped, animations hold still (same flag as the desktop slide)
+        document.documentElement.dataset.paging = "";
+        clearTimeout(still);
+        still = window.setTimeout(() => delete document.documentElement.dataset.paging, 140);
         const list = scenes();
         let i = 0;
         list.forEach((el, k) => {
@@ -287,7 +305,11 @@ export default function Journey({
         if (el) fr.scrollTo({ left: el.offsetLeft, behavior: smooth ? "smooth" : ("instant" as ScrollBehavior) });
       };
       fr.addEventListener("scroll", onScroll, { passive: true });
-      return () => fr.removeEventListener("scroll", onScroll);
+      return () => {
+        fr.removeEventListener("scroll", onScroll);
+        clearTimeout(still);
+        delete document.documentElement.dataset.paging;
+      };
     }
     // reduced motion: stacked
     goRef.current = (i) => scenes()[i]?.scrollIntoView({ block: "start" });
