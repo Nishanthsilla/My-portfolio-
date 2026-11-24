@@ -113,7 +113,7 @@ export const selfReadyStudy: Study = {
         "This distinction helps users understand which images are currently relevant and which are retained as historical or temporary records.",
         "It also avoids treating every image update as a destructive replacement.",
       ],
-      shots: { ids: ["sr-product-details", "sr-product-database"], layout: "wide" },
+      shots: { ids: ["sr-product-details"], layout: "wide" },
     },
     {
       n: "06",
@@ -123,7 +123,6 @@ export const selfReadyStudy: Study = {
         "The On-device Index provides visibility into the product data prepared for device use.",
         "By connecting image ingestion, validation and product lifecycle management, Self-Ready supports a more structured process for improving the data used by the device model.",
       ],
-      shots: { ids: ["sr-on-device-index"], layout: "side" },
     },
   ],
   journey: {
