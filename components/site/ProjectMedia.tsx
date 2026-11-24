@@ -56,7 +56,7 @@ export default function ProjectMedia({ project, className = "", fill, eager = fa
             <b>ADD IMAGE HERE — {p.need}</b>
           </div>
         ) : p.kind === "scene" ? (
-          p.id === "field-ops" ? <FieldOpsMini /> : <CoverScene />
+          p.id === "field-ops" ? <FieldOpsMini /> : <div className="cover-fit"><CoverScene /></div>
         ) : p.kind === "visual" ? (
           <FitVisual id={p.id} fill={fill} />
         ) : (

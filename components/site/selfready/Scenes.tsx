@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import { Chip, Crop, Cursor, ITEMS, KINDS, LABEL, NAME, PALETTE, PH, PW, Product, Shelf, ShelfLabel, Stage, ease, easeInOut, lerp, prog, useLoop, useNarrow, window01, type ShelfState } from "./engine";
 import s from "./selfready.module.css";
 
@@ -21,67 +23,95 @@ const ROW = [0, 1, 2, 3];
 export function CoverScene() {
   const D = 8;
   const { ref, t } = useLoop(D, 5.6);
+  const box = useTall(ref);
+  const tall = box.tall;
   const out = prog(t, 7.0, 7.7);
   const boxes = ease(prog(t, 0.3, 1.0)) * (1 - out);
   const link = (k: number) => ease(prog(t, 1.2 + k * 0.6, 1.7 + k * 0.6)) * (1 - out);
   const matched = ROW.filter((_, k) => link(k) > 0.95).length;
-  return (
-    <div ref={ref} className={s.sceneWrap}>
-      <Stage w={760} h={400} label="Illustrative Self-Ready shelf analysis: each product on a shelf row is matched to its shelf label, and the matches are listed.">
-        <div className={s.win} style={{ left: 20, top: 20, width: 720, height: 360 }}>
-          <div className={s.winBar}>
-            <i /><i /><i />
-            <b>Self-Ready</b>
-            <span className={s.crumb}>/ Shelf Analysis</span>
-            <span className={s.winRight}>
-              {matched === ROW.length ? <Chip tone="done">✓ All matched</Chip> : <Chip tone="plain">Matching · {matched}/{ROW.length}</Chip>}
-            </span>
-          </div>
-          <div className={s.coverBody2}>
-            <div className={s.rowShelf}>
-              <svg viewBox="10 4 470 156" aria-hidden="true">
-                <rect x="0" y="0" width="600" height="160" fill="#F4F1EC" />
-                <rect x="10" y={24 + PH + 2} width="580" height="8" fill="#CBC3B7" />
-                <rect x="10" y={24 + PH + 10} width="580" height="30" fill="#E7E2DA" />
-                {ROW.map((i) => (
-                  <g key={i}>
-                    <Product x={ITEMS[i].x} y={ITEMS[i].y} kind={KINDS[i]} color={PALETTE[i % PALETTE.length]} />
-                    <ShelfLabel x={ITEMS[i].x + 8} y={ITEMS[i].ly} />
-                  </g>
-                ))}
-                {ROW.map((i, k) => {
-                  const it = ITEMS[i], p = link(k);
-                  const x1 = it.x + PW / 2, y1 = it.y + PH + 2, x2 = it.x + 48, y2 = it.ly - 3;
-                  return (
-                    <g key={i}>
-                      <rect x={it.x + 6} y={it.y} width={PW - 12} height={PH + 2} rx={5} fill="none" stroke={p > 0.95 ? "#2f7d5b" : "#FF4938"} strokeWidth={1.8} opacity={boxes} />
-                      <g opacity={p}>
-                        <line x1={x1} y1={y1} x2={lerp(x1, x2, p)} y2={lerp(y1, y2, p)} stroke="#2f7d5b" strokeWidth={2.2} />
-                        <circle cx={x1} cy={y1} r={3.5} fill="#2f7d5b" />
-                        <circle cx={lerp(x1, x2, p)} cy={lerp(y1, y2, p)} r={3.5} fill="#2f7d5b" />
-                      </g>
-                    </g>
-                  );
-                })}
-              </svg>
-            </div>
-            <div className={s.matchList}>
-              <p className={s.paneTitle}>Associations</p>
-              {ROW.map((i, k) => {
-                const p = link(k);
-                return (
-                  <div key={i} className={s.row} style={{ opacity: 0.25 + 0.75 * p, transform: `translateX(${(1 - p) * 8}px)` }}>
-                    <span>{NAME(i)} ↔ {LABEL(i)}</span>
-                    {p > 0.95 ? <Chip tone="done">✓ Matched</Chip> : <span className={s.pending} />}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </Stage>
+  const shelf = (
+    <div className={s.rowShelf}>
+      <svg viewBox="10 4 470 156" aria-hidden="true">
+        <rect x="0" y="0" width="600" height="160" fill="#F4F1EC" />
+        <rect x="10" y={24 + PH + 2} width="580" height="8" fill="#CBC3B7" />
+        <rect x="10" y={24 + PH + 10} width="580" height="30" fill="#E7E2DA" />
+        {ROW.map((i) => (
+          <g key={i}>
+            <Product x={ITEMS[i].x} y={ITEMS[i].y} kind={KINDS[i]} color={PALETTE[i % PALETTE.length]} />
+            <ShelfLabel x={ITEMS[i].x + 8} y={ITEMS[i].ly} />
+          </g>
+        ))}
+        {ROW.map((i, k) => {
+          const it = ITEMS[i], p = link(k);
+          const x1 = it.x + PW / 2, y1 = it.y + PH + 2, x2 = it.x + 48, y2 = it.ly - 3;
+          return (
+            <g key={i}>
+              <rect x={it.x + 6} y={it.y} width={PW - 12} height={PH + 2} rx={5} fill="none" stroke={p > 0.95 ? "#2f7d5b" : "#FF4938"} strokeWidth={1.8} opacity={boxes} />
+              <g opacity={p}>
+                <line x1={x1} y1={y1} x2={lerp(x1, x2, p)} y2={lerp(y1, y2, p)} stroke="#2f7d5b" strokeWidth={2.2} />
+                <circle cx={x1} cy={y1} r={3.5} fill="#2f7d5b" />
+                <circle cx={lerp(x1, x2, p)} cy={lerp(y1, y2, p)} r={3.5} fill="#2f7d5b" />
+              </g>
+            </g>
+          );
+        })}
+      </svg>
     </div>
   );
+  const list = (
+    <div className={s.matchList}>
+      <p className={s.paneTitle}>Associations</p>
+      {ROW.map((i, k) => {
+        const p = link(k);
+        return (
+          <div key={i} className={s.row} style={{ opacity: 0.25 + 0.75 * p, transform: `translateX(${(1 - p) * 8}px)` }}>
+            <span>{NAME(i)} ↔ {LABEL(i)}</span>
+            {p > 0.95 ? <Chip tone="done">✓ Matched</Chip> : <span className={s.pending} />}
+          </div>
+        );
+      })}
+    </div>
+  );
+  // a wide tile: shelf and list side by side; a tall tile (phones, portrait cards): the row on top, the matches below
+  const W = tall ? 520 : 760, H = tall ? 560 : 400;
+  return (
+    <div ref={ref} className={`${s.sceneWrap} ${s.coverCenter}`}>
+      {/* as wide as the card allows, without getting taller than it */}
+      <div style={{ width: box.h ? Math.min(box.w, box.h * 0.94 * (W / H)) : "100%", margin: "0 auto" }}>
+        <Stage w={W} h={H} label="Illustrative Self-Ready shelf analysis: each product on a shelf row is matched to its shelf label, and the matches are listed.">
+          <div className={s.win} style={{ left: 20, top: 20, width: W - 40, height: H - 40 }}>
+            <div className={s.winBar}>
+              <i /><i /><i />
+              <b>Self-Ready</b>
+              {!tall && <span className={s.crumb}>/ Shelf Analysis</span>}
+              <span className={s.winRight}>
+                {matched === ROW.length ? <Chip tone="done">✓ All matched</Chip> : <Chip tone="plain">Matching · {matched}/{ROW.length}</Chip>}
+              </span>
+            </div>
+            <div className={tall ? s.coverBodyTall : s.coverBody2}>
+              {shelf}
+              {list}
+            </div>
+          </div>
+        </Stage>
+      </div>
+    </div>
+  );
+}
+
+/** True when the scene's box is taller than it is wide-ish (a portrait card). */
+function useTall(ref: React.RefObject<HTMLElement | null>) {
+  const [box, setBox] = useState({ tall: false, w: 0, h: 0 });
+  useEffect(() => {
+    const el = ref.current?.parentElement;
+    if (!el) return;
+    const fit = () => setBox({ tall: el.clientHeight > el.clientWidth * 0.7, w: el.clientWidth, h: el.clientHeight });
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref]);
+  return box;
 }
 
 /* ======================================================================== */

@@ -174,29 +174,35 @@ export default function Journey({
         });
         return out;
       };
-      let paging = false, lastWheel = 0, anim = 0;
+      let paging = false, lastWheel = 0, anim = 0, queued: 0 | 1 | -1 = 0;
       const blocked = () => {
         const html = document.documentElement;
         return html.style.overflow === "hidden" || !!html.dataset.drawer || html.classList.contains("intro-lock");
       };
       const stepTo = (dirn: 1 | -1) => {
-        const p = scrollY - top;
+        const p = Math.max(0, scrollY - top);
         const list = stops();
         const next = dirn > 0 ? list.find((x) => x > p + 3) : [...list].reverse().find((x) => x < p - 3);
         if (next === undefined) return false;
         paging = settling = true;
-        const from = scrollY, to = top + next, t0 = performance.now(), dur = 720;
+        const from = scrollY, to = top + next, t0 = performance.now(), dur = 620;
         cancelAnimationFrame(anim);
         const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
         const tick = (now: number) => {
           const k = Math.min(1, (now - t0) / dur);
           scrollTo({ top: from + (to - from) * ease(k), behavior: "instant" as ScrollBehavior });
           if (k < 1) anim = requestAnimationFrame(tick);
-          else {
-            // stay locked until the rest of this gesture has died away
+          else if (queued) {
+            // a new swipe arrived while this page was sliding: go straight on to the next one
+            const d = queued;
+            queued = 0;
+            if (!stepTo(d)) { paging = false; settling = false; }
+          } else {
+            // stay locked until the rest of this gesture (trackpad momentum) has died away
             const wait = () => {
-              if (performance.now() - lastWheel > 220) { paging = false; settling = false; }
-              else window.setTimeout(wait, 60);
+              if (queued) { const d = queued; queued = 0; if (stepTo(d)) return; }
+              if (performance.now() - lastWheel > 200) { paging = false; settling = false; }
+              else window.setTimeout(wait, 50);
             };
             wait();
           }
@@ -204,9 +210,10 @@ export default function Journey({
         anim = requestAnimationFrame(tick);
         return true;
       };
+      // the journey starts just below the top of the page: count that first bit as part of it, so the very first scroll moves a whole page
       const inJourney = () => {
         const p = scrollY - top;
-        return p >= -2 && p <= dist + 2;
+        return p >= -top - 2 && p <= dist + 2;
       };
       const onWheel = (e: WheelEvent) => {
         if (e.defaultPrevented || blocked() || e.ctrlKey) return; // the wall / gallery scroll themselves; pinch-zoom stays
@@ -217,8 +224,14 @@ export default function Journey({
         // past the ends of the journey, the page scrolls as usual
         if ((dirn > 0 && p >= dist - 2) || (dirn < 0 && p <= 2)) { if (!paging) return; }
         e.preventDefault();
-        lastWheel = performance.now();
-        if (paging || Math.abs(dy) < 2) return;
+        const now = performance.now(), gap = now - lastWheel;
+        lastWheel = now;
+        if (Math.abs(dy) < 2) return;
+        if (paging) {
+          // momentum arrives every ~16 ms; a pause before this event means a fresh swipe: queue one more page
+          if (gap > 140 && !queued) queued = dirn;
+          return;
+        }
         stepTo(dirn);
       };
       const onKey = (e: KeyboardEvent) => {
