@@ -168,7 +168,7 @@
 
 /* ---------- confidential screens (Locked.tsx) ---------- */
 .locked { position: relative; display: grid; }
-.locked .zoomHint { display: none; }
+
 .lockBtn, .lockTag {
   position: absolute; left: 14px; bottom: 14px; z-index: 2; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px;
   border-radius: 999px; border: 0; background: rgba(20, 20, 22, 0.86); color: #fff; font: 500 13px/1 var(--sans); cursor: pointer;

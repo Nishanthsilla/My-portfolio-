@@ -1,9 +1,6 @@
 "use client";
 
-import { useRef } from "react";
-
-import { Chip, Crop, Cursor, ITEMS, LABEL, NAME, Shelf, Stage, ease, easeInOut, lerp, prog, useLoop, useNarrow, window01, type ShelfState } from "./engine";
-import { selfReady } from "@/lib/site/selfReady";
+import { Chip, Crop, Cursor, ITEMS, KINDS, LABEL, NAME, PALETTE, PH, PW, Product, Shelf, ShelfLabel, Stage, ease, easeInOut, lerp, prog, useLoop, useNarrow, window01, type ShelfState } from "./engine";
 import s from "./selfready.module.css";
 
 /*
@@ -17,189 +14,177 @@ const FLAG = 13; // the ambiguous association (its label sits between two produc
 const AUTO = [0, 1, 2, 3, 4, 5, 6, 8, 10, 11, 12, 14];
 
 /* ======================================================================== */
-/* 1. Listing-card cover — 10 s: detect → associate → flag → review → confirm → resolved */
+/* 1. Listing-card cover — 8 s, deliberately simple: one shelf row, its       */
+/*    labels, each product matched to its label, and the matches listed.      */
 /* ======================================================================== */
+const ROW = [0, 1, 2, 3];
 export function CoverScene() {
-  const D = 10;
-  const { ref, t } = useLoop(D, 6.9);
-  const n = useNarrow(ref);
-  const out = prog(t, 8.9, 9.7);
-  const flagA = ease(prog(t, 3.5, 3.9));
-  const review = window01(t, 4.5, 5.1, 7.2, 7.7);
-  const confirmed = ease(prog(t, 6.45, 6.75));
-  const st: ShelfState = {
-    products: ease(prog(t, 0.5, 1.5)),
-    labels: ease(prog(t, 1.1, 2.1)),
-    links: [
-      ...[0, 2, 6, 11].map((i, k) => ({ i, p: ease(prog(t, 2.2 + k * 0.12, 2.7 + k * 0.12)) })),
-      { i: FLAG, p: ease(prog(t, 3.2, 3.6)), tone: confirmed > 0.5 ? ("done" as const) : ("flag" as const) },
-    ],
-    flag: confirmed > 0.5 ? null : { i: FLAG, a: flagA },
-    focus: { i: FLAG, a: review },
-    done: confirmed > 0.5 ? [FLAG] : [],
-    boxesOut: out,
-  };
-  // cursor: in from the bottom right, onto Confirm, click, away
-  const cIn = easeInOut(prog(t, 5.0, 6.1));
-  const cx = n ? lerp(440, 350, cIn) : lerp(860, 712, cIn), cy = n ? lerp(700, 584, cIn) : lerp(520, 368, cIn);
-  const cursorA = prog(t, 4.9, 5.1) * (1 - prog(t, 6.9, 7.3));
-  const press = t > 6.3 && t < 6.45;
-  const resolved = ease(prog(t, 7.5, 8.0)) * (1 - out);
-  const listA = ease(prog(t, 2.0, 2.6)) * (1 - review) * (1 - out);
+  const D = 8;
+  const { ref, t } = useLoop(D, 5.6);
+  const out = prog(t, 7.0, 7.7);
+  const boxes = ease(prog(t, 0.3, 1.0)) * (1 - out);
+  const link = (k: number) => ease(prog(t, 1.2 + k * 0.6, 1.7 + k * 0.6)) * (1 - out);
+  const matched = ROW.filter((_, k) => link(k) > 0.95).length;
   return (
-    <div ref={ref} className={`${s.sceneWrap} ${n ? s.n : ""}`}>
-      <Stage w={n ? 420 : 800} h={n ? 640 : 450} label="Illustrative Self-Ready shelf analysis: products and labels are detected, one association needs confirmation, the reviewer inspects the evidence and confirms it.">
-        <div className={s.win} style={n ? { left: 10, top: 10, width: 400, height: 620 } : { left: 24, top: 24, width: 752, height: 402 }}>
+    <div ref={ref} className={s.sceneWrap}>
+      <Stage w={760} h={400} label="Illustrative Self-Ready shelf analysis: each product on a shelf row is matched to its shelf label, and the matches are listed.">
+        <div className={s.win} style={{ left: 20, top: 20, width: 720, height: 360 }}>
           <div className={s.winBar}>
             <i /><i /><i />
-            <b>Shelf Analysis</b>
+            <b>Self-Ready</b>
+            <span className={s.crumb}>/ Shelf Analysis</span>
             <span className={s.winRight}>
-              {resolved > 0.5 ? <Chip tone="done">All reviewed</Chip> : flagA > 0.5 ? <Chip tone="confirm">1 to review</Chip> : <Chip tone="plain">Analysing</Chip>}
+              {matched === ROW.length ? <Chip tone="done">✓ All matched</Chip> : <Chip tone="plain">Matching · {matched}/{ROW.length}</Chip>}
             </span>
           </div>
-          <div className={s.coverBody}>
-            <div className={s.shelfPane}><Shelf st={st} /></div>
-            <div className={s.sidePane}>
-              {/* list of associations */}
-              <div className={s.layer} style={{ opacity: listA, transform: `translateY(${(1 - listA) * 8}px)` }}>
-                <p className={s.paneTitle}>Associations</p>
-                {[0, 2, 6, FLAG].map((i, k) => {
-                  const a = ease(prog(t, 2.2 + k * 0.15, 2.6 + k * 0.15));
-                  const isFlag = i === FLAG;
+          <div className={s.coverBody2}>
+            <div className={s.rowShelf}>
+              <svg viewBox="10 4 470 156" aria-hidden="true">
+                <rect x="0" y="0" width="600" height="160" fill="#F4F1EC" />
+                <rect x="10" y={24 + PH + 2} width="580" height="8" fill="#CBC3B7" />
+                <rect x="10" y={24 + PH + 10} width="580" height="30" fill="#E7E2DA" />
+                {ROW.map((i) => (
+                  <g key={i}>
+                    <Product x={ITEMS[i].x} y={ITEMS[i].y} kind={KINDS[i]} color={PALETTE[i % PALETTE.length]} />
+                    <ShelfLabel x={ITEMS[i].x + 8} y={ITEMS[i].ly} />
+                  </g>
+                ))}
+                {ROW.map((i, k) => {
+                  const it = ITEMS[i], p = link(k);
+                  const x1 = it.x + PW / 2, y1 = it.y + PH + 2, x2 = it.x + 48, y2 = it.ly - 3;
                   return (
-                    <div key={i} className={`${s.row} ${isFlag && flagA > 0.5 ? s.rowFlag : ""}`} style={{ opacity: a }}>
-                      <span>{NAME(i)} ↔ {LABEL(i)}</span>
-                      {isFlag ? (flagA > 0.5 ? <Chip tone="confirm">Needs confirmation</Chip> : null) : <Chip tone="auto">Auto-admitted</Chip>}
-                    </div>
+                    <g key={i}>
+                      <rect x={it.x + 6} y={it.y} width={PW - 12} height={PH + 2} rx={5} fill="none" stroke={p > 0.95 ? "#2f7d5b" : "#FF4938"} strokeWidth={1.8} opacity={boxes} />
+                      <g opacity={p}>
+                        <line x1={x1} y1={y1} x2={lerp(x1, x2, p)} y2={lerp(y1, y2, p)} stroke="#2f7d5b" strokeWidth={2.2} />
+                        <circle cx={x1} cy={y1} r={3.5} fill="#2f7d5b" />
+                        <circle cx={lerp(x1, x2, p)} cy={lerp(y1, y2, p)} r={3.5} fill="#2f7d5b" />
+                      </g>
+                    </g>
                   );
                 })}
-              </div>
-              {/* focused review */}
-              <div className={s.layer} style={{ opacity: review, transform: `translateY(${(1 - review) * 10}px)` }}>
-                <p className={s.paneTitle}>Review</p>
-                <p className={s.reviewTitle}>{NAME(FLAG)} ↔ {LABEL(FLAG)}</p>
-                {confirmed > 0.5 ? <Chip tone="done">✓ Confirmed</Chip> : <Chip tone="confirm">Needs confirmation</Chip>}
-                <div className={s.evidence}>
-                  <figure><Crop i={FLAG} part="product" /><figcaption>Product</figcaption></figure>
-                  <figure><Crop i={FLAG} part="label" /><figcaption>Shelf label</figcaption></figure>
-                </div>
-                <div className={s.kv}><span>Detection quality</span><b>Medium</b></div>
-                <div className={s.actions}>
-                  <span className={s.btnGhost}>Correct</span>
-                  <span className={`${s.btnPrimary} ${press ? s.pressed : ""}`}>{confirmed > 0.5 ? "Confirmed" : "Confirm"}</span>
-                </div>
-              </div>
-              {/* resolved */}
-              <div className={s.layer} style={{ opacity: resolved, transform: `translateY(${(1 - resolved) * 8}px)` }}>
-                <p className={s.paneTitle}>Associations</p>
-                {[0, 2, 6, FLAG].map((i) => (
-                  <div key={i} className={s.row}>
+              </svg>
+            </div>
+            <div className={s.matchList}>
+              <p className={s.paneTitle}>Associations</p>
+              {ROW.map((i, k) => {
+                const p = link(k);
+                return (
+                  <div key={i} className={s.row} style={{ opacity: 0.25 + 0.75 * p, transform: `translateX(${(1 - p) * 8}px)` }}>
                     <span>{NAME(i)} ↔ {LABEL(i)}</span>
-                    {i === FLAG ? <Chip tone="done">✓ Confirmed</Chip> : <Chip tone="auto">Auto-admitted</Chip>}
+                    {p > 0.95 ? <Chip tone="done">✓ Matched</Chip> : <span className={s.pending} />}
                   </div>
-                ))}
-                <p className={s.note}>Nothing left to review in this capture.</p>
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>
-        <Cursor x={cx} y={cy} press={press} a={cursorA} />
       </Stage>
     </div>
   );
 }
 
 /* ======================================================================== */
-/* 2. Case-study hero — 14 s, a fuller product view                          */
+/* 2. Case-study hero — 12 s, a different scene: a scan sweeps two shelf      */
+/*    rows, matches stream into the list with their confidence, one weak      */
+/*    match is flagged, the reviewer confirms it, and the totals settle.      */
 /* ======================================================================== */
+const HERO = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const WEAK = 7;
+const CONF = [96, 94, 98, 91, 95, 93, 97, 62, 92, 96];
 export function HeroScene() {
-  const probe = useRef<HTMLDivElement>(null);
-  const n = useNarrow(probe);
-  return <div ref={probe}>{n ? <CoverScene /> : <HeroWide />}</div>;
-}
-
-function HeroWide() {
-  const D = 14;
-  const { ref, t } = useLoop(D, 8.6);
-  const out = prog(t, 12.9, 13.7);
-  const flagA = ease(prog(t, 4.0, 4.5));
-  const tabNeeds = window01(t, 5.3, 5.6, 11.0, 11.4); // filter: "Needs confirmation"
-  const review = window01(t, 6.6, 7.2, 10.6, 11.1);
-  const confirmed = ease(prog(t, 9.55, 9.85));
-  const linkIds = AUTO.slice(0, 8);
-  const st: ShelfState = {
-    products: ease(prog(t, 0.5, 1.7)),
-    labels: ease(prog(t, 1.2, 2.4)),
-    links: [
-      ...linkIds.map((i, k) => ({ i, p: ease(prog(t, 2.5 + k * 0.1, 3.0 + k * 0.1)) })),
-      { i: FLAG, p: ease(prog(t, 3.6, 4.1)), tone: confirmed > 0.5 ? ("done" as const) : ("flag" as const) },
-    ],
-    flag: confirmed > 0.5 ? null : { i: FLAG, a: flagA },
-    focus: { i: FLAG, a: review },
-    done: confirmed > 0.5 ? [FLAG] : [],
-    boxesOut: out,
-  };
-  // cursor path: → tab (5.3) → row (6.5) → Confirm (9.4) → away
-  const p1 = easeInOut(prog(t, 4.6, 5.25)), p2 = easeInOut(prog(t, 5.8, 6.45)), p3 = easeInOut(prog(t, 8.3, 9.3));
-  let cx = lerp(1240, 952, p1), cy = lerp(600, 108, p1);
-  cx = lerp(cx, 1010, p2); cy = lerp(cy, 172, p2);
-  cx = lerp(cx, 1112, p3); cy = lerp(cy, 424, p3);
-  const cursorA = prog(t, 4.5, 4.7) * (1 - prog(t, 10.2, 10.6));
-  const press = (t > 5.25 && t < 5.4) || (t > 6.45 && t < 6.6) || (t > 9.4 && t < 9.55);
-  const rows = [0, 2, 6, 8, FLAG, 11];
-  const listA = ease(prog(t, 2.4, 3.0)) * (1 - out);
-  const visibleRows = tabNeeds > 0.5 && confirmed < 0.5 ? [FLAG] : rows;
+  const D = 12;
+  const { ref, t } = useLoop(D, 9.6);
+  const out = prog(t, 11.0, 11.7);
+  const scan = prog(t, 0.4, 3.6); // 0 → 1 across the shelf
+  const seen = (i: number) => scan * 600 > ITEMS[i].x + PW / 2;
+  const link = (k: number) => ease(prog(t, 1.2 + k * 0.32, 1.7 + k * 0.32)) * (1 - out);
+  const flagA = ease(prog(t, 4.4, 4.8)) * (1 - out);
+  const confirmed = t > 7.6 && out < 0.5;
+  const press = t > 7.45 && t < 7.6;
+  const cIn = easeInOut(prog(t, 5.6, 7.3));
+  const cx = lerp(1180, 1046, cIn), cy = lerp(560, 452, cIn);
+  const cursorA = prog(t, 5.5, 5.8) * (1 - prog(t, 8.3, 8.7));
+  const listed = HERO.filter((_, k) => link(k) > 0.5);
+  const matched = listed.filter((i) => i !== WEAK || confirmed).length;
+  const review = listed.includes(WEAK) && !confirmed && flagA > 0.5 ? 1 : 0;
   return (
     <div ref={ref} className={s.sceneWrap}>
-      <Stage w={1200} h={560} label="Illustrative Self-Ready workspace: a capture's shelf is analysed, associations are listed, the reviewer filters to what needs confirmation, inspects the evidence and confirms.">
+      <Stage w={1200} h={560} label="Illustrative Self-Ready workspace: a scan sweeps the shelf, products are matched to their labels with a confidence score, one weak match is flagged and the reviewer confirms it.">
         <div className={s.win} style={{ left: 24, top: 24, width: 1152, height: 512 }}>
           <div className={s.winBar}>
             <i /><i /><i />
             <b>Self-Ready</b>
-            <span className={s.crumb}>/ Shelf Analysis</span>
+            <span className={s.crumb}>/ Capture 214 · Aisle 4</span>
             <span className={s.winRight}>
-              {confirmed > 0.5 && tabNeeds < 0.5 ? <Chip tone="done">All reviewed</Chip> : flagA > 0.5 ? <Chip tone="confirm">{confirmed > 0.5 ? 0 : 1} needs confirmation</Chip> : <Chip tone="plain">Analysing capture</Chip>}
+              {scan < 1 ? <Chip tone="plain">Scanning shelf…</Chip> : review ? <Chip tone="confirm">1 needs confirmation</Chip> : <Chip tone="done">✓ Ready for the device</Chip>}
             </span>
           </div>
-          <div className={s.heroBody}>
-            <nav className={s.sideNav} aria-hidden="true">
-              {selfReady.modules.map((m) => (
-                <span key={m} className={m === "Shelf Analysis" ? s.navOn : undefined}>{m}</span>
-              ))}
-            </nav>
-            <div className={s.heroShelf}><Shelf st={st} /></div>
-            <div className={s.heroSide}>
-              <div className={s.tabsMini}>
-                <span className={tabNeeds < 0.5 ? s.tabOn : undefined}>All</span>
-                <span className={tabNeeds >= 0.5 ? s.tabOn : undefined}>Needs confirmation</span>
-                <span>Unresolved</span>
+          <div className={s.heroBody2}>
+            <div className={s.heroShelf2}>
+              <div className={s.stats}>
+                <span><b>{HERO.filter(seen).length}</b> products</span>
+                <span><b>{matched}</b> matched</span>
+                <span className={review ? s.statWarn : undefined}><b>{review}</b> to review</span>
               </div>
-              <div className={s.layer} style={{ top: 56, opacity: listA * (1 - review), transform: `translateY(${(1 - listA) * 8}px)` }}>
-                {visibleRows.map((i, k) => {
-                  const a = ease(prog(t, 2.6 + k * 0.12, 3.0 + k * 0.12));
-                  const isFlag = i === FLAG;
-                  return (
-                    <div key={i} className={`${s.row} ${isFlag && flagA > 0.5 && confirmed < 0.5 ? s.rowFlag : ""} ${isFlag && t > 6.3 && t < 6.6 ? s.rowPress : ""}`} style={{ opacity: a }}>
-                      <span>{NAME(i)} ↔ {LABEL(i)}</span>
-                      {isFlag ? (confirmed > 0.5 ? <Chip tone="done">✓ Confirmed</Chip> : flagA > 0.5 ? <Chip tone="confirm">Needs confirmation</Chip> : null) : <Chip tone="auto">Auto-admitted</Chip>}
-                    </div>
-                  );
-                })}
-              </div>
-              <div className={s.layer} style={{ top: 56, opacity: review, transform: `translateY(${(1 - review) * 10}px)` }}>
-                <p className={s.reviewTitle}>{NAME(FLAG)} ↔ {LABEL(FLAG)}</p>
-                {confirmed > 0.5 ? <Chip tone="done">✓ Confirmed</Chip> : <Chip tone="confirm">Needs confirmation</Chip>}
-                <p className={s.why}>The label sits between two products.</p>
-                <div className={s.evidence}>
-                  <figure><Crop i={FLAG} part="product" /><figcaption>Product</figcaption></figure>
-                  <figure><Crop i={FLAG} part="label" /><figcaption>Shelf label</figcaption></figure>
-                </div>
-                <div className={s.kv}><span>Detection quality</span><b>Medium</b></div>
-                <div className={s.actions}>
-                  <span className={s.btnGhost}>Correct</span>
-                  <span className={`${s.btnPrimary} ${t > 9.4 && t < 9.55 ? s.pressed : ""}`}>{confirmed > 0.5 ? "Confirmed" : "Confirm"}</span>
-                </div>
-              </div>
+              <svg viewBox="0 0 600 270" aria-hidden="true">
+                <rect width="600" height="270" fill="#F4F1EC" />
+                {[24, 148].map((y) => (
+                  <g key={y}>
+                    <rect x="10" y={y + PH + 2} width="580" height="8" fill="#CBC3B7" />
+                    <rect x="10" y={y + PH + 10} width="580" height="30" fill="#E7E2DA" />
+                  </g>
+                ))}
+                {HERO.map((i) => (
+                  <g key={i}>
+                    <Product x={ITEMS[i].x} y={ITEMS[i].y} kind={KINDS[i]} color={PALETTE[i % PALETTE.length]} />
+                    <ShelfLabel x={ITEMS[i].x + 8} y={ITEMS[i].ly} />
+                  </g>
+                ))}
+                <g opacity={1 - out}>
+                  {HERO.map((i, k) => {
+                    const it = ITEMS[i], p = link(k), weak = i === WEAK && !confirmed;
+                    const col = weak && flagA > 0.5 ? "#FF4938" : "#2f7d5b";
+                    const x1 = it.x + PW / 2, y1 = it.y + PH + 2, x2 = it.x + 48, y2 = it.ly - 3;
+                    return (
+                      <g key={i}>
+                        {seen(i) && <rect x={it.x + 6} y={it.y} width={PW - 12} height={PH + 2} rx={5} fill="none" stroke={col} strokeWidth={weak && flagA > 0.5 ? 2.6 : 1.6} strokeDasharray={weak && flagA > 0.5 ? "5 4" : undefined} />}
+                        <g opacity={p}>
+                          <line x1={x1} y1={y1} x2={lerp(x1, x2, p)} y2={lerp(y1, y2, p)} stroke={col} strokeWidth={2} />
+                          <circle cx={lerp(x1, x2, p)} cy={lerp(y1, y2, p)} r={3.5} fill={col} />
+                        </g>
+                      </g>
+                    );
+                  })}
+                  {scan > 0 && scan < 1 && (
+                    <g>
+                      <rect x={scan * 600 - 40} y="0" width="40" height="270" fill="url(#beam)" />
+                      <rect x={scan * 600 - 1} y="0" width="2" height="270" fill="#FF4938" />
+                    </g>
+                  )}
+                </g>
+                <defs>
+                  <linearGradient id="beam" x1="0" x2="1">
+                    <stop offset="0" stopColor="#FF4938" stopOpacity="0" />
+                    <stop offset="1" stopColor="#FF4938" stopOpacity="0.18" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <div className={s.heroList}>
+              <p className={s.paneTitle}>Associations · confidence</p>
+              {HERO.map((i, k) => {
+                const p = link(k), weak = i === WEAK;
+                if (p < 0.02) return null;
+                return (
+                  <div key={i} className={`${s.confRow} ${weak && review ? s.confFlag : ""}`} style={{ opacity: p, transform: `translateY(${(1 - p) * 6}px)` }}>
+                    <span className={s.confName}>{NAME(i)} ↔ {LABEL(i)}</span>
+                    <span className={s.confBar}><i style={{ width: `${CONF[i] * p}%`, background: weak && !confirmed ? "#FF4938" : "#2f7d5b" }} /></span>
+                    <b>{Math.round(CONF[i] * p)}%</b>
+                    {weak && review ? <span className={`${s.miniBtn} ${press ? s.pressed : ""}`}>Confirm</span> : weak && confirmed ? <span className={s.okMark}>✓</span> : <span className={s.okMark}>✓</span>}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

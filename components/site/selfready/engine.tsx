@@ -103,10 +103,10 @@ export function Stage({ w, h, children, label }: { w: number; h: number; childre
 /* ------------------------------------------------------------------------ */
 const ROWS = [24, 148, 272];
 const COLS = [24, 138, 252, 366, 480];
-const PW = 96, PH = 84;
-const PALETTE = ["#E9D3B8", "#CFDCE6", "#DCCFE0", "#D3E2CD", "#F0DFAE", "#E6C9C3"];
+export const PW = 96, PH = 84;
+export const PALETTE = ["#E9D3B8", "#CFDCE6", "#DCCFE0", "#D3E2CD", "#F0DFAE", "#E6C9C3"];
 type Kind = "box" | "bottle" | "can" | "pouch";
-const KINDS: Kind[] = ["box", "bottle", "box", "can", "pouch", "bottle", "box", "can", "box", "pouch", "can", "box", "bottle", "box", "can"];
+export const KINDS: Kind[] = ["box", "bottle", "box", "can", "pouch", "bottle", "box", "can", "box", "pouch", "can", "box", "bottle", "box", "can"];
 
 export type Item = { i: number; x: number; y: number; lx: number; ly: number };
 /** 15 items: 3 shelves × 5. Item 13's label sits between two products (the ambiguous case). */
@@ -129,7 +129,7 @@ export type ShelfState = {
   boxesOut?: number;            // 0..1 fade of all overlays (for the loop)
 };
 
-function Product({ x, y, kind, color }: { x: number; y: number; kind: Kind; color: string }) {
+export function Product({ x, y, kind, color }: { x: number; y: number; kind: Kind; color: string }) {
   const cx = x + PW / 2;
   if (kind === "bottle")
     return (
@@ -163,7 +163,7 @@ function Product({ x, y, kind, color }: { x: number; y: number; kind: Kind; colo
   );
 }
 
-function ShelfLabel({ x, y }: { x: number; y: number }) {
+export function ShelfLabel({ x, y }: { x: number; y: number }) {
   return (
     <g>
       <rect x={x} y={y} width={80} height={22} rx={2} fill="#FFFFFF" stroke="#D8D2C8" />

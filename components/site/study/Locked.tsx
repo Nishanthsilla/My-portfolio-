@@ -13,7 +13,6 @@ import s from "./study.module.css";
  */
 export default function Locked({ id, replica, width, height, label, priority }: { id: string; replica: string; width?: number; height?: number; label: string; priority?: boolean }) {
   const access = useAccess();
-  const [ask, setAsk] = useState(false);
   const [realFailed, setRealFailed] = useState(false);
   const real = access === "approved" && !realFailed;
 
@@ -30,15 +29,6 @@ export default function Locked({ id, replica, width, height, label, priority }: 
       <div className={s.frame}>
         <Zoomable src={real ? `/api/access/image/${id}` : replica} alt={real ? `${label}: real screenshot` : `${label}: a recreation of the confidential client screen`} width={width} height={height} label={label} priority={priority} />
       </div>
-      {real ? (
-        <span className={`${s.lockTag} ${s.lockOpen}`}>Real screenshot · shared with you in confidence</span>
-      ) : (
-        <button type="button" className={s.lockBtn} onClick={() => setAsk(true)} disabled={access === "loading"}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></svg>
-          {access === "pending" ? "Access requested · waiting" : "Confidential · view the real screen"}
-        </button>
-      )}
-      {ask && <AskModal onClose={() => setAsk(false)} />}
     </div>
   );
 }
