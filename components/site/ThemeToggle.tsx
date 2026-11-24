@@ -114,33 +114,12 @@ export default function ThemeToggle() {
 
   return (
     <button ref={btn} type="button" className={`${s.themeBtn} cursor-target`} onClick={flip} onPointerEnter={prepare} aria-label={dark ? "Switch to light theme" : "Switch to dark theme"} aria-pressed={dark} title={dark ? "Light theme" : "Dark theme"}>
-      {/* a little sun and moon with faces: the sun spins away and the moon pops in (and back) */}
-      <svg viewBox="0 0 24 24" aria-hidden="true" className={s.themeIcon}>
-        <defs>
-          <linearGradient id="moonFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#d9d5ff" />
-            <stop offset="1" stopColor="#6c63ff" />
-          </linearGradient>
-          <mask id="moonCut">
-            <rect width="24" height="24" fill="#fff" />
-            <circle cx="7.4" cy="7.6" r="6.6" fill="#000" />
-          </mask>
-        </defs>
-        <g className={s.sun}>
-          <g className={s.rays}>
-            {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
-              <line key={a} x1="12" y1="2.6" x2="12" y2="4.6" transform={`rotate(${a} 12 12)`} />
-            ))}
-          </g>
-          <circle cx="12" cy="12" r="5.4" fill="#ffcf4a" />
-          <rect x="10.05" y="10.6" width="1.25" height="2.6" rx="0.62" fill="#2a2108" />
-          <rect x="12.7" y="10.6" width="1.25" height="2.6" rx="0.62" fill="#2a2108" />
-        </g>
-        <g className={s.moon}>
-          <circle cx="12.4" cy="12.2" r="8" fill="url(#moonFill)" mask="url(#moonCut)" />
-          <rect x="13.9" y="12.4" width="1.15" height="2.5" rx="0.57" fill="#17143a" />
-          <rect x="16.3" y="12.4" width="1.15" height="2.5" rx="0.57" fill="#17143a" />
-        </g>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        {dark ? (
+          <g><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" /></g>
+        ) : (
+          <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z" />
+        )}
       </svg>
     </button>
   );

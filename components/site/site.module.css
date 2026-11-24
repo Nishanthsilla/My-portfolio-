@@ -94,21 +94,8 @@
   border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer;
   transition: transform var(--t-hover) var(--ease), border-color var(--t-hover) var(--ease);
 }
-.themeBtn:hover { border-color: var(--ink); }
-.themeBtn { view-transition-name: theme-toggle; }
-.themeIcon { width: 24px; height: 24px; overflow: visible; }
-.themeIcon .rays line { stroke: #ffcf4a; stroke-width: 1.7; stroke-linecap: round; }
-.sun, .moon { transform-box: view-box; transform-origin: 12px 12px; }
-.rays { transform-box: view-box; transform-origin: 12px 12px; transition: transform 520ms cubic-bezier(0.34, 1.4, 0.64, 1); }
-/* light: the sun is out */
-.sun { transform: none; opacity: 1; transition: transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1) 150ms, opacity 220ms ease 150ms; }
-.moon { transform: scale(0.1) rotate(-90deg); opacity: 0; transition: transform 200ms ease-in, opacity 160ms ease-in; }
-/* dark: the sun spins away, then the moon pops in */
-:global(html[data-theme="dark"]) .sun { transform: rotate(80deg) scale(0.55); opacity: 0; transition: transform 220ms ease-in, opacity 180ms ease-in; }
-:global(html[data-theme="dark"]) .moon { transform: none; opacity: 1; transition: transform 440ms cubic-bezier(0.34, 1.56, 0.64, 1) 170ms, opacity 200ms ease 170ms; }
-.themeBtn:hover .rays { transform: rotate(45deg); }
-:global(html[data-theme="dark"]) .themeBtn:hover .moon { transform: rotate(-12deg); }
-@media (prefers-reduced-motion: reduce) { .sun, .moon, .rays { transition: none !important; } }
+.themeBtn:hover { border-color: var(--ink); transform: rotate(-12deg); }
+.themeBtn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 @media (max-width: 640px) { .themeBtn { width: 44px; height: 44px; } }
 
 /* ---------- header (keeps .bar .wrap .mark i for the intro film's landing dot) ---------- */
