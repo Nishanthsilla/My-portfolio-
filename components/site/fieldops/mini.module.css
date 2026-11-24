@@ -14,7 +14,35 @@
 }
 .tip b { color: #1d1d22; font-weight: 600; }
 .tip em { font-style: normal; font-weight: 600; color: #b81f55; }
-:global(.cursor-target):hover .box { transform: translateY(-1.2cqi) scale(1.04); box-shadow: 0 0 0 1cqi rgba(255, 255, 255, 0.9), 0 3.4cqi 7cqi rgba(80, 0, 30, 0.45); }
-:global(.cursor-target):hover .cursor { transform: translate(-1.5cqi, -1.5cqi); }
-:global(.cursor-target):hover .tip { opacity: 1; transform: translate(-50%, 0); }
-@media (prefers-reduced-motion: reduce) { .box, .cursor, .tip { transition: none; } }
+/* while on screen: the cursor glides in, clicks, the cell lifts and its tooltip shows; then it resets (4.4 s loop) */
+.on .box { animation: boxLoop 4.4s cubic-bezier(0.22, 1, 0.36, 1) 300ms infinite both; }
+.on .cursor { animation: cursorLoop 4.4s cubic-bezier(0.22, 1, 0.36, 1) 300ms infinite both; }
+.on .tip { animation: tipLoop 4.4s cubic-bezier(0.22, 1, 0.36, 1) 300ms infinite both; }
+@keyframes cursorLoop {
+  0% { transform: translate(6cqi, 5cqi); opacity: 0; }
+  14% { opacity: 1; }
+  20% { transform: translate(-1.5cqi, -1.5cqi) scale(1); }
+  23% { transform: translate(-1.5cqi, -1.5cqi) scale(0.86); }
+  27% { transform: translate(-1.5cqi, -1.5cqi) scale(1); }
+  80% { transform: translate(-1.5cqi, -1.5cqi); opacity: 1; }
+  94%, 100% { transform: translate(6cqi, 5cqi); opacity: 0; }
+}
+@keyframes boxLoop {
+  0%, 20% { transform: none; box-shadow: 0 2.4cqi 5cqi rgba(80, 0, 30, 0.35); }
+  23% { transform: scale(0.95); box-shadow: 0 1.2cqi 3cqi rgba(80, 0, 30, 0.35); }
+  30%, 78% { transform: translateY(-1.2cqi) scale(1.04); box-shadow: 0 0 0 1cqi rgba(255, 255, 255, 0.9), 0 3.4cqi 7cqi rgba(80, 0, 30, 0.45); }
+  90%, 100% { transform: none; box-shadow: 0 2.4cqi 5cqi rgba(80, 0, 30, 0.35); }
+}
+@keyframes tipLoop {
+  0%, 26% { opacity: 0; transform: translate(-50%, 1cqi); }
+  33%, 76% { opacity: 1; transform: translate(-50%, 0); }
+  84%, 100% { opacity: 0; transform: translate(-50%, 1cqi); }
+}
+/* on a laptop, hovering the card holds the clicked state */
+@media (hover: hover) {
+  :global(.cursor-target):hover .box, :global(.cursor-target):hover .cursor, :global(.cursor-target):hover .tip { animation: none; }
+  :global(.cursor-target):hover .box { transform: translateY(-1.2cqi) scale(1.04); box-shadow: 0 0 0 1cqi rgba(255, 255, 255, 0.9), 0 3.4cqi 7cqi rgba(80, 0, 30, 0.45); }
+  :global(.cursor-target):hover .cursor { transform: translate(-1.5cqi, -1.5cqi); }
+  :global(.cursor-target):hover .tip { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) { .box, .cursor, .tip { transition: none; animation: none !important; } }
