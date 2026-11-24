@@ -61,7 +61,7 @@ function AskModal({ onClose }: { onClose: () => void }) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     setBusy(true);
-    setErr(await requestAccess({ name: String(f.get("name") ?? ""), email: String(f.get("email") ?? ""), company: String(f.get("company") ?? ""), reason: String(f.get("reason") ?? ""), website: String(f.get("website") ?? "") }));
+    setErr(await requestAccess({ name: String(f.get("name") ?? ""), email: String(f.get("email") ?? ""), company: "", reason: String(f.get("reason") ?? ""), website: String(f.get("website") ?? "") }));
     setBusy(false);
   };
 
@@ -81,9 +81,8 @@ function AskModal({ onClose }: { onClose: () => void }) {
             <p>Self-Ready is client work, so what you see here are faithful recreations with the client&rsquo;s name, data and photos taken out. Tell me who you are and I&rsquo;ll share the real screens with you.</p>
             <form onSubmit={submit} className={s.askForm}>
               <label><b>Name</b><input ref={first} name="name" required maxLength={60} autoComplete="name" /></label>
-              <label><b>Work email</b><input name="email" type="email" required maxLength={120} autoComplete="email" /></label>
-              <label><b>Company <span>(optional)</span></b><input name="company" maxLength={80} autoComplete="organization" /></label>
-              <label><b>Why you&rsquo;d like to see them <span>(optional)</span></b><textarea name="reason" maxLength={400} rows={3} /></label>
+              <label><b>Email</b><input name="email" type="email" required maxLength={120} autoComplete="email" /></label>
+              <label><b>Why you&rsquo;d like to see them</b><textarea name="reason" required minLength={3} maxLength={400} rows={3} /></label>
               <input name="website" tabIndex={-1} autoComplete="off" className={s.hp} aria-hidden="true" />
               {err && <p className={s.askErr} role="alert">{err}</p>}
               <button type="submit" className={s.askSend} disabled={busy}>{busy ? "Sending…" : "Request access"}</button>

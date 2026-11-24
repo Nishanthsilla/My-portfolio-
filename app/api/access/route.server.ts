@@ -37,6 +37,7 @@ export async function POST(req: Request) {
   const name = clean(body.name, 60), email = clean(body.email, 120), company = clean(body.company, 80), reason = clean(body.reason, 400);
   if (name.length < 2) return json({ ok: false, error: "Please add your name." }, 400);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return json({ ok: false, error: "Please add a valid email." }, 400);
+  if (reason.length < 3) return json({ ok: false, error: "Please say briefly why you'd like to see them." }, 400);
   const ip = clientHash(req);
   try {
     if ((await countRecent(ip, 60 * 60_000)) >= 3) return json({ ok: false, error: "You've already asked. I'll get back to you soon." }, 429);
