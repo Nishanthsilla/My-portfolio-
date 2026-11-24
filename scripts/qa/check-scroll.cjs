@@ -8,9 +8,9 @@
  * on a 4× slower one (a laptop on battery), and fails if:
  *   · a page takes more than 100 ms to start moving after the scroll,
  *   · a slide drops more than 4 frames (a frame slower than 25 ms),
- *   · a scroll doesn't land exactly one page further.
+ *   · a scroll doesn't move the page (free scroll: it should move as far as you scroll).
  * Keep it green: anything that animates on the homepage must hold still while
- * the page slides (check `"paging" in document.documentElement.dataset`).
+ * the page moves (check `"paging" in document.documentElement.dataset`).
  */
 // Playwright: the project's own install if there is one, otherwise a global one (npm i -g playwright)
 const { chromium } = require("playwright");
@@ -45,7 +45,7 @@ for (const cpu of [1, 4]) {
         if (pending.first == null && Math.abs(x - pending.x) > 4) pending.first = t - pending.t;
         if (pending.first != null) {
           frames++; if (dt > 25) slow++;
-          if (Math.abs(x - (pending.lx ?? x)) < 0.5) { if (++still > 6) { w.__r.push({ react: Math.round(pending.first), slow, frames, dy: Math.round(scrollY - pending.y) }); pending = null; still = slow = frames = 0; } } else still = 0;
+          if (Math.abs(x - (pending.lx ?? x)) < 0.5) { if (++still > 6) { w.__r.push({ react: Math.round(pending.first), slow, frames, dy: Math.round(Math.abs(x - pending.x)) }); pending = null; still = slow = frames = 0; } } else still = 0;
           if (pending) pending.lx = x;
         }
       }
@@ -57,9 +57,9 @@ for (const cpu of [1, 4]) {
   const rows = await page.evaluate(() => window.__r);
   console.log(`\nCPU ${cpu}×`);
   rows.forEach((r, i) => {
-    const bad = r.react > LIMITS.react || r.slow > LIMITS.slow || r.dy < 200;
+    const bad = r.react > LIMITS.react || r.slow > LIMITS.slow || r.dy < 20;
     if (bad) failed = true;
-    console.log(`  ${bad ? "✗" : "✓"} page ${i + 1}: moves after ${r.react} ms, ${r.slow}/${r.frames} slow frames, moved ${r.dy}px`);
+    console.log(`  ${bad ? "✗" : "✓"} scroll ${i + 1}: moves after ${r.react} ms, ${r.slow}/${r.frames} slow frames, slid ${r.dy}px`);
   });
   if (rows.length < 8) { failed = true; console.log(`  ✗ only ${rows.length} of 8 scrolls moved the page`); }
   await browser.close();

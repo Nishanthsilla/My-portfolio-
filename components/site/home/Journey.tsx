@@ -79,8 +79,9 @@ export default function Journey({
     const sec = section.current, fr = frame.current, tr = track.current;
     if (!sec || !fr || !tr) return;
     if (mode === "desktop") {
-      let dist = 0, top = 0, target = 0, current = 0, raf = 0, idle = 0, settling = false, shown = -1;
-      // (dir: the direction of the last scroll — see settle)
+      /* Free scroll: the page moves sideways exactly as far as the visitor scrolls (wheel,
+       * trackpad, keys, scrollbar), with a light smoothing. No page steps, no snapping. */
+      let dist = 0, top = 0, target = 0, current = 0, raf = 0, shown = -1, moving = false;
       const measure = () => {
         // every full-width scene is exactly the visible frame (100vw would include the scrollbar)
         sec.style.setProperty("--jw", `${fr.clientWidth}px`);
@@ -100,166 +101,34 @@ export default function Journey({
           setActive(i);
         }
       };
+      const html = document.documentElement;
       const paint = () => {
         raf = 0;
-        current = paging ? target : current + (target - current) * 0.18;
+        current += (target - current) * 0.26;
         if (Math.abs(target - current) < 0.4) current = target;
         tr.style.transform = `translate3d(${(-current).toFixed(1)}px,0,0)`;
         pick(current);
-        if (current !== target) raf = requestAnimationFrame(paint);
-      };
-      /** while a page step animates: move the track in the same frame as the scroll (no extra frame of delay) */
-      const paintNow = () => {
-        target = current = Math.min(dist, Math.max(0, scrollY - top));
-        tr.style.transform = `translate3d(${(-current).toFixed(1)}px,0,0)`;
-        pick(current);
+        if (current !== target) {
+          // scene animations hold still while the strip is moving (keeps the motion smooth)
+          if (!moving) { moving = true; html.dataset.paging = ""; }
+          raf = requestAnimationFrame(paint);
+        } else if (moving) {
+          moving = false;
+          delete html.dataset.paging;
+        }
       };
       const kick = () => {
         if (!raf) raf = requestAnimationFrame(paint);
       };
-      // pausing near the start of a scene (or the end of the wide work scene) settles onto it
-      const settle = () => {
-        // never while a full-screen layer is open over the page (the wall, a folder sheet)
-        if (document.documentElement.style.overflow === "hidden" || document.documentElement.dataset.drawer) return;
-        const vw = fr.clientWidth;
-        const p = scrollY - top;
-        if (p <= 1 || p >= dist - 1) return;
-        const points: number[] = [];
-        tr.querySelectorAll<HTMLElement>("[data-snap]").forEach((el) => points.push(Math.min(dist, el.offsetLeft)));
-        tr.querySelectorAll<HTMLElement>("[data-snap-end]").forEach((el) => points.push(Math.min(dist, el.offsetLeft + el.offsetWidth - vw)));
-        // settle only forward (the way the visitor was going), or onto a scene that's practically there —
-        // never pull them back against their scroll
-        let best = Infinity;
-        for (const q of points) {
-          const d = q - p;
-          const ahead = Math.sign(d) === dir && Math.abs(d) < vw * 0.3;
-          const near = Math.abs(d) < vw * 0.06;
-          if ((ahead || near) && Math.abs(d) < Math.abs(best - p)) best = q;
-        }
-        if (!Number.isFinite(best) || Math.abs(best - p) < 2) return;
-        settling = true;
-        scrollTo({ top: top + best, behavior: "smooth" });
-        window.setTimeout(() => (settling = false), 700);
-      };
-      let lastY = scrollY, dir = 1;
       const onScroll = () => {
-        if (scrollY !== lastY) dir = scrollY > lastY ? 1 : -1;
-        lastY = scrollY;
         target = Math.min(dist, Math.max(0, scrollY - top));
         kick();
-        window.clearTimeout(idle);
-        if (!settling) idle = window.setTimeout(settle, 180);
       };
       goRef.current = (i, smooth = true) => {
         const el = scenes()[i];
         if (!el) return;
         scrollTo({ top: top + Math.min(dist, el.offsetLeft), behavior: smooth ? "smooth" : ("instant" as ScrollBehavior) });
       };
-
-      /* ---------- one scroll = one page ----------
-       * A wheel or trackpad gesture (or ↓ / ↑, Page Down / Up, Space) moves exactly one
-       * page: the start of the next panel or scene. The rest of that gesture (trackpad
-       * momentum) is swallowed, so a flick never skips a page or stops between two.
-       * Wide scenes (the work strip) are stepped through a screen at a time. */
-      const stops = () => {
-        const vw = fr.clientWidth;
-        const raw: number[] = [0, dist];
-        tr.querySelectorAll<HTMLElement>("[data-snap]").forEach((el) => raw.push(Math.min(dist, el.offsetLeft)));
-        tr.querySelectorAll<HTMLElement>("[data-snap-end]").forEach((el) => raw.push(Math.min(dist, Math.max(0, el.offsetLeft + el.offsetWidth - vw))));
-        const pts = [...new Set(raw.map((x) => Math.round(x)))].sort((x, y) => x - y).filter((x, i, arr) => i === 0 || x - arr[i - 1] > 4);
-        // a gap wider than a screen gets in-between stops, a screen (less a little) apart
-        const out: number[] = [];
-        pts.forEach((x, i) => {
-          if (i) {
-            const prev = pts[i - 1], gap = x - prev;
-            if (gap > vw * 1.1) {
-              const n = Math.ceil(gap / (vw * 0.85));
-              for (let k = 1; k < n; k++) out.push(Math.round(prev + (gap * k) / n));
-            }
-          }
-          out.push(x);
-        });
-        return out;
-      };
-      let paging = false, lastWheel = 0, lastMag = 0, anim = 0, queued: 0 | 1 | -1 = 0;
-      const blocked = () => {
-        const html = document.documentElement;
-        return html.style.overflow === "hidden" || !!html.dataset.drawer || html.classList.contains("intro-lock");
-      };
-      const stepTo = (dirn: 1 | -1) => {
-        const p = Math.max(0, scrollY - top);
-        const list = stops();
-        const next = dirn > 0 ? list.find((x) => x > p + 3) : [...list].reverse().find((x) => x < p - 3);
-        if (next === undefined) return false;
-        paging = settling = true;
-        document.documentElement.dataset.paging = ""; // scene animations hold still while the page slides
-        const from = scrollY, to = top + next, t0 = performance.now(), dur = 560;
-        cancelAnimationFrame(anim);
-        // ease-out: the page starts moving on the very next frame, then lands softly
-        const ease = (t: number) => 1 - Math.pow(1 - t, 4);
-        const tick = (now: number) => {
-          const k = Math.min(1, (now - t0) / dur);
-          scrollTo({ top: from + (to - from) * ease(k), behavior: "instant" as ScrollBehavior });
-          paintNow();
-          if (k < 1) anim = requestAnimationFrame(tick);
-          else if (queued) {
-            // a new swipe arrived while this page was sliding: go straight on to the next one
-            const d = queued;
-            queued = 0;
-            if (!stepTo(d)) { paging = false; settling = false; delete document.documentElement.dataset.paging; }
-          } else {
-            // stay locked until the rest of this gesture (trackpad momentum) has died away
-            const wait = () => {
-              if (queued) { const d = queued; queued = 0; if (stepTo(d)) return; }
-              if (performance.now() - lastWheel > 120) { paging = false; settling = false; delete document.documentElement.dataset.paging; }
-              else window.setTimeout(wait, 50);
-            };
-            wait();
-          }
-        };
-        // the first step happens right away, in the same frame as the wheel / key press
-        tick(t0 + 16);
-        return true;
-      };
-      // the journey starts just below the top of the page: count that first bit as part of it, so the very first scroll moves a whole page
-      const inJourney = () => {
-        const p = scrollY - top;
-        return p >= -top - 2 && p <= dist + 2;
-      };
-      const onWheel = (e: WheelEvent) => {
-        if (e.defaultPrevented || blocked() || e.ctrlKey) return; // the wall / gallery scroll themselves; pinch-zoom stays
-        const dy = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-        if (!inJourney()) return;
-        const p = scrollY - top;
-        const dirn = dy > 0 ? 1 : -1;
-        // past the ends of the journey, the page scrolls as usual
-        if ((dirn > 0 && p >= dist - 2) || (dirn < 0 && p <= 2)) { if (!paging) return; }
-        e.preventDefault();
-        const now = performance.now(), gap = now - lastWheel, mag = Math.abs(dy);
-        lastWheel = now;
-        const rising = mag > 12 && mag > lastMag * 1.6; // trackpad momentum only decays, so a jump up is a new swipe
-        lastMag = mag;
-        if (mag < 2) return;
-        if (paging) {
-          // a pause before this event, or a clear rise in speed, means a fresh swipe: queue one more page
-          if ((gap > 120 || rising) && !queued) queued = dirn;
-          return;
-        }
-        stepTo(dirn);
-      };
-      const onKey = (e: KeyboardEvent) => {
-        if (blocked() || !inJourney() || e.altKey || e.ctrlKey || e.metaKey) return;
-        const t = e.target as HTMLElement | null;
-        if (t?.closest?.("input, textarea, select, [contenteditable], [role=dialog]")) return;
-        const down = ["ArrowDown", "PageDown", "ArrowRight"].includes(e.key) || (e.key === " " && !e.shiftKey);
-        const up = ["ArrowUp", "PageUp", "ArrowLeft"].includes(e.key) || (e.key === " " && e.shiftKey);
-        if (!down && !up) return;
-        if (e.key.startsWith("Arrow") && t?.closest?.("button, a, [role=tab], [role=slider]") && (e.key === "ArrowLeft" || e.key === "ArrowRight")) return;
-        e.preventDefault();
-        if (!paging) stepTo(down ? 1 : -1);
-      };
-      addEventListener("wheel", onWheel, { passive: false });
-      addEventListener("keydown", onKey);
 
       const ro = new ResizeObserver(() => {
         measure();
@@ -274,12 +143,8 @@ export default function Journey({
       return () => {
         ro.disconnect();
         cancelAnimationFrame(raf);
-        window.clearTimeout(idle);
         removeEventListener("scroll", onScroll);
-        removeEventListener("wheel", onWheel);
-        delete document.documentElement.dataset.paging;
-        removeEventListener("keydown", onKey);
-        cancelAnimationFrame(anim);
+        delete html.dataset.paging;
         sec.style.height = "";
         sec.style.removeProperty("--jw");
         tr.style.transform = "";
