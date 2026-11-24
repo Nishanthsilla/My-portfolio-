@@ -1,10 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAccess } from "./access";
 import { AskModal } from "./Locked";
 import Zoomable from "./Zoomable";
 import s from "./study.module.css";
+
+/** the screen drawn at a tiny size and scaled back up, so it reads as big blocks of colour at any zoom */
+function Pixelated({ src, width = 16, height = 9 }: { src: string; width?: number; height?: number }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current;
+    if (!c) return;
+    const im = new Image();
+    im.onload = () => {
+      const w = 28, h = Math.max(1, Math.round((w * im.naturalHeight) / im.naturalWidth));
+      c.width = w;
+      c.height = h;
+      c.getContext("2d")?.drawImage(im, 0, 0, w, h);
+    };
+    im.src = src;
+  }, [src]);
+  return <canvas ref={ref} className={s.pixel} style={{ aspectRatio: `${width} / ${height}` }} aria-hidden="true" />;
+}
 
 type Item = { id: string; label: string; caption: string; replica: string; width?: number; height?: number };
 
@@ -39,9 +57,11 @@ export default function Catalogue({ items }: { items: Item[] }) {
               <div className={s.frame}>
                 {real ? (
                   <Zoomable src={`/api/access/image/${it.id}`} alt={`${it.label}: real screenshot`} width={it.width} height={it.height} label={it.label} />
-                ) : (
+                ) : open ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={it.replica} alt={`${it.label}: recreation`} width={it.width} height={it.height} loading="lazy" className={s.img} />
+                ) : (
+                  <Pixelated src={it.replica} width={it.width} height={it.height} />
                 )}
               </div>
               <figcaption><b>{it.label}</b>{real ? " · real screen" : ""}</figcaption>
