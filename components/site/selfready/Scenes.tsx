@@ -73,13 +73,13 @@ export function CoverScene() {
     </div>
   );
   // a wide tile: shelf and list side by side; a tall tile (phones, portrait cards): the row on top, the matches below
-  const W = tall ? 520 : 760, H = tall ? 560 : 400;
+  const W = tall ? 500 : 740, H = tall ? 530 : 380;
   return (
     <div ref={ref} className={`${s.sceneWrap} ${s.coverCenter}`}>
       {/* as wide as the card allows, without getting taller than it */}
-      <div style={{ width: box.h ? Math.min(box.w, box.h * 0.94 * (W / H)) : "100%", margin: "0 auto" }}>
+      <div style={{ width: box.h ? Math.min(box.w, box.h * (W / H)) : "100%", margin: "0 auto" }}>
         <Stage w={W} h={H} label="Illustrative Self-Ready shelf analysis: each product on a shelf row is matched to its shelf label, and the matches are listed.">
-          <div className={s.win} style={{ left: 20, top: 20, width: W - 40, height: H - 40 }}>
+          <div className={s.win} style={{ left: 6, top: 6, width: W - 12, height: H - 12 }}>
             <div className={s.winBar}>
               <i /><i /><i />
               <b>Self-Ready</b>

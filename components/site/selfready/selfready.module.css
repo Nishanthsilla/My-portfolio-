@@ -281,6 +281,6 @@
 
 /* the cover fills its card: centred in the space above the card's title */
 .coverCenter { height: 100%; display: flex; align-items: center; }
-:global(.cover-fit) { position: absolute; inset: 0 0 34% 0; display: flex; align-items: center; padding: 0 3%; }
+:global(.cover-fit) { position: absolute; inset: 4% 0 27% 0; display: flex; align-items: center; padding: 0 4%; }
 .coverBodyTall { position: absolute; top: 48px; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 16px 18px; }
-@media (max-width: 640px) { :global(.cover-fit) { inset: 58px 0 40% 0; } }
+@media (max-width: 640px) { :global(.cover-fit) { inset: 56px 0 39% 0; padding: 0 3%; } }
