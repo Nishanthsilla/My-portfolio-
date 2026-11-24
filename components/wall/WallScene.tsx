@@ -18,6 +18,7 @@ export default function WallScene() {
   const { hash, open, close } = useHashLayer();
   const full = hash.startsWith("the-wall");
   const [mounted, setMounted] = useState(false);
+  const [ask, setAsk] = useState(0); // "Write a note": open the composer right here
   const [gen, setGen] = useState(0); // remount the embedded wall after full screen (it re-reads the visitor's layout)
   const slot = useRef<HTMLDivElement>(null);
   const layer = useRef<HTMLDivElement>(null);
@@ -62,7 +63,7 @@ export default function WallScene() {
         <h2 id="wall-scene-title" className={w.sceneTitle}>Leave a little something.</h2>
         <p className={w.sceneLine}>A thought, a note, or just a little sticker. I&apos;d love to see what you leave.</p>
         <div className={w.sceneActions}>
-          <button type="button" className={`${w.btnPrimary} ${w.nudge}`} onClick={() => open("the-wall/note")}>
+          <button type="button" className={`${w.btnPrimary} ${w.nudge}`} onClick={() => setAsk((n) => n + 1)}>
             <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M13.5 3.5l3 3L7 16H4v-3z" />
             </svg>
@@ -74,7 +75,7 @@ export default function WallScene() {
         </div>
       </div>
       <div ref={slot} className={w.sceneWall}>
-        <WallApp key={gen} embedded onExpand={() => open("the-wall")} onCompose={() => open("the-wall/note")} />
+        <WallApp key={gen} embedded askToWrite={ask} onExpand={() => open("the-wall")} />
       </div>
       {mounted &&
         createPortal(

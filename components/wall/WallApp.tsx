@@ -84,6 +84,7 @@ export default function WallApp({
   embedded = false,
   onExpand,
   onCompose,
+  askToWrite = 0,
 }: {
   onClose?: () => void;
   compose?: boolean;
@@ -92,7 +93,10 @@ export default function WallApp({
   onExpand?: () => void;
   /** embedded: "Add a note" opens the full-screen wall with the composer */
   onCompose?: () => void;
+  /** embedded: bump it to open (and focus) the composer in place */
+  askToWrite?: number;
 }) {
+  const root = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("loading");
   const [captcha, setCaptcha] = useState(false);
@@ -176,7 +180,7 @@ export default function WallApp({
     const sx = e.clientX, sy = e.clientY;
     const isPlacing = e.currentTarget.dataset.placing !== undefined;
     if (!isPlacing && (e.target as HTMLElement).closest("[data-sticker-art], button, input, textarea, [data-nodrag]")) return;
-    if (embedded && e.pointerType !== "mouse") return; // phones: the page swipes; "Explore canvas" opens it full screen
+    if (embedded && e.pointerType !== "mouse" && !isPlacing) return; // phones: the page swipes; "Explore canvas" opens it full screen
     const v = e.currentTarget;
     v.setPointerCapture(e.pointerId);
     v.dataset.panning = "";
@@ -318,7 +322,7 @@ export default function WallApp({
     return { x: clamp((v.clientWidth / 2 - pan.current.x) / (WORLD.w * z), 0.05, 0.95), y: clamp((v.clientHeight * 0.36 - pan.current.y) / (WORLD.h * z), 0.05, 0.95) };
   };
   const start = () => {
-    if (embedded && onCompose) return onCompose();
+    void onCompose; // the homepage writes in place now
     setError("");
     setDraft((d) => d ?? { sticker: "gif-wave", font: DEFAULT_FONT, shape: DEFAULT_SHAPE, color: DEFAULT_COLOR, rotation: Math.round((Math.random() - 0.5) * 10), ...visibleSpot() });
     setStartedAt((t) => t || Date.now());
@@ -334,11 +338,22 @@ export default function WallApp({
   const autoStarted = useRef(false);
   useEffect(() => {
     // the full-screen wall opens with the composer in the middle (the notes behind it)
-    if (!restored || autoStarted.current || embedded) return;
+    if (!restored || autoStarted.current) return;
     autoStarted.current = true;
     start();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restored, fromCompose, embedded]);
+
+  // the homepage's "Write a note" opens the composer right here in the scene
+  useEffect(() => {
+    if (!askToWrite) return;
+    const id = requestAnimationFrame(() => {
+      start();
+      requestAnimationFrame(() => root.current?.querySelector<HTMLTextAreaElement>("[role=dialog] textarea")?.focus({ preventScroll: true }));
+    });
+    return () => cancelAnimationFrame(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [askToWrite]);
 
   /* ---------- composing ---------- */
   const cancel = useCallback(() => {
@@ -445,7 +460,10 @@ export default function WallApp({
   };
   useEffect(() => {
     if (step !== "place") return;
-    const move = (e: PointerEvent) => setAim({ x: e.clientX, y: e.clientY, z: zoom.current });
+    const move = (e: PointerEvent) => {
+      const r = root.current?.getBoundingClientRect();
+      if (r) setAim({ x: e.clientX - r.left, y: e.clientY - r.top, z: zoom.current });
+    };
     const key = (e: KeyboardEvent) => e.key === "Escape" && setStep("compose");
     addEventListener("pointermove", move);
     addEventListener("keydown", key);
@@ -487,7 +505,7 @@ export default function WallApp({
   
 
   return (
-    <div className={`${w.wall} ${embedded ? w.wallEmbedded : ""}`}>
+    <div ref={root} className={`${w.wall} ${embedded ? w.wallEmbedded : ""}`}>
       {/* floating controls only — the canvas is the whole thing */}
       {embedded ? (
         <button type="button" className={w.fabExpand} onClick={onExpand} aria-label="Explore the wall full screen" title="Explore the wall">
@@ -599,8 +617,8 @@ export default function WallApp({
       {step === "place" && draft && (
         <>
           <div className={w.placeHint} role="status">
-            <b>Click anywhere on the wall to stick your note</b>
-            <button type="button" className={w.placeBack} onClick={() => setStep("compose")}>Back to editing</button>
+            <b><span className={w.hintLong}>Click anywhere on the wall to stick your note</span><span className={w.hintShort}>Tap the wall to stick it</span></b>
+            <button type="button" className={w.placeBack} onClick={() => setStep("compose")}>Edit</button>
           </div>
           <div className={`${w.pad} ${aim ? "" : w.padCentre}`} style={aim ? { left: aim.x, top: aim.y } : undefined} aria-hidden="true">
             <div style={{ transform: `scale(${aim?.z ?? 1}) rotate(${draft.rotation}deg)` }}>
@@ -636,8 +654,8 @@ export default function WallApp({
 
       {/* the composer: a minimal prompt bar — words on top, a slim row of tools below */}
       {step === "compose" && draft && (
-        <div className={`${w.prompt} ${embedded ? "" : w.promptCard}`} role="dialog" aria-label="Write your note">
-          {!embedded && (
+        <div className={`${w.prompt} ${w.promptCard}`} role="dialog" aria-label="Write your note">
+          {(
             <div className={w.cardHead}>
               <button type="button" className={w.cardClose} onClick={cancel} aria-label="Close the composer" title="Close">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
