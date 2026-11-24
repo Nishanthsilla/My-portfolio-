@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, type CSSProperties, type ReactNode } from "react";
+import { notifySound, primeNotify, type Notify } from "@/lib/sound/notify";
 import f from "./fine.module.css";
 
 /**
@@ -55,7 +56,7 @@ function Card({ x, y, mx, my, t, d, w, title, lines, icon, tag }: { x: number; y
   const tx = icon ? 40 : 14;
   return (
     <g className={f.pos} style={{ "--x": x, "--y": y, "--mx": mx, "--my": my } as V}>
-      <g className={`${f.tl} ${f.pop}`} style={{ "--t": t, "--d": d } as V}>
+      <g className={`${f.tl} ${f.pop}`} style={{ "--t": t, "--d": d } as V} data-sfx={tag ? "alarm" : "ding"}>
         <rect x={4} y={5} width={w} height={h} rx={12} fill={INK} />
         <rect width={w} height={h} rx={12} fill="#fffdf6" stroke={INK} strokeWidth={2.5} />
         {icon && <g transform={`translate(12 ${title ? 12 : 10})`}>{icon}</g>}
@@ -81,7 +82,7 @@ function Sticky({ x, y, mx, my, r, t, d, lines, w = 118 }: { x: number; y: numbe
   const h = 26 + lines.length * 17;
   return (
     <g className={f.pos} style={{ "--x": x, "--y": y, "--mx": mx, "--my": my, "--r": `${r}deg` } as V}>
-      <g className={`${f.tl} ${f.drop}`} style={{ "--t": t, "--d": d } as V}>
+      <g className={`${f.tl} ${f.drop}`} style={{ "--t": t, "--d": d } as V} data-sfx="pop">
         <rect x={3} y={4} width={w} height={h} fill="rgba(43,24,9,0.35)" />
         <rect width={w} height={h} fill="#ffe36a" stroke={INK} strokeWidth={2} />
         <circle cx={w / 2} cy={7} r={5} fill="#e8322a" stroke={INK} strokeWidth={1.5} />
@@ -183,7 +184,16 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
       { threshold: [0, 0.55] },
     );
     io.observe(el);
+    // a notification sound as each message pops in (not with reduced motion: the frames jump straight to the end)
+    primeNotify();
+    const calm = matchMedia("(prefers-reduced-motion: reduce)");
+    const onStart = (e: AnimationEvent) => {
+      const kind = (e.target as Element).getAttribute?.("data-sfx") as Notify | null;
+      if (kind && !calm.matches) notifySound(kind);
+    };
+    el.addEventListener("animationstart", onStart);
     return () => {
+      el.removeEventListener("animationstart", onStart);
       ro.disconnect();
       io.disconnect();
     };
@@ -438,7 +448,7 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
         <Sticky x={1000} y={30} mx={810} my={-104} r={8} t={8.24} d={0.76} lines={["Actually, can", "we go back", "to v1? 😅"]} w={124} />
         {/* 08 */}
         <g className={f.pos} style={{ "--x": 790, "--y": 4, "--mx": 712, "--my": -100 } as V}>
-          <g className={`${f.tl} ${f.pop}`} style={{ "--t": 9, "--d": 1 } as V}>
+          <g className={`${f.tl} ${f.pop}`} style={{ "--t": 9, "--d": 1 } as V} data-sfx="fine">
             <path d="M16 58l-48 36 40-14z" fill="#fff" stroke={INK} strokeWidth={3} strokeLinejoin="round" />
             <ellipse cx={92} cy={42} rx={92} ry={42} fill="#fff" stroke={INK} strokeWidth={3.5} />
             <path d="M6 60l10 16" stroke="#fff" strokeWidth={7} />
