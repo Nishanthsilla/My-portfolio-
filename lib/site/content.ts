@@ -35,7 +35,7 @@ export type Project = {
   contribution?: string[];
   preview:
     | { kind: "visual"; id: VisualId }
-    | { kind: "image"; src: string; alt: string; fit?: "cover" | "contain"; bg?: string }
+    | { kind: "image"; src: string; alt: string; fit?: "cover" | "contain" | "window"; bg?: string }
     /** an animated product-UI cover (Self-Ready) */
     | { kind: "scene"; id: "self-ready" | "field-ops" }
     /** no visual yet: a designed "ADD IMAGE HERE" cover */
@@ -172,8 +172,7 @@ export const projects: Project[] = [
     eyebrow: "Enterprise AI / Platform experience",
     role: "Lead Product Designer",
     description: "Bringing clarity and structure to complex AI-powered experiences.",
-    preview: { kind: "placeholder", need: "Ambient AI cover" },
-    pending: ["Cover visual"],
+    preview: { kind: "image", src: "/images/case-studies/ambient-ai/screens/aa-overview.webp", alt: "Ambient AI Control Plane overview (recreation)", fit: "window" },
     featured: {
       overview: "/work/ambient-ai",
       caseStudy: "/work/ambient-ai/case-study",

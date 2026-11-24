@@ -52,7 +52,7 @@ export async function notify(origin: string, r: { id: string; name: string; emai
       body: JSON.stringify({
         topic,
         title: `Access request: ${r.name}${r.company ? ` (${r.company})` : ""}`,
-        message: `${r.email}\n${r.reason || "No reason given."}\n\nWants to see the real Self-Ready screenshots.`,
+        message: `${r.email}\n${r.reason || "No reason given."}\n\nWants to see the real client screenshots (Self-Ready, Ambient AI).`,
         tags: ["lock"],
         priority: 4,
         click: `${origin}/access-admin`,

@@ -61,6 +61,7 @@ export const ambientAi: Study = {
         },
         "This helped establish a more user-oriented approach to structuring the platform.",
       ],
+      shots: { ids: ["aa-agent"], layout: "wide" },
     },
     {
       n: "02",
@@ -77,6 +78,7 @@ export const ambientAi: Study = {
         },
         "The goal was to help users understand where they were and what they could do next.",
       ],
+      shots: { ids: ["aa-skill-registry"], layout: "wide" },
     },
     {
       n: "03",
@@ -86,6 +88,7 @@ export const ambientAi: Study = {
         { ul: ["Content hierarchy.", "Visual grouping.", "Information density.", "Action visibility.", "Consistency across interface components."] },
         "Rather than removing important capabilities, the objective was to make the information easier to scan and interact with.",
       ],
+      shots: { ids: ["aa-workflow-builder"], layout: "wide" },
     },
     {
       n: "04",
@@ -123,6 +126,7 @@ export const ambientAi: Study = {
       challenge: "Different platform areas need to feel like parts of the same product.",
       approach: ["Focused on consistent spacing and typography.", "Improved component-level visual consistency.", "Used predictable interaction patterns.", "Maintained a common visual language across screens."],
       objective: "Create a cohesive experience that can scale as the platform evolves.",
+      shots: { ids: ["aa-recording"], layout: "wide" },
     },
   ],
   decisionsHead: {
@@ -167,9 +171,12 @@ export const ambientAi: Study = {
     title: "Making complex AI experiences easier to understand, navigate, and use.",
     body: "Ambient AI gave me the opportunity to work on the broader product experience of an enterprise AI platform, focusing on how structure, interaction design, and contextual guidance can make sophisticated products more approachable.",
   },
-  // screenshots: recreations to be added once the real screens are shared
   screens: [
-    { id: "aa-overview", need: "Platform overview — Ambient AI Control Plane", caption: "The Ambient AI Control Plane.", ratio: "16:9" },
+    { id: "aa-overview", need: "Overview — the Control Plane workspace", caption: "The workspace overview: skills, configurations, workflows and pushes, the connected device, recent activity and quick actions.", ratio: "16:9", locked: true },
+    { id: "aa-agent", need: "Agent view — a conversational starting point", caption: "Agent, Expert and Classic views over the same objects. The Agent view starts with a question and suggested first steps.", ratio: "16:9", locked: true },
+    { id: "aa-skill-registry", need: "Skill Registry — discovering capabilities", caption: "Skill Registry: each capability as a card with its version, where it runs, its type and its configuration status.", ratio: "16:9", locked: true },
+    { id: "aa-workflow-builder", need: "Workflow builder — composing steps with pre-flight checks", caption: "The workflow builder: blocks and sub-workflows on the left, steps connected on the canvas, and pre-flight checks pointing to what needs attention.", ratio: "16:9", locked: true },
+    { id: "aa-recording", need: "Sub-workflow recording — a step-by-step flow", caption: "Recording a sub-workflow on a connected device: a stepped flow (ready check, recording, review, save) with a live feed of each captured action.", ratio: "16:9", locked: true },
   ],
   next: { slug: "self-ready", title: "Self-Ready", href: "/work/self-ready/case-study" },
 };

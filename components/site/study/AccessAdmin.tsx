@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ambientAi } from "@/lib/site/studies/ambientAi";
 import { selfReadyStudy } from "@/lib/site/studies/selfReady";
 
 /**
@@ -10,7 +11,7 @@ import { selfReadyStudy } from "@/lib/site/studies/selfReady";
  */
 type Req = { id: string; name: string; email: string; company: string; reason: string; status: "pending" | "approved" | "declined"; createdAt: string };
 const KEY = "nishanth.wall.admin";
-const SCREENS = selfReadyStudy.screens.filter((s) => s.locked);
+const SCREENS = [selfReadyStudy, ambientAi].flatMap((st) => st.screens.filter((s) => s.locked).map((s) => ({ ...s, study: st.title })));
 
 export default function AccessAdmin() {
   const [token, setToken] = useState("");
@@ -96,7 +97,7 @@ export default function AccessAdmin() {
           <p style={{ color: "#6b6f76", margin: "4px 0 8px", fontSize: 14 }}>Upload the original for each screen. Approved visitors see these instead of the recreations. They live in the database, not in the code.</p>
           {SCREENS.map((s) => (
             <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: "1px solid #eee", flexWrap: "wrap" }}>
-              <span style={{ flex: 1, minWidth: 220 }}>{s.need.split(" — ")[0]} <code style={{ color: "#8a8d93", fontSize: 12 }}>{s.id}</code></span>
+              <span style={{ flex: 1, minWidth: 220 }}><b style={{ fontWeight: 500, color: "#8a8d93" }}>{s.study} · </b>{s.need.split(" — ")[0]} <code style={{ color: "#8a8d93", fontSize: 12 }}>{s.id}</code></span>
               <span style={{ fontSize: 13, color: data?.images.includes(s.id) ? "#0f7a5f" : "#8a8d93" }}>{data?.images.includes(s.id) ? "✓ Uploaded" : "Not uploaded"}</span>
               <label style={{ ...btn("#17191c"), display: "inline-flex", alignItems: "center" }}>
                 {data?.images.includes(s.id) ? "Replace" : "Upload"}

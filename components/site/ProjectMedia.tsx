@@ -59,6 +59,12 @@ export default function ProjectMedia({ project, className = "", fill, eager = fa
           p.id === "field-ops" ? <FieldOpsMini /> : <div className="cover-fit"><CoverScene /></div>
         ) : p.kind === "visual" ? (
           <FitVisual id={p.id} fill={fill} />
+        ) : p.fit === "window" ? (
+          // a product screen shown whole, as a window in the space above the card's title
+          <div className="cover-fit">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={p.src} alt={p.alt} className={s.windowImg} loading={eager ? "eager" : "lazy"} decoding="async" />
+          </div>
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img

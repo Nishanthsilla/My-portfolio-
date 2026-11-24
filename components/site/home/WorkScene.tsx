@@ -22,6 +22,8 @@ const TONES = [
 const TONE_FOR: Record<string, string> = {
   // deep plum and wine: the Critical red box glows on it
   "salespulze-heat-map": "radial-gradient(120% 90% at 50% 30%, #6B1E3E 0%, #3A0F22 55%, #1C0711 100%)",
+  // the platform's own violet
+  "ambient-ai": "linear-gradient(170deg, #9C8BF5 0%, #3B2B95 100%)",
 };
 const SHOWN = 6;
 const size = (slug: string): TileSize => bento.find((b) => b.slug === slug)?.size ?? "small";
