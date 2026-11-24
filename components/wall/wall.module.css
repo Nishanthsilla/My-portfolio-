@@ -530,4 +530,33 @@ img.monkeyArt { width: 96px; height: 96px; object-fit: cover; border-radius: 12p
 .wallEmbedded .placeHint { top: 12px; bottom: auto; }
 @media (prefers-reduced-motion: reduce) { .prompt.promptCard { animation: none; } }
 /* phones: keep the send tile clear of the floating chat face in the corner */
-@media (max-width: 640px) { .wallEmbedded .prompt.promptCard { right: 92px; left: 10px; bottom: 10px; } }
+/* phones: the wall runs to the bottom of the screen; the bar goes edge to edge (even padding),
+   sitting just above the floating music button and chat face so nothing overlaps */
+@media (max-width: 899px) { .scene { padding-bottom: 0; } .wallEmbedded { border-radius: 0; border-left: 0; border-right: 0; border-bottom: 0; } }
+@media (max-width: 640px) { .wallEmbedded .prompt.promptCard { left: 12px; right: 12px; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 84px); } }
+
+/* ---------- the bar, polished ---------- */
+.pbar :global(.prompt-bar__field) {
+  gap: 10px; padding: 14px 12px 12px 16px; border-radius: 22px;
+  background: linear-gradient(180deg, #303035 0%, #242427 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 0 0 1px rgba(255, 255, 255, 0.07), 0 24px 48px -20px rgba(0, 0, 0, 0.6), 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: box-shadow 200ms ease;
+}
+.pbar:focus-within :global(.prompt-bar__field) {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 0 0 1px rgba(255, 73, 56, 0.55), 0 0 0 4px rgba(255, 73, 56, 0.14), 0 24px 48px -20px rgba(0, 0, 0, 0.6);
+}
+.pbar :global(.prompt-bar__input) { font-size: 16px; line-height: 24px; letter-spacing: -0.005em; }
+.pbar :global(.prompt-bar__input)::placeholder { color: #8d8d96; }
+.pbar :global(.prompt-bar__bar) { gap: 6px; }
+.pbar :global(.prompt-bar__tool) { width: 36px; height: 36px; border-radius: 11px; background: rgba(255, 255, 255, 0.06); color: #d4d4d8; }
+.pbar :global(.prompt-bar__tool)[data-on] { background: rgba(255, 255, 255, 0.16); color: #fff; }
+.pbar .gifPick { height: 36px !important; padding: 0 12px; border: 0 !important; border-radius: 11px !important; background: rgba(255, 255, 255, 0.06); color: #f4f4f5; font-size: 12.5px; letter-spacing: 0.08em; margin: 0; }
+.pbar .gifPick[data-on] { background: #f5f5f5 !important; color: #27272a !important; }
+.pbar :global(.prompt-bar__send) { width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); color: #6f6f78; }
+.pbar :global(.prompt-bar__send)[data-armed] { background: #ff4938; color: #fff; box-shadow: 0 8px 18px -6px rgba(255, 73, 56, 0.7); }
+.pbar :global(.prompt-bar__send)[data-armed]:hover { background: #ff5a4a; }
+.pbar :global(.prompt-bar__glyph) { width: 18px; height: 18px; }
+.pbar :global(.prompt-bar__menu) { padding: 6px; border-radius: 16px; background: #2c2c30; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07), 0 18px 40px -14px rgba(0, 0, 0, 0.6); }
+.pbar :global(.prompt-bar__row) { height: 42px; border-radius: 10px; }
+.pbar :global(.prompt-bar__row-name) { font-size: 14px; }
+.promptCard .pop { border-radius: 16px; background: #2c2c30; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07), 0 18px 40px -14px rgba(0, 0, 0, 0.6); }

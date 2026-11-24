@@ -112,3 +112,6 @@ html[data-embed] .sticker { display: none; }
 .followUps { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-top: 2px; animation: fade 300ms ease; }
 .followUp { padding: 7px 12px; border-radius: 999px; border: 1px solid #ddd8cf; background: transparent; color: #4a4640; font: 400 13.5px/1.3 inherit; text-align: left; cursor: pointer; transition: background 160ms, border-color 160ms, color 160ms; }
 .followUp:hover { background: #efece6; border-color: #cfc8bc; color: #1d1b19; }
+
+/* while someone is typing a note on the Wall, the chat teaser stays out of their way */
+:global(body:has(.prompt-bar:focus-within)) .chatTip { display: none; }
