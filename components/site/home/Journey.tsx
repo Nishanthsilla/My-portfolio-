@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { createPortal } from "react-dom";
 import { onIntroDone } from "@/lib/introState";
 import { SCENE_EVENT } from "../Header";
+import ScrollHint from "./ScrollHint";
 import GlyphEmbers from "./GlyphEmbers";
 import { JourneyContext, type BranchId } from "./journeyContext";
 import { useHashLayer } from "./useHashLayer";
@@ -398,6 +399,7 @@ export default function Journey({
   return (
     <JourneyContext.Provider value={ctx}>
       <section ref={section} className={h.journey} data-mode={mode} aria-label="Homepage">
+        {mode !== "stack" && <ScrollHint track={track} />}
         <div ref={frame} className={h.journeyFrame}>
           <div ref={track} className={h.journeyTrack}>
             <div className={h.sceneIntro} data-scene="intro">
