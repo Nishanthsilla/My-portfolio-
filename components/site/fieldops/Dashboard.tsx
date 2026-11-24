@@ -44,9 +44,9 @@ function useVisibleNow() {
   useEffect(() => {
     let framed = false;
     try { framed = window.self !== window.top; } catch { framed = true; }
-    if (!framed) { setOk(true); return; }
     let t = 0;
-    const go = () => { t = window.setTimeout(() => setOk(true), 280); };
+    const go = () => { t = window.setTimeout(() => setOk(true), framed ? 280 : 0); };
+    if (!framed) { go(); return () => clearTimeout(t); }
     if (document.readyState === "complete") go();
     else window.addEventListener("load", go, { once: true });
     return () => { window.removeEventListener("load", go); clearTimeout(t); };
