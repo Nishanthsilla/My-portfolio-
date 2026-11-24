@@ -97,6 +97,16 @@ export default function WallApp({
   askToWrite?: number;
 }) {
   const root = useRef<HTMLDivElement>(null);
+  // on the homepage the composer only exists while the wall scene is on screen (it costs the strip's scroll otherwise)
+  const [onScreen, setOnScreen] = useState(false);
+  const seen = !embedded || onScreen;
+  useEffect(() => {
+    const el = root.current;
+    if (!embedded || !el) return;
+    const io = new IntersectionObserver(([e]) => setOnScreen(e.isIntersecting), { threshold: 0.35 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [embedded]);
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("loading");
   const [captcha, setCaptcha] = useState(false);
@@ -653,7 +663,7 @@ export default function WallApp({
       )}
 
       {/* the composer: a minimal prompt bar — words on top, a slim row of tools below */}
-      {step === "compose" && draft && (
+      {step === "compose" && draft && seen && (
         <div className={`${w.prompt} ${w.promptCard}`} role="dialog" aria-label="Write your note">
           {(
             <div className={w.cardHead}>
