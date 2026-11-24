@@ -18,7 +18,7 @@ import Celebration from "./Celebration";
 import w from "./wall.module.css";
 
 type Mode = "loading" | "sqlite" | "postgres" | "unconfigured" | "offline";
-type Step = "browse" | "compose" | "sent";
+type Step = "browse" | "compose" | "place" | "sent";
 type Draft = { sticker: string; font: string; shape: string; color: string; x: number; y: number; rotation: number };
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
@@ -170,8 +170,12 @@ export default function WallApp({
       v.removeEventListener("wheel", wheel);
     };
   }, [embedded, applyPan]);
+  const placing = useRef<(cx: number, cy: number) => void>(() => {});
   const panDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0 || (e.target as HTMLElement).closest("[data-sticker-art], button, input, textarea, [data-nodrag]")) return;
+    if (e.button !== 0) return;
+    const sx = e.clientX, sy = e.clientY;
+    const isPlacing = e.currentTarget.dataset.placing !== undefined;
+    if (!isPlacing && (e.target as HTMLElement).closest("[data-sticker-art], button, input, textarea, [data-nodrag]")) return;
     if (embedded && e.pointerType !== "mouse") return; // phones: the page swipes; "Explore canvas" opens it full screen
     const v = e.currentTarget;
     v.setPointerCapture(e.pointerId);
@@ -189,11 +193,16 @@ export default function WallApp({
       pan.current.y += dy;
       applyPan();
     };
-    const up = () => {
+    const up = (ev: PointerEvent) => {
       v.removeEventListener("pointermove", move);
       v.removeEventListener("pointerup", up);
       v.removeEventListener("pointercancel", up);
       delete v.dataset.panning;
+      // placing a note: a click (not a drag) sticks it right there
+      if (isPlacing && ev.type === "pointerup" && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 6) {
+        placing.current(ev.clientX, ev.clientY);
+        return;
+      }
       // a little glide after letting go
       if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const glide = () => {
@@ -320,10 +329,12 @@ export default function WallApp({
   const setShape = (id: string) => setDraft((d) => (d ? { ...d, shape: id } : d));
   const setColor = (id: string) => setDraft((d) => (d ? { ...d, color: id } : d));
 
-  // arriving via "Leave a note" (or from the homepage scene): open the composer straight away
+  // arriving on the full-screen wall: the composer is open straight away (fromCompose kept for links that ask for it)
+  void fromCompose;
   const autoStarted = useRef(false);
   useEffect(() => {
-    if (!restored || autoStarted.current || !fromCompose || embedded) return;
+    // the full-screen wall opens with the composer in the middle (the notes behind it)
+    if (!restored || autoStarted.current || embedded) return;
     autoStarted.current = true;
     start();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -364,13 +375,14 @@ export default function WallApp({
     }
   }, [step, captcha, siteKey]);
 
-  const submit = async () => {
+  const submit = async (at?: { x: number; y: number }) => {
     if (!valid || !draft || busy) return;
+    const note = at ? { ...draft, ...at } : draft;
     if (mode === "offline") {
       // no server in this copy: keep the note on this device (clearly labelled), nothing is sent
-      addMine({ id: `local-${Date.now()}`, message, name, ...draft, createdAt: new Date().toISOString(), local: true });
+      addMine({ id: `local-${Date.now()}`, message, name, ...note, createdAt: new Date().toISOString(), local: true });
       setMine(loadMine());
-      setPostedAt({ x: draft.x, y: draft.y });
+      setPostedAt({ x: note.x, y: note.y });
       setStep("sent");
         setPanel(null);
       setDraft(null);
@@ -384,7 +396,7 @@ export default function WallApp({
       const res = await fetch("/api/wall", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, name, ...draft, website: honey, startedAt, captcha: token || undefined }),
+        body: JSON.stringify({ message, name, ...note, website: honey, startedAt, captcha: token || undefined }),
       });
       const d = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; note?: PublicNote };
       if (res.ok && d.ok) {
@@ -393,27 +405,84 @@ export default function WallApp({
           addMine(d.note);
           setMine(loadMine());
         }
-        setPostedAt({ x: draft.x, y: draft.y });
+        setPostedAt({ x: note.x, y: note.y });
         setStep("sent");
         setPanel(null);
         setDraft(null);
         setLine("");
         setStartedAt(0);
-      } else setError(d.error || "Something went wrong — please try again.");
+      } else {
+        setError(d.error || "Something went wrong — please try again.");
+        setStep("compose");
+      }
     } catch {
       setError("Couldn't reach the wall — please try again.");
+      setStep("compose");
     } finally {
       setBusy(false);
     }
   };
 
+  /* ---------- placing: "Add a note" turns the note into a sticky pad on the cursor ---------- */
+  const [aim, setAim] = useState<{ x: number; y: number; z: number } | null>(null);
+  const toPlace = () => {
+    if (!valid) return;
+    setPanel(null);
+    setError("");
+    setStep("place");
+  };
+  const boardSpot = (cx: number, cy: number) => {
+    const v = scroller.current;
+    if (!v) return null;
+    const r = v.getBoundingClientRect(), z = zoom.current;
+    return { x: clamp((cx - r.left - pan.current.x) / (WORLD.w * z), 0.03, 0.97), y: clamp((cy - r.top - pan.current.y) / (WORLD.h * z), 0.04, 0.96) };
+  };
+  const stickAt = (cx: number, cy: number) => {
+    const at = boardSpot(cx, cy);
+    if (!at || step !== "place") return;
+    sfx("drop");
+    void submit(at);
+  };
+  useEffect(() => {
+    if (step !== "place") return;
+    const move = (e: PointerEvent) => setAim({ x: e.clientX, y: e.clientY, z: zoom.current });
+    const key = (e: KeyboardEvent) => e.key === "Escape" && setStep("compose");
+    addEventListener("pointermove", move);
+    addEventListener("keydown", key);
+    return () => {
+      removeEventListener("pointermove", move);
+      removeEventListener("keydown", key);
+    };
+  }, [step]);
+
+  /* ---------- the breeze: now and then a soft gust from the right; the notes flutter ---------- */
+  const [gust, setGust] = useState(-1);
+  useEffect(() => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let id = 0;
+    const next = (ms: number) => {
+      id = window.setTimeout(() => {
+        if (!document.hidden) setGust((g) => g + 1);
+        next(5200 + Math.random() * 6500);
+      }, ms);
+    };
+    next(1800);
+    return () => clearTimeout(id);
+  }, []);
+  /** each note catches the gust a little after the one to its right, by a slightly different amount */
+  const flap = (id: string, x: number) => {
+    let h = 0;
+    for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 997;
+    return { ["--bd" as string]: `${((1 - x) * 1.5 + (h % 7) * 0.04).toFixed(2)}s`, ["--amp" as string]: (0.55 + (h % 10) * 0.06).toFixed(2) } as React.CSSProperties;
+  };
+
+  useEffect(() => { placing.current = stickAt; });
   const report = async (id: string) => {
     setHidden((h) => [...h, id]);
     fetch("/api/wall/report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) }).catch(() => {});
   };
 
   const shown = notes.filter((n) => !hidden.includes(n.id));
-  const st = draft ? stickerById(draft.sticker) : null;
   const moved = Object.keys(layout).length > 0;
   
 
@@ -448,8 +517,8 @@ export default function WallApp({
         </>
       )}
 
-      <div ref={scroller} className={w.scroller} onPointerDown={panDown}>
-        <div ref={board} className={w.board} style={{ width: WORLD.w, height: WORLD.h }} aria-label="The wall">
+      <div ref={scroller} className={`${w.scroller} ${step === "place" ? w.scrollerPlacing : ""}`} onPointerDown={panDown} data-placing={step === "place" ? "" : undefined}>
+        <div ref={board} className={w.board} style={{ width: WORLD.w, height: WORLD.h }} aria-label="The wall" data-gust={gust < 0 ? undefined : gust % 2}>
           {DECOR.map((d, i) => {
             const id = `decor-${i}`, p = spot(id, d.x, d.y);
             return (
@@ -475,7 +544,9 @@ export default function WallApp({
             const p = spot(PINNED.id, PINNED.x, PINNED.y);
             return (
               <ElasticSticker board={board} x={p.x} y={p.y} z={p.z} rotation={PINNED.rotation} onMove={moveTo(PINNED.id)} label="Pinned note from Nishanth" className={w.placed}>
-                <NoteCard sticker={PINNED.sticker} font={PINNED.font} shape={PINNED.shape} color={PINNED.color} message={PINNED.message} name={PINNED.name} />
+                <span className={w.flap} style={flap(PINNED.id, p.x)}>
+                  <NoteCard sticker={PINNED.sticker} font={PINNED.font} shape={PINNED.shape} color={PINNED.color} message={PINNED.message} name={PINNED.name} />
+                </span>
               </ElasticSticker>
             );
           })()}
@@ -484,7 +555,9 @@ export default function WallApp({
             const p = spot(n.id, n.x, n.y);
             return (
               <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Note from ${n.name}: ${n.message}`} className={w.placed}>
-                <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name={n.name} />
+                <span className={w.flap} style={flap(n.id, p.x)}>
+                  <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name={n.name} />
+                </span>
                 <button type="button" data-nodrag className={w.report} onClick={() => report(n.id)} aria-label={`Report the note from ${n.name}`}>
                   Report
                 </button>
@@ -497,7 +570,9 @@ export default function WallApp({
             return (
               // the visitor's own notes always sit above everyone else's
               <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={MINE_Z + p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Your note: ${n.message}`} className={w.placed}>
-                <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name={n.name} />
+                <span className={w.flap} style={flap(n.id, p.x)}>
+                  <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name={n.name} />
+                </span>
               </ElasticSticker>
             );
           })}
@@ -511,24 +586,30 @@ export default function WallApp({
             </button>
           )}
 
-          {draft && step === "compose" && (
-            <ElasticSticker
-              board={board}
-              x={draft.x}
-              y={draft.y}
-              z={2000}
-              rotation={draft.rotation}
-              onMove={(x, y) => setDraft((d) => (d ? { ...d, x, y } : d))}
-              label={`Your note${st ? ` with ${st.label}` : ""} — it will be posted where you leave it`}
-              className={`${w.placed} ${w.draft}`}
-            >
-              <NoteCard sticker={draft.sticker} font={draft.font} shape={draft.shape} color={draft.color} message={safeMessage} name={safeName} ghost={!message} />
-              <span className={w.draftHint} aria-hidden="true">Drag me anywhere</span>
-            </ElasticSticker>
-          )}
         </div>
+        {/* the breeze itself: a few faint streaks crossing from the right */}
+        {gust >= 0 && (
+          <div key={gust} className={w.breeze} aria-hidden="true">
+            {[0, 1, 2, 3, 4].map((i) => <i key={i} style={{ top: `${14 + i * 17 + (gust * 7 + i * 13) % 9}%`, animationDelay: `${i * 0.18}s` }} />)}
+          </div>
+        )}
       </div>
 
+      {/* placing: the note rides on the cursor until it's stuck to the wall */}
+      {step === "place" && draft && (
+        <>
+          <div className={w.placeHint} role="status">
+            <b>Click anywhere on the wall to stick your note</b>
+            <button type="button" className={w.placeBack} onClick={() => setStep("compose")}>Back to editing</button>
+          </div>
+          <div className={`${w.pad} ${aim ? "" : w.padCentre}`} style={aim ? { left: aim.x, top: aim.y } : undefined} aria-hidden="true">
+            <div style={{ transform: `scale(${aim?.z ?? 1}) rotate(${draft.rotation}deg)` }}>
+              <NoteCard sticker={draft.sticker} font={draft.font} shape={draft.shape} color={draft.color} message={safeMessage} name={safeName} />
+            </div>
+          </div>
+          {busy && <div className={w.placeBusy}><span className={w.spin} aria-hidden="true" /> Sticking it on the wall…</div>}
+        </>
+      )}
 
       {step === "sent" && (
         <Celebration
@@ -555,7 +636,15 @@ export default function WallApp({
 
       {/* the composer: a minimal prompt bar — words on top, a slim row of tools below */}
       {step === "compose" && draft && (
-        <div className={w.prompt} role="dialog" aria-label="Write your note">
+        <div className={`${w.prompt} ${embedded ? "" : w.promptCard}`} role="dialog" aria-label="Write your note">
+          {!embedded && (
+            <div className={w.cardHead}>
+              <button type="button" className={w.cardClose} onClick={cancel} aria-label="Close the composer" title="Close">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+              <span className={w.cardTitle}>Leave a note</span>
+            </div>
+          )}
           {panel === "sticker" && (
             <div className={w.pop}>
               <div className={w.tabs} role="tablist" aria-label="Sticker type">
@@ -634,22 +723,16 @@ export default function WallApp({
                 <span style={{ fontFamily: FONTS.find((f) => f.id === draft.font)?.family, fontSize: 17 }}>Aa</span>
               </button>
               <span className={w.promptSpacer} />
-              <button type="button" className={w.toolGhost} onClick={cancel} aria-label="Cancel" title="Cancel">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
-              </button>
-              <button type="button" className={w.send} onClick={submit} disabled={!valid || busy} aria-label={busy ? "Sending" : "Stick it on the wall"} title="Stick it on the wall">
-                {busy ? (
-                  <span className={w.spin} aria-hidden="true" />
-                ) : (
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
-                )}
+              <button type="button" className={w.addNote} onClick={toPlace} disabled={!valid || busy} title={valid ? "Pick it up and stick it on the wall" : "Write a few words, then @ and your name"}>
+                Add a note
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
               </button>
             </div>
           </div>
           {/* spam trap: hidden from people, filled in by bots */}
           <input className={w.honey} tabIndex={-1} autoComplete="off" aria-hidden="true" value={honey} onChange={(e) => setHoney(e.target.value)} name="website" />
           {captcha && siteKey && <div className="cf-turnstile" data-sitekey={siteKey} data-callback="__wallCaptcha" data-theme="light" />}
-          <p className={w.promptHint}>Drag your note anywhere on the wall · stickers: Noto Emoji (CC BY 4.0)</p>
+          <p className={w.promptHint}>Write it, add it, then click where it should stick · stickers: Noto Emoji (CC BY 4.0)</p>
         </div>
       )}
     </div>

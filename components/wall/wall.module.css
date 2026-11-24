@@ -403,3 +403,108 @@ img.monkeyArt { width: 96px; height: 96px; object-fit: cover; border-radius: 12p
 .scribbleArrow { position: absolute; right: -56px; top: 70%; width: 74px; height: 56px; }
 .scribbleLine { position: absolute; left: 0; right: 0; bottom: -12px; width: 100%; height: 12px; }
 .scribbleMark { width: 1.05em; height: 1.05em; flex: none; }
+
+/* =====================================================================
+   The composer as a centred frosted card (full-screen wall only)
+   ===================================================================== */
+.prompt.promptCard {
+  top: 50%; bottom: auto; transform: translate(-50%, -50%); width: min(560px, calc(100% - 24px));
+  padding: 14px 14px 12px; border-radius: 22px; background: rgba(255, 255, 255, 0.93); border: 1px solid rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow: 0 40px 80px -36px rgba(34, 34, 34, 0.45), 0 2px 6px rgba(0, 0, 0, 0.04);
+  animation: cardIn 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes cardIn { from { opacity: 0; transform: translate(-50%, calc(-50% + 14px)) scale(0.98); } }
+.cardHead { display: flex; align-items: center; gap: 10px; padding: 0 2px 2px; }
+.cardClose { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(0, 0, 0, 0.05); color: #3a3733; cursor: pointer; transition: background 160ms; }
+.cardClose:hover { background: rgba(0, 0, 0, 0.1); }
+.cardTitle { font: 600 14px/1 var(--font-geist-sans), Arial, sans-serif; color: #2a2724; }
+.promptCard .promptBox, .promptCard .pop { background: #fff; border: 1px solid #e7e2d9; color: #1f1d1a; box-shadow: 0 14px 30px -24px rgba(34, 34, 34, 0.4); }
+.promptCard .promptBox:focus-within { border-color: #d6cec1; box-shadow: 0 0 0 4px rgba(255, 73, 56, 0.08); }
+.promptCard .editorBare .editorMirror { color: #1f1d1a; }
+.promptCard .editorBare .editorField { caret-color: #1f1d1a; }
+.promptCard .editorBare .editorField::placeholder { color: #a49d92; -webkit-text-fill-color: #a49d92; }
+.promptCard .editorBare .flag { color: #d93a2b; }
+.promptCard .sig { color: #8a847a; }
+.promptCard .sigGhost { color: #bdb6ab; }
+.promptCard .tool, .promptCard .toolGhost { color: #4a4640; }
+.promptCard .tool:hover, .promptCard .toolGhost:hover, .promptCard .tool[aria-expanded="true"] { background: rgba(0, 0, 0, 0.05); }
+.promptCard .toolSwatch { box-shadow: inset 0 0 0 1.5px rgba(29, 27, 25, 0.25); }
+.promptCard .tabs { background: #f3efe8; }
+.promptCard .tab { color: #7a746b; }
+.promptCard .tab[aria-selected="true"] { background: #fff; color: #1f1d1a; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+.promptCard .pop .trayItem { background: #f6f2ea; }
+.promptCard .pop .trayItem:hover { background: #efe9df; }
+.promptCard .pop .trayItem[aria-selected="true"] { background: #ffe9e5; border-color: #ff4938; }
+.promptCard .gifSearch { background: #f6f2ea; border-color: #e7e2d9; color: #1f1d1a; }
+.promptCard .gifSearch::placeholder { color: #a49d92; }
+.promptCard .gifEmpty, .promptCard .giphyCredit { color: #8a847a; }
+.promptCard .fontChip { background: #f6f2ea; border-color: #e7e2d9; color: #1f1d1a; }
+.promptCard .fontChip[aria-checked="true"] { border-color: #ff4938; background: #fff4f2; }
+.promptCard .shapeChip { background: #f6f2ea; color: #4a4640; }
+.promptCard .shapeChip[aria-checked="true"] { background: #fff4f2; }
+.promptCard .swatch { border-color: #fff; box-shadow: 0 0 0 1.5px #e3ddd2; }
+.promptCard .promptNotes .error { background: #fff1ef; border-color: #f3c4bd; color: #b3261e; }
+.promptCard .monkey { background: #fff; border-color: #f3c4bd; color: #222; }
+.addNote {
+  flex: none; height: 38px; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px 0 18px; border-radius: 999px; border: 0;
+  background: #ff4938; color: #fff; font: 600 14px/1 var(--font-geist-sans), Arial, sans-serif; cursor: pointer;
+  transition: background 160ms, transform 120ms, opacity 160ms;
+}
+.addNote:hover { background: #e23a2a; }
+.addNote:active { transform: scale(0.96); }
+.addNote:disabled { background: #ebe6dd; color: #a49d92; cursor: not-allowed; }
+.prompt:not(.promptCard) .addNote:disabled { background: rgba(255, 255, 255, 0.1); color: #6b6b74; }
+
+/* placing: the note follows the cursor, a click sticks it */
+.scrollerPlacing, .scrollerPlacing * { cursor: none !important; }
+.pad { position: fixed; z-index: 40; pointer-events: none; transform: translate(-50%, -50%); filter: drop-shadow(0 22px 22px rgba(0, 0, 0, 0.22)); transition: filter 200ms; animation: padIn 260ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.pad > div { transform-origin: 50% 50%; }
+.padCentre { left: 50%; top: 50%; }
+@keyframes padIn { from { opacity: 0; scale: 0.85; } }
+.placeHint {
+  position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 41; display: flex; align-items: center; gap: 12px;
+  padding: 8px 8px 8px 16px; border-radius: 999px; background: rgba(17, 17, 19, 0.92); color: #f4f4f5; white-space: nowrap;
+  font: 500 13px/1 var(--font-geist-sans), Arial, sans-serif; box-shadow: 0 16px 34px -18px rgba(0, 0, 0, 0.6); animation: rise 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.placeHint b { font-weight: 600; }
+.placeBack { height: 30px; padding: 0 12px; border-radius: 999px; border: 0; background: rgba(255, 255, 255, 0.12); color: #fff; font: inherit; cursor: pointer; }
+.placeBack:hover { background: rgba(255, 255, 255, 0.2); }
+.placeBusy { position: absolute; left: 50%; top: 18px; transform: translateX(-50%); z-index: 41; display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #fff; color: #222; font: 500 13px/1 var(--font-geist-sans), Arial, sans-serif; box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.4); }
+@media (max-width: 599px) { .placeHint { white-space: normal; text-align: left; width: calc(100% - 24px); justify-content: space-between; } }
+
+/* the breeze: notes hinge on their top edge and flutter as a gust passes right → left */
+.flap { display: block; transform-origin: 50% 4%; }
+.board[data-gust="0"] .flap { animation: flapA 2.6s cubic-bezier(0.37, 0, 0.3, 1) var(--bd, 0s) both; }
+.board[data-gust="1"] .flap { animation: flapB 2.6s cubic-bezier(0.37, 0, 0.3, 1) var(--bd, 0s) both; }
+@keyframes flapA {
+  0%, 100% { transform: none; }
+  14% { transform: rotate(calc(-3.2deg * var(--amp, 1))) skewY(calc(0.8deg * var(--amp, 1))); }
+  32% { transform: rotate(calc(2.2deg * var(--amp, 1))) skewY(calc(-0.5deg * var(--amp, 1))); }
+  50% { transform: rotate(calc(-1.5deg * var(--amp, 1))); }
+  68% { transform: rotate(calc(0.8deg * var(--amp, 1))); }
+  84% { transform: rotate(calc(-0.3deg * var(--amp, 1))); }
+}
+@keyframes flapB {
+  0%, 100% { transform: none; }
+  14% { transform: rotate(calc(-3.2deg * var(--amp, 1))) skewY(calc(0.8deg * var(--amp, 1))); }
+  32% { transform: rotate(calc(2.2deg * var(--amp, 1))) skewY(calc(-0.5deg * var(--amp, 1))); }
+  50% { transform: rotate(calc(-1.5deg * var(--amp, 1))); }
+  68% { transform: rotate(calc(0.8deg * var(--amp, 1))); }
+  84% { transform: rotate(calc(-0.3deg * var(--amp, 1))); }
+}
+.breeze { position: absolute; inset: 0; z-index: 30; pointer-events: none; overflow: hidden; }
+.breeze i {
+  position: absolute; right: -40%; width: 34%; height: 1.5px; border-radius: 2px; opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(120, 112, 100, 0.28) 40%, rgba(120, 112, 100, 0.12) 80%, transparent);
+  animation: streak 2.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.breeze i:nth-child(even) { width: 22%; height: 1px; }
+@keyframes streak {
+  0% { opacity: 0; transform: translateX(0); }
+  15% { opacity: 1; }
+  80% { opacity: 0.8; }
+  100% { opacity: 0; transform: translateX(-320%); }
+}
+:global(html[data-theme="dark"]) .breeze i { background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22) 40%, rgba(255, 255, 255, 0.08) 80%, transparent); }
+@media (prefers-reduced-motion: reduce) { .flap, .board .flap, .breeze, .pad, .prompt.promptCard { animation: none !important; } .breeze { display: none; } }
