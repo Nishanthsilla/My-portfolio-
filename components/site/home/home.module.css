@@ -422,8 +422,8 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 .journey[data-mode="touch"] .panel .panelInner { padding-top: 40px; padding-bottom: 72px; }
 
 /* ---------- "Scroll right" hint on the first screen (ScrollHint.tsx) ---------- */
-.scrollHint { position: fixed; z-index: 2147483000; width: 140px; height: 140px; border-radius: 50%; background: rgba(250, 250, 247, 0.9); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); box-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.35); pointer-events: none; opacity: 0; transition: opacity 260ms ease; color: #14182a; }
-:global(html[data-theme="dark"]) .scrollHint { background: rgba(21, 21, 24, 0.9); color: #edebe6; box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.8); }
+.scrollHint { position: fixed; z-index: 2147483000; width: 140px; height: 140px; border-radius: 50%; background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%); box-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.35); pointer-events: none; opacity: 0; transition: opacity 260ms ease; color: #14182a; }
+:global(html[data-theme="dark"]) .scrollHint { background: rgba(255, 255, 255, 0.84); color: #14182a; box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.8); }
 .scrollHintOn { opacity: 1; }
 .scrollHintFollow { left: 0; top: 0; }
 .scrollHintDock { right: 16px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); width: 108px; height: 108px; }
