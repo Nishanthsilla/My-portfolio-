@@ -469,3 +469,6 @@ html[data-embed] .back { display: none; }
   .popWa svg { width: 23px; height: 23px; }
 }
 @media (prefers-reduced-motion: reduce) { .popBtn { transition: opacity 120ms !important; translate: 0 0 !important; } }
+
+/* the "this is fine" cartoon sits flush at the very bottom of the footer */
+.footerFine { margin-top: var(--s5); margin-bottom: calc(-1 * var(--s5)); }

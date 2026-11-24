@@ -142,3 +142,9 @@
 .sign b { display: block; }
 .sign small { display: block; margin-top: 7px; font: 500 clamp(11px, 1vw, 13px)/1.2 var(--mono, ui-monospace, monospace); color: #6b665f; }
 @media (prefers-reduced-motion: reduce) { .duck, .catWrap[data-state="startle"] .duck { animation: none; } }
+
+/* the "this is fine" cartoon along the bottom of the contact screen */
+.screen { flex-direction: column; }
+.inner { flex: 1 1 auto; min-height: 0; padding-bottom: clamp(16px, 3vh, 32px); }
+.fine { flex: none; height: clamp(150px, 27vh, 250px); }
+@media (max-width: 760px) { .inner { padding-bottom: 24px; } .fine { height: 300px; } }

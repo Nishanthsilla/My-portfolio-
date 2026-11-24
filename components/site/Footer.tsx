@@ -5,6 +5,7 @@ import HoverPreview from "./HoverPreview";
 import ProjectMedia from "./ProjectMedia";
 import SocialLinks from "./SocialLinks";
 import PhoneLink from "./PhoneLink";
+import DesignerChaosFooterAnimation from "./fine/DesignerChaosFooterAnimation";
 import s from "./site.module.css";
 
 /** Contact + footer, on every page. */
@@ -47,6 +48,7 @@ export default function Footer() {
           <span>{footer.note}</span>
         </div>
       </div>
+      <DesignerChaosFooterAnimation className={s.footerFine} />
     </footer>
   );
 }

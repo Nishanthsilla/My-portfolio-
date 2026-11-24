@@ -2,6 +2,7 @@ import { contact, footer, socials } from "@/lib/site/content";
 import CopyEmail from "../CopyEmail";
 import SocialLinks from "../SocialLinks";
 import PeekCat from "./PeekCat";
+import DesignerChaosFooterAnimation from "../fine/DesignerChaosFooterAnimation";
 
 import PhoneLink from "../PhoneLink";
 import s from "../site.module.css";
@@ -43,6 +44,7 @@ export default function ContactScene() {
             {SHOW_CAT && <PeekCat />}
           </div>
         </div>
+        <DesignerChaosFooterAnimation className={c.fine} />
       </div>
     </section>
   );

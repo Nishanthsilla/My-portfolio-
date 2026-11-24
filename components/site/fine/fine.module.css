@@ -1,0 +1,120 @@
+/* "This is fine — designer edition": one 12.5 s timeline (percentages below are of 12.5 s) */
+.root { position: relative; width: 100%; height: 250px; overflow: hidden; background: #8f8a2c; contain: layout paint; }
+@media (max-width: 700px) { .root { height: 300px; } }
+.svg { display: block; width: 100%; height: 100%; }
+
+/* everything waits, paused, until the footer is on screen; then the timeline runs once */
+.tl { animation-duration: 12.5s; animation-timing-function: linear; animation-fill-mode: both; animation-iteration-count: 1; }
+.root .tl, .root .lp { animation-play-state: paused; }
+.root.play.vis .tl { animation-play-state: running; }
+.root.vis .lp { animation-play-state: running; }
+:global(html[data-paging]) .root .lp { animation-play-state: paused; }
+
+/* ---------- text ---------- */
+.cardText { font: 600 14px/1 var(--font-geist-sans), "Helvetica Neue", Arial, sans-serif; fill: #2b1809; }
+.cardTitle { font-weight: 800; }
+.tag { font: 900 14px/1 var(--font-geist-sans), Arial, sans-serif; fill: #fff; letter-spacing: 0.04em; }
+.stickyText { font: 700 14px/1 var(--font-geist-sans), Arial, sans-serif; fill: #2b1809; }
+.fine { font: italic 900 25px/1 var(--font-geist-sans), Impact, Arial, sans-serif; fill: #1b1008; letter-spacing: 0.02em; }
+.frameN { font: 800 52px/1 Georgia, "Times New Roman", serif; fill: #2b1809; }
+.lapN { font: 800 30px/1 Georgia, "Times New Roman", serif; fill: #2b1809; }
+
+/* ---------- messages: placed per screen size, then popped in and out on their own windows ---------- */
+.pos { transform: translate(calc(var(--x) * 1px), calc(var(--y) * 1px)) rotate(var(--r, 0deg)); }
+@media (max-width: 700px) { .pos { transform: translate(calc(var(--mx) * 1px), calc(var(--my) * 1px)) rotate(var(--r, 0deg)); } }
+.pop, .drop {
+  transform-box: fill-box; transform-origin: 20% 100%;
+  animation-duration: calc(var(--d) * 1s); animation-delay: calc(var(--t) * 1s);
+}
+.pop { animation-name: pop; animation-timing-function: ease-out; }
+.drop { animation-name: drop; animation-timing-function: ease-out; transform-origin: 50% 0; }
+@keyframes pop {
+  0% { opacity: 0; transform: scale(0.4) rotate(-8deg); }
+  12% { opacity: 1; transform: scale(1.07) rotate(2deg); }
+  20% { transform: scale(1) rotate(0); }
+  88% { opacity: 1; transform: scale(1) rotate(0); }
+  100% { opacity: 0; transform: scale(0.92) rotate(0); }
+}
+@keyframes drop {
+  0% { opacity: 0; transform: translateY(-26px) rotate(-10deg); }
+  14% { opacity: 1; transform: translateY(4px) rotate(4deg); }
+  22% { transform: translateY(-2px) rotate(-2deg); }
+  30% { transform: translateY(0) rotate(0); }
+  88% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(6px); }
+}
+
+/* ---------- his face across the scenes ---------- */
+/* open 01–02, 04, 08–10 · tired 03, 07 · shut (sipping) 05–06 */
+.eOpen { animation-name: eOpen; }
+@keyframes eOpen { 0%, 23.9% { opacity: 1; } 24%, 35.9% { opacity: 0; } 36%, 47.9% { opacity: 1; } 48%, 71.9% { opacity: 0; } 72%, 100% { opacity: 1; } }
+.eHalf { animation-name: eHalf; }
+@keyframes eHalf { 0%, 23.9% { opacity: 0; } 24%, 35.9% { opacity: 1; } 36%, 63.9% { opacity: 0; } 64%, 71.9% { opacity: 1; } 72%, 100% { opacity: 0; } }
+.eShut { animation-name: eShut; }
+@keyframes eShut { 0%, 47.9% { opacity: 0; } 48%, 63.9% { opacity: 1; } 64%, 100% { opacity: 0; } }
+/* glances at the first message (02), wide little pupils at the deadline (04) */
+.pupils { animation-name: pupils; transform-box: fill-box; transform-origin: center; }
+@keyframes pupils {
+  0%, 11% { transform: none; } 13%, 23% { transform: translate(3px, -4px); } 24%, 35.9% { transform: none; }
+  36% { transform: scale(1); } 38%, 47% { transform: scale(0.62) translate(0, -2px); } 48%, 100% { transform: none; }
+}
+.blink { transform-box: fill-box; transform-origin: center; animation: blink 3.6s ease-in-out infinite; }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.08); } }
+.nod { transform-box: fill-box; transform-origin: 30% 90%; animation: nod 4.2s ease-in-out infinite; }
+@keyframes nod { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-2.2deg); } }
+.bob { animation: bob 3.4s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(1.5px); } }
+.steam { animation: steam 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+.steam2 { animation-delay: -1.2s; }
+@keyframes steam { 0% { opacity: 0; transform: translateY(4px) scaleY(0.7); } 40% { opacity: 0.9; } 100% { opacity: 0; transform: translateY(-10px) scaleY(1.1); } }
+
+/* 09: the sunglasses drop on; 11: a puff and he's bones; 12: the sunglasses again */
+.shades { animation-name: shades; }
+@keyframes shades { 0%, 79.9% { opacity: 0; transform: translateY(-44px); } 80% { opacity: 1; transform: translateY(-44px); } 82.4% { transform: translateY(3px); } 84%, 100% { opacity: 1; transform: translateY(0); } }
+.dog { animation-name: dog; }
+@keyframes dog { 0%, 91.5% { opacity: 1; } 93.5%, 100% { opacity: 0; } }
+.skel { animation-name: skel; }
+@keyframes skel { 0%, 92.5% { opacity: 0; } 95%, 100% { opacity: 1; } }
+.skShades { animation-name: skShades; }
+@keyframes skShades { 0%, 95.9% { opacity: 0; transform: translateY(-44px); } 96% { opacity: 1; transform: translateY(-44px); } 98.2% { transform: translateY(3px); } 99.4%, 100% { opacity: 1; transform: translateY(0); } }
+.puff { animation-name: puff; transform-box: fill-box; transform-origin: center; }
+@keyframes puff { 0%, 90.5% { opacity: 0; transform: scale(0.3); } 92.5% { opacity: 1; transform: scale(1.05); } 94% { opacity: 0.9; transform: scale(1.15); } 97%, 100% { opacity: 0; transform: scale(1.45); } }
+
+/* ---------- the fire: creeps in at 02, grows through 04–08, takes the room at 09 ---------- */
+.grow { transform-box: fill-box; transform-origin: 50% 100%; }
+.gLeft { animation-name: gLeft; }
+@keyframes gLeft { 0%, 11.9% { opacity: 0; transform: scaleY(0); } 12% { opacity: 1; transform: scaleY(0.25); } 24% { transform: scaleY(0.45); } 36% { transform: scaleY(0.75); } 48% { transform: scaleY(0.85); } 64% { transform: scaleY(1); } 80%, 100% { opacity: 1; transform: scaleY(1.4); } }
+.gRight { animation-name: gRight; }
+@keyframes gRight { 0%, 29.9% { opacity: 0; transform: scaleY(0); } 30% { opacity: 1; transform: scaleY(0.2); } 48% { transform: scaleY(0.6); } 64% { transform: scaleY(0.9); } 80%, 100% { opacity: 1; transform: scaleY(1.35); } }
+.gBack { animation-name: gBack; }
+@keyframes gBack { 0%, 39.9% { opacity: 0; transform: scaleY(0); } 40% { opacity: 1; transform: scaleY(0.12); } 56% { transform: scaleY(0.32); } 64% { transform: scaleY(0.5); } 72% { transform: scaleY(0.75); } 80% { transform: scaleY(1.3); } 92%, 100% { opacity: 1; transform: scaleY(1.15); } }
+.gFront { animation-name: gFront; }
+@keyframes gFront { 0%, 74.9% { opacity: 0; transform: scaleY(0); } 75% { opacity: 1; transform: scaleY(0.15); } 82% { transform: scaleY(1); } 92%, 100% { opacity: 1; transform: scaleY(0.85); } }
+.glow { animation-name: glow; }
+@keyframes glow { 0% { opacity: 0; } 12% { opacity: 0.06; } 36% { opacity: 0.14; } 64% { opacity: 0.28; } 80% { opacity: 0.58; } 92% { opacity: 0.62; } 100% { opacity: 0.5; } }
+.char { animation-name: char; }
+@keyframes char { 0%, 70% { opacity: 0; } 80% { opacity: 0.3; } 92% { opacity: 0.55; } 100% { opacity: 0.62; } }
+.smoke { animation-name: smoke; }
+@keyframes smoke { 0%, 68% { opacity: 0; transform: translateY(-30px); } 80% { opacity: 1; transform: translateY(0); } 100% { opacity: 1; transform: translateY(0); } }
+.drift { animation: drift var(--sd, 8s) ease-in-out var(--so, 0s) infinite alternate; }
+@keyframes drift { from { transform: translateX(0); } to { transform: translateX(-26px) translateY(-6px); } }
+.lapFire { animation-name: lapFire; transform-box: fill-box; transform-origin: 50% 100%; }
+@keyframes lapFire { 0%, 85.9% { opacity: 0; transform: scaleY(0); } 86% { opacity: 1; transform: scaleY(0.2); } 90%, 100% { opacity: 1; transform: scaleY(1); } }
+.papers { animation-name: papers; }
+@keyframes papers { 0%, 79.9% { opacity: 0; } 82%, 100% { opacity: 1; } }
+.flutter { animation: flutter var(--pd, 2.6s) ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes flutter { from { transform: translate(0, 0) rotate(-8deg); } to { transform: translate(-14px, -12px) rotate(10deg); } }
+
+/* every flame flickers on its own beat */
+.flick { transform-box: fill-box; transform-origin: 50% 100%; animation: flick var(--fd, 0.7s) ease-in-out var(--fo, 0s) infinite alternate; }
+@keyframes flick { 0% { transform: scale(1, 1) skewX(0); } 50% { transform: scale(0.94, 1.08) skewX(-3deg); } 100% { transform: scale(1.04, 0.92) skewX(3deg); } }
+
+/* reduced motion: the last frame, still */
+@media (prefers-reduced-motion: reduce) {
+  .root .tl { animation-duration: 1ms !important; animation-delay: 0s !important; animation-play-state: running !important; }
+  .root .lp { animation: none !important; }
+}
+
+/* phones show more wall above him: the back fire reaches higher there */
+.tall { transform-box: fill-box; transform-origin: 50% 100%; }
+@media (max-width: 700px) { .tall { transform: scaleY(1.55); } }
