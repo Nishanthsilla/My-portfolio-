@@ -88,6 +88,14 @@ const FACE_CSS =
   `@keyframes fine-jaw{${TALK.map((o, i) => `${((i / (TALK.length - 1)) * 100).toFixed(2)}%{transform:scaleY(${(0.1 + 0.9 * o).toFixed(2)})}`).join("")}}`;
 const anim = (n: string): CSSProperties => ({ animationName: `fine-${n}` });
 
+/** subtitles for the dialogue (seconds on the cartoon's clock) */
+const SUBS: [number, number, string][] = [
+  [4.35, 5.05, "This is fine."],
+  [5.45, 7.6, "I'm okay with the events that are unfolding currently."],
+  [9.95, 12.35, "That's okay, things are going to be okay."],
+];
+const SUB_CSS = SUBS.map(([a, b], i) => onOff(`sub${i}`, [[a, b]])).join("");
+
 const FIRE = {
   left: flames(11, 360, 600, 26, 230, 26, 58),
   right: flames(23, 760, 1010, 28, 230, 26, 60),
@@ -268,7 +276,7 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
 
   return (
     <div ref={root} className={`${f.root} ${className}`} role="img" aria-label="A cartoon dog in a hat calmly drinks coffee while client requests pile up and the room catches fire. He ends up a skeleton in sunglasses, still holding his coffee and saying he is okay with the events that are unfolding.">
-      <style>{FACE_CSS}</style>
+      <style>{FACE_CSS + SUB_CSS}</style>
       <svg ref={svg} className={f.svg} viewBox="0 0 1440 250" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
         <defs>
           <linearGradient id={wall} x1="0" y1="0" x2="0" y2="1">
@@ -588,6 +596,14 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
           </g>
         </g>
       </svg>
+      {/* subtitles: small pixel type, only while he speaks */}
+      <div className={f.subs} aria-hidden="true">
+        {SUBS.map(([, , text], i) => (
+          <p key={i} className={`${f.tl} ${f.sub}`} style={anim(`sub${i}`)}>
+            {text}
+          </p>
+        ))}
+      </div>
     </div>
   );
 }
