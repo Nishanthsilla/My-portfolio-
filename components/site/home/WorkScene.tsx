@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProjectMedia from "../ProjectMedia";
 import CursorScope from "../CursorScope";
 import ProjectDrawer, { type DrawerMode } from "./ProjectDrawer";
-import { categories, projects, workIntro, type CategoryId, type Project } from "@/lib/site/content";
-import { bento, recent, type TileSize } from "@/lib/site/home";
+import { projects, type Project } from "@/lib/site/content";
+import { bento, type TileSize } from "@/lib/site/home";
 import { categoryLabel } from "@/lib/site/routes";
 import h from "./home.module.css";
 
@@ -25,69 +25,119 @@ const TONE_FOR: Record<string, string> = {
   // the platform's own violet
   "ambient-ai": "linear-gradient(170deg, #9C8BF5 0%, #3B2B95 100%)",
 };
-const SHOWN = 6;
-const size = (slug: string): TileSize => bento.find((b) => b.slug === slug)?.size ?? "small";
-
-/** newest first (lib/site/home.ts `recent`), then everything else in the bento order */
-const ORDERED: Project[] = [
-  ...recent.map((slug) => projects.find((p) => p.slug === slug)).filter((p): p is Project => !!p),
-  ...bento.map((b) => projects.find((p) => p.slug === b.slug)).filter((p): p is Project => !!p && !recent.includes(p.slug)),
-  ...projects.filter((p) => !recent.includes(p.slug) && !bento.some((b) => b.slug === p.slug)),
+/**
+ * The work, told as four things Nishanth can do — each a statement with the projects that prove
+ * it — then a compact list of everything. (Superkalam is hidden for now.)
+ */
+export const STATEMENTS: { id: string; title: string; line: string; slugs: string[] }[] = [
+  {
+    id: "idea-to-launch",
+    title: "I can take a product from idea to launch",
+    line: "Products I owned from the business problem to the shipped release.",
+    slugs: ["ambient-ai", "self-ready", "thriving-springs-e-learning", "ryzeup"],
+  },
+  {
+    id: "hard-problems",
+    title: "I untangle hard problems",
+    line: "Messy, complex problems, and how I made them simple to use.",
+    slugs: ["salespulze-heat-map", "mao", "disprz"],
+  },
+  {
+    id: "pixels",
+    title: "I care about the pixels",
+    line: "Interfaces, branding and posters where the detail is the point.",
+    slugs: ["fitness-app", "design-system-frustration-logic", "extreme-appcoders-website", "eeve-poster", "food-engineers-logo"],
+  },
+  {
+    id: "systems",
+    title: "I build systems that scale",
+    line: "The components and rules that keep a product consistent as it grows.",
+    slugs: ["covasant-design-system"],
+  },
 ];
+const HIDDEN = ["superkalam"];
+const bySlug = (s: string) => projects.find((p) => p.slug === s);
+const size = (slug: string, i: number): TileSize => (i === 0 ? "large" : bento.find((b) => b.slug === slug)?.size === "large" && i < 2 ? "large" : "small");
+const ALL: Project[] = projects.filter((p) => !HIDDEN.includes(p.slug));
+
+/** jump to a statement inside the sideways journey (desktop) or the stacked scene (phones) */
+function jumpTo(id: string) {
+  const el = document.getElementById(`work-${id}`);
+  if (!el) return;
+  const journey = el.closest<HTMLElement>("section[data-mode]");
+  if (journey?.dataset.mode === "desktop") {
+    const track = el.closest<HTMLElement>("[data-scene]")?.parentElement;
+    if (!track) return;
+    const x = el.getBoundingClientRect().left - track.getBoundingClientRect().left;
+    scrollTo({ top: journey.getBoundingClientRect().top + scrollY + x - 24, behavior: "smooth" });
+  } else el.scrollIntoView({ behavior: "smooth", block: "start", inline: "start" });
+}
 
 /**
- * Scene 2 of the homepage: the work. Tabs filter by category; the six newest
- * case studies show first and the rest wait behind "Explore more of my work".
- * Opening a project slides a panel in from the right with a Simplified and a
- * Deep-dive view, so visitors never lose their place.
+ * Scene 2 of the homepage: the work, as four statements in a row (stacked on phones), each with
+ * its projects, then "All work". Opening a project slides a panel in from the right with a
+ * Simplified and a Deep-dive view, so visitors never lose their place.
  */
 export default function WorkScene() {
-  const [tab, setTab] = useState<"all" | CategoryId>("all");
-  const [more, setMore] = useState(false);
   const [drawer, setDrawer] = useState<{ p: Project; mode: DrawerMode } | null>(null);
+  const open = (p: Project, mode: DrawerMode) => setDrawer({ p, mode });
 
-  const list = tab === "all" ? ORDERED : ORDERED.filter((p) => p.category === tab);
-  const shown = more ? list : list.slice(0, SHOWN);
-  const hidden = list.length - shown.length;
-  const tabs: { id: "all" | CategoryId; label: string }[] = [{ id: "all", label: "All work" }, ...categories];
+  // a shared link (?lens=hard-problems) lands on that statement
+  useEffect(() => {
+    const lens = new URLSearchParams(location.search).get("lens");
+    if (!lens || !STATEMENTS.some((s) => s.id === lens)) return;
+    const id = setTimeout(() => jumpTo(lens), 900);
+    return () => clearTimeout(id);
+  }, []);
 
   return (
     <section id="work" className={h.workScene} aria-labelledby="work-title">
-      <div className={h.workSceneHead}>
-        <p className={h.eyebrow}>Selected work</p>
-        <h2 id="work-title" className={h.h2}>{workIntro.title}</h2>
-        <p className={h.workLine}>{workIntro.line}</p>
-        <div className={h.workTabs} role="tablist" aria-label="Filter work">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="tab"
-              aria-selected={tab === t.id}
-              onClick={() => {
-                setTab(t.id);
-                setMore(false);
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <h2 id="work-title" className={h.srOnly}>Selected work</h2>
       <CursorScope>
-        <div className={h.bentoRow} role="tabpanel" aria-label={tabs.find((t) => t.id === tab)!.label}>
-          {shown.map((p, i) => (
-            <Tile key={p.slug} p={p} size={size(p.slug)} tone={i} open={(mode) => setDrawer({ p, mode })} />
-          ))}
-          {hidden > 0 && (
-            <button type="button" className={h.moreTile} onClick={() => setMore(true)}>
-              <span className={h.moreCount}>+{hidden}</span>
-              <span className={h.moreLabel}>
-                Explore more of my work <span aria-hidden="true">→</span>
-              </span>
-              <span className={h.moreNote}>Older projects, posters and branding</span>
-            </button>
-          )}
+        {STATEMENTS.map((st, n) => (
+          <div key={st.id} id={`work-${st.id}`} className={h.statement} aria-labelledby={`st-${st.id}`}>
+            <div className={h.statementHead}>
+              <p className={h.eyebrow}>{n === 0 ? "Selected work · " : ""}{n + 1} / {STATEMENTS.length}</p>
+              <h3 id={`st-${st.id}`} className={h.statementTitle}>{st.title}</h3>
+              <p className={h.workLine}>{st.line}</p>
+              {n === 0 && (
+                <nav className={h.jumpRow} aria-label="Jump to">
+                  {STATEMENTS.slice(1).map((s) => (
+                    <a key={s.id} href={`/?lens=${s.id}#work`} onClick={(e) => { e.preventDefault(); jumpTo(s.id); }}>
+                      {s.title.replace(/^I (can )?/, "").replace(/^./, (c) => c.toUpperCase())} <span aria-hidden="true">→</span>
+                    </a>
+                  ))}
+                  <a href="#work-all" onClick={(e) => { e.preventDefault(); jumpTo("all"); }}>
+                    All work <span aria-hidden="true">→</span>
+                  </a>
+                </nav>
+              )}
+            </div>
+            <div className={`${h.bentoRow} ${st.slugs.length === 1 ? h.bentoOne : ""}`} role="list">
+              {st.slugs.map(bySlug).filter((p): p is Project => !!p).map((p, i) => (
+                <Tile key={p.slug} p={p} size={size(p.slug, i)} tone={n * 2 + i} open={(mode) => open(p, mode)} />
+              ))}
+            </div>
+          </div>
+        ))}
+        <div id="work-all" className={h.allWork} aria-labelledby="all-work-title">
+          <p className={h.eyebrow}>Everything</p>
+          <h3 id="all-work-title" className={h.statementTitle}>All work</h3>
+          <ul className={h.allList}>
+            {ALL.map((p) => (
+              <li key={p.slug}>
+                {p.external ? (
+                  <a href={p.external.href} target="_blank" rel="noopener noreferrer">
+                    <b>{p.title}</b><span>{p.eyebrow}</span><em>{p.year ?? ""}</em>
+                  </a>
+                ) : (
+                  <button type="button" onClick={() => open(p, "simple")}>
+                    <b>{p.title}</b><span>{p.eyebrow}</span><em>{p.year ?? ""}</em>
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
       </CursorScope>
       {drawer && (

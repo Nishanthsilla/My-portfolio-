@@ -438,3 +438,38 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 
 /* while a note is being placed on the Wall, the strip holds still */
 :global(html[data-placing]) .journey[data-mode="touch"] .journeyFrame { overflow-x: hidden; touch-action: none; }
+
+/* =====================================================================
+   Work as four statements (each with the projects that prove it), then "All work"
+   ===================================================================== */
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.workScene { gap: clamp(48px, 5vw, 96px); }
+.statement { display: flex; gap: clamp(24px, 2.4vw, 40px); height: 100%; flex: none; }
+.statementHead { flex: 0 0 clamp(240px, 22vw, 340px); align-self: center; display: grid; gap: 14px; }
+.statementTitle { margin: 0; font-size: clamp(30px, 3.2vw, 48px); line-height: 1.04; letter-spacing: -0.035em; font-weight: 560; text-wrap: balance; }
+.jumpRow { display: grid; gap: 2px; margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.jumpRow a { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; color: var(--ink); font-size: 15px; border-bottom: 1px solid var(--line); transition: color 150ms ease, padding 150ms ease; }
+.jumpRow a span { color: var(--muted); transition: transform 150ms ease, color 150ms ease; }
+.jumpRow a:hover { color: var(--accent-ink); }
+.jumpRow a:hover span { color: var(--accent-ink); transform: translateX(4px); }
+/* a statement with a single project: one wide tile */
+.bentoOne { grid-auto-columns: clamp(420px, 36vw, 560px); }
+.bentoOne > * { grid-row: span 2; }
+/* All work: a compact list */
+.allWork { flex: 0 0 clamp(420px, 34vw, 560px); align-self: stretch; display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 0; }
+.allList { list-style: none; margin: 8px 0 0; padding: 0; overflow-y: auto; border-top: 1px solid var(--line); }
+.allList li { border-bottom: 1px solid var(--line); }
+.allList a, .allList button { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "t y" "s y"; column-gap: 16px; width: 100%; padding: 10px 0; border: 0; background: none; color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+.allList b { grid-area: t; font-weight: 500; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 150ms ease; }
+.allList span { grid-area: s; font-size: 13px; color: var(--muted); }
+.allList em { grid-area: y; align-self: center; font: normal 12px/1 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.allList a:hover b, .allList button:hover b { color: var(--accent-ink); }
+
+/* phones: the statements stack, each with its tiles underneath */
+.journey[data-mode="touch"] .statement, .journey[data-mode="stack"] .statement { display: block; height: auto; margin-bottom: 56px; scroll-margin-top: 16px; }
+.journey[data-mode="touch"] .statementHead, .journey[data-mode="stack"] .statementHead { margin-bottom: 20px; }
+.journey[data-mode="touch"] .statementTitle { font-size: 30px; }
+.journey[data-mode="touch"] .allWork, .journey[data-mode="stack"] .allWork { display: block; scroll-margin-top: 16px; }
+.journey[data-mode="touch"] .allList { overflow: visible; }
+.journey[data-mode="touch"] .bentoOne { grid-template-columns: 1fr; }
+.journey[data-mode="desktop"] .workScene > div { display: flex; gap: clamp(64px, 6vw, 120px); height: 100%; }
