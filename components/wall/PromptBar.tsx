@@ -88,6 +88,8 @@ export type PromptBarProps = {
   onSource?: (row: PromptBarSource) => void;
   canSend?: boolean;
   tools?: ReactNode;
+  /** a row between the field and the tools (the Wall's name line) */
+  footer?: ReactNode;
   maxLength?: number;
   sendLabel?: string;
   ariaLabel?: string;
@@ -127,6 +129,7 @@ export default function PromptBar({
   onSource,
   canSend: canSendProp,
   tools,
+  footer,
   maxLength,
   sendLabel = "Send",
   ariaLabel = "Prompt",
@@ -594,6 +597,7 @@ export default function PromptBar({
           onKeyDown={onKeyDown}
         />
 
+        {footer}
         <div className="prompt-bar__bar">
           {sources.length > 0 ? (
             <button

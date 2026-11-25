@@ -435,3 +435,6 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 @keyframes hintSpin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .scrollHintRing { animation: none; } }
 :global(html.scroll-hint-cursor), :global(html.scroll-hint-cursor) * { cursor: none !important; }
+
+/* while a note is being placed on the Wall, the strip holds still */
+:global(html[data-placing]) .journey[data-mode="touch"] .journeyFrame { overflow-x: hidden; touch-action: none; }

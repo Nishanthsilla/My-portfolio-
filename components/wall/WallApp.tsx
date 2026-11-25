@@ -15,7 +15,6 @@ import { sfx } from "@/lib/sound/engine";
 import { uiSound } from "@/lib/sound/ui";
 import NoteCard from "./NoteCard";
 import SideEyeMonkey from "./SideEyeMonkey";
-import Celebration from "./Celebration";
 import w from "./wall.module.css";
 
 type Mode = "loading" | "sqlite" | "postgres" | "unconfigured" | "offline";
@@ -114,15 +113,21 @@ export default function WallApp({
   const [notes, setNotes] = useState<PublicNote[]>([]);
   const [hidden, setHidden] = useState<string[]>([]);
   const [step, setStep] = useState<Step>("browse");
-  /** where the note just posted sits (fractions of the wall), for "See your note" */
-  const [postedAt, setPostedAt] = useState<{ x: number; y: number } | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
-  // one line: the note, then "@name" to sign it
-  const [line, setLine] = useState("");
+  // the note, and the name it's signed with (its own field; an "@name" typed in the note still works)
+  const [msg, setMsg] = useState("");
+  const [who, setWho] = useState("");
   const { message, name } = useMemo(() => {
-    const i = line.lastIndexOf("@");
-    return i < 0 ? { message: line.trim(), name: "" } : { message: line.slice(0, i).trim(), name: line.slice(i + 1).trim().slice(0, LIMITS.name) };
-  }, [line]);
+    if (who.trim()) return { message: msg.trim(), name: who.trim().slice(0, LIMITS.name) };
+    const i = msg.lastIndexOf("@");
+    return i < 0 ? { message: msg.trim(), name: "" } : { message: msg.slice(0, i).trim(), name: msg.slice(i + 1).trim().slice(0, LIMITS.name) };
+  }, [msg, who]);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const [askName, setAskName] = useState(0); // bumps when someone tries to send unsigned
+  const setLine = (v: string) => {
+    setMsg(v);
+    setWho("");
+  };
   const [tab, setTab] = useState<"animated" | "gifs">("gifs"); // GIFs first (when the server has a GIPHY key)
   const [gifsOn, setGifsOn] = useState(false); // GIPHY search is available (server has a key)
   const [gifQ, setGifQ] = useState("");
@@ -279,7 +284,8 @@ export default function WallApp({
     setLayout(loadLayout());
     if (saved?.draft && !embedded) {
       setDraft({ ...saved.draft, font: saved.draft.font ?? DEFAULT_FONT, shape: saved.draft.shape ?? DEFAULT_SHAPE, color: saved.draft.color ?? DEFAULT_COLOR });
-      setLine(saved.message + (saved.name ? ` @${saved.name}` : ""));
+      setMsg(saved.message);
+      setWho(saved.name || "");
       setStep("compose");
     }
     setRestored(true);
@@ -319,10 +325,6 @@ export default function WallApp({
       saveLayout(next);
       return next;
     });
-  const resetLayout = () => {
-    setLayout({});
-    saveLayout(null);
-  };
 
   /* ---------- writing a note ---------- */
   const visibleSpot = () => {
@@ -414,10 +416,10 @@ export default function WallApp({
     const note = at ? { ...draft, ...at } : draft;
     if (mode === "offline") {
       // no server in this copy: keep the note on this device (clearly labelled), nothing is sent
-      addMine({ id: `local-${Date.now()}`, message, name, ...note, createdAt: new Date().toISOString(), local: true });
+      addMine({ id: localId(), message, name, ...note, createdAt: nowIso(), local: true });
       setMine(loadMine());
-      setPostedAt({ x: note.x, y: note.y });
       setStep("sent");
+      glideTo(note);
         setPanel(null);
       setDraft(null);
       setLine("");
@@ -439,8 +441,8 @@ export default function WallApp({
           addMine(d.note);
           setMine(loadMine());
         }
-        setPostedAt({ x: note.x, y: note.y });
         setStep("sent");
+        glideTo(note);
         setPanel(null);
         setDraft(null);
         setLine("");
@@ -455,6 +457,41 @@ export default function WallApp({
     } finally {
       setBusy(false);
     }
+  };
+
+  // homepage: while a note is being placed, the page holds still (no sliding to another scene)
+  useEffect(() => {
+    if (!embedded || step !== "place") return;
+    const html = document.documentElement;
+    html.dataset.placing = "";
+    const stopWheel = (e: WheelEvent) => e.preventDefault();
+    const stopKeys = (e: KeyboardEvent) => {
+      if ([" ", "PageDown", "PageUp", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) e.preventDefault();
+    };
+    addEventListener("wheel", stopWheel, { passive: false });
+    addEventListener("keydown", stopKeys);
+    return () => {
+      delete html.dataset.placing;
+      removeEventListener("wheel", stopWheel);
+      removeEventListener("keydown", stopKeys);
+    };
+  }, [embedded, step]);
+
+  /** glide the canvas so a spot (fractions of the wall) sits in the middle */
+  const glideTo = (at: { x: number; y: number }) => {
+    const v = scroller.current;
+    if (!v) return;
+    const z = zoom.current;
+    const from = { ...pan.current };
+    const to = { x: v.clientWidth / 2 - at.x * WORLD.w * z, y: v.clientHeight / 2 - at.y * WORLD.h * z };
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - t0) / 700), e = 1 - Math.pow(1 - k, 3);
+      pan.current = { x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e };
+      applyPan();
+      if (k < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   };
 
   /* ---------- placing: "Add a note" turns the note into a sticky pad on the cursor ---------- */
@@ -499,7 +536,6 @@ export default function WallApp({
   };
 
   const shown = notes.filter((n) => !hidden.includes(n.id));
-  const moved = Object.keys(layout).length > 0;
   
 
   return (
@@ -527,11 +563,6 @@ export default function WallApp({
           {step === "browse" && (
             <div className={w.fabBar}>
               <span className={w.fabHint}>Drag to look around · pick up any sticker to move it · stickers: Noto Emoji, CC BY 4.0</span>
-              {moved && (
-                <button type="button" className={w.btnLink} onClick={resetLayout} title="Put every sticker back where its writer left it">
-                  Reset
-                </button>
-              )}
               <button type="button" className={w.btnPrimary} onClick={start}>
                 Add a note
               </button>
@@ -622,28 +653,7 @@ export default function WallApp({
         </>
       )}
 
-      {step === "sent" && (
-        <Celebration
-          offline={mode === "offline"}
-          onSee={() => {
-            setStep("browse");
-            // glide the canvas to the note just posted
-            const v = scroller.current;
-            if (!v || !postedAt) return;
-            const z = zoom.current;
-            const from = { ...pan.current };
-            const to = { x: v.clientWidth / 2 - postedAt.x * WORLD.w * z, y: v.clientHeight / 2 - postedAt.y * WORLD.h * z };
-            const t0 = performance.now();
-            const step = (now: number) => {
-              const k = Math.min(1, (now - t0) / 700), e = 1 - Math.pow(1 - k, 3);
-              pan.current = { x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e };
-              applyPan();
-              if (k < 1) requestAnimationFrame(step);
-            };
-            requestAnimationFrame(step);
-          }}
-        />
-      )}
+      {step === "sent" && <ThanksSnack onDone={() => setStep("browse")} />}
 
       {/* the composer: a minimal prompt bar — words on top, a slim row of tools below */}
       {step === "compose" && draft && seen && (
@@ -719,14 +729,45 @@ export default function WallApp({
             radius={18}
             maxRows={3}
             tokens={false}
-            value={line}
-            onValueChange={setLine}
+            value={msg}
+            onValueChange={setMsg}
             maxLength={LIMITS.message + LIMITS.name + 4}
-            placeholder="Write something…  @your name"
-            ariaLabel="Your note, then @ and your name"
+            placeholder="Write something nice…"
+            ariaLabel="Your note"
             sendLabel="Add a note"
-            canSend={valid && !busy}
-            onSend={toPlace}
+            canSend={message.trim().length >= LIMITS.minMessage && !flagged && !busy}
+            onSend={() => {
+              if (!name.trim()) {
+                setAskName((n) => n + 1);
+                nameRef.current?.focus({ preventScroll: true });
+                requestAnimationFrame(() => nameRef.current?.focus({ preventScroll: true }));
+                return;
+              }
+              toPlace();
+            }}
+            footer={
+              <label className={`${w.signRow} ${askName && !name.trim() ? (askName % 2 ? w.signAsk : w.signAsk2) : ""}`} onClick={(e) => e.stopPropagation()}>
+                <span className={w.signDash} aria-hidden="true">—</span>
+                <input
+                  ref={nameRef}
+                  className={w.signInput}
+                  value={who || name}
+                  onChange={(e) => setWho(e.target.value.replace(/^@/, "").slice(0, LIMITS.name))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (valid) toPlace();
+                    }
+                  }}
+                  placeholder="Your name, to sign it"
+                  aria-label="Your name"
+                  autoComplete="nickname"
+                  enterKeyHint="done"
+                  maxLength={LIMITS.name}
+                />
+                {askName > 0 && !name.trim() && <span className={w.signHint}>Sign it to post</span>}
+              </label>
+            }
             sources={[
               ...(gifsOn ? [{ key: "gif", name: "GIF", description: "Search GIPHY", icon: Gif01Icon }] : []),
               { key: "icon", name: "Animated icon", description: "A moving sticker", icon: StickerIcon },
@@ -763,6 +804,22 @@ export default function WallApp({
           {captcha && siteKey && <div className="cf-turnstile" data-sitekey={siteKey} data-callback="__wallCaptcha" data-theme="light" />}
         </div>
       )}
+    </div>
+  );
+}
+
+const localId = () => `local-${Date.now()}`;
+const nowIso = () => new Date().toISOString();
+
+/** "Thank you for the note" — a small snackbar at the bottom of the wall, gone on its own */
+function ThanksSnack({ onDone }: { onDone: () => void }) {
+  useEffect(() => {
+    const id = window.setTimeout(onDone, 3600);
+    return () => clearTimeout(id);
+  }, [onDone]);
+  return (
+    <div className={w.snack} role="status" aria-live="polite">
+      <span aria-hidden="true">💛</span> Thank you for the note!
     </div>
   );
 }

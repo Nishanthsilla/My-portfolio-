@@ -183,7 +183,7 @@ export default function Journey({
       };
       const onStart = (e: TouchEvent) => {
         on = false;
-        if (e.touches.length !== 1) return;
+        if (e.touches.length !== 1 || document.documentElement.dataset.placing !== undefined) return;
         if ((e.target as Element).closest?.("input, textarea, select, [contenteditable], [data-sticker-art], [data-nodrag], .prompt-bar__menu")) return;
         sx = e.touches[0].clientX;
         sy = e.touches[0].clientY;
@@ -279,7 +279,7 @@ export default function Journey({
   const branch: BranchId | null = hash.startsWith(BRANCH_HASH.beyond) ? "beyond" : hash.startsWith(BRANCH_HASH.photography) ? "photography" : null;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (branch || e.altKey || e.metaKey || e.ctrlKey) return;
+      if (branch || e.altKey || e.metaKey || e.ctrlKey || document.documentElement.dataset.placing !== undefined) return;
       const t = e.target as HTMLElement;
       if (t.closest("input, textarea, select, [contenteditable], [role=group], [role=listbox], [role=dialog], .circular-gallery")) return;
       if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
