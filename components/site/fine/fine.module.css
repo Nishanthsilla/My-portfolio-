@@ -155,3 +155,6 @@
 /* the last frame: the room's things catch, one after another */
 .objFire { transform-box: fill-box; transform-origin: 50% 100%; animation-name: objFire; }
 @keyframes objFire { 0%, 79.9% { opacity: 0; transform: scaleY(0.1); } 80% { opacity: 1; transform: scaleY(0.25); } 87% { transform: scaleY(0.85); } 93%, 100% { opacity: 1; transform: scaleY(1); } }
+
+/* the talking mouth opens from its top lip */
+.jaw { transform-box: fill-box; transform-origin: 50% 0; animation-timing-function: linear; }
