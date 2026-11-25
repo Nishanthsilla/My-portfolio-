@@ -90,9 +90,10 @@ const anim = (n: string): CSSProperties => ({ animationName: `fine-${n}` });
 
 /** subtitles for the dialogue (seconds on the cartoon's clock) */
 const SUBS: [number, number, string][] = [
-  [4.35, 5.05, "This is fine."],
-  [5.45, 7.6, "I'm okay with the events that are unfolding currently."],
-  [9.95, 12.35, "That's okay, things are going to be okay."],
+  [4.3, 5.2, "This is fine."],
+  [5.45, 7.65, "I'm okay with the events that are unfolding currently."],
+  [9.95, 10.9, "That's okay."],
+  [11.25, 12.35, "Things are going to be okay."],
 ];
 const SUB_CSS = SUBS.map(([a, b], i) => onOff(`sub${i}`, [[a, b]])).join("");
 
