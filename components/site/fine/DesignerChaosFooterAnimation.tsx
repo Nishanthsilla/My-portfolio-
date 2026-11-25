@@ -205,7 +205,7 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
   );
 
   return (
-    <div ref={root} className={`${f.root} ${className}`} role="img" aria-label="A cartoon dog in a hat calmly drinks coffee while client requests pile up and the room catches fire. He ends up a skeleton in sunglasses, still holding his coffee: this is fine.">
+    <div ref={root} className={`${f.root} ${className}`} role="img" aria-label="A cartoon dog in a hat calmly drinks coffee while client requests pile up and the room catches fire. He ends up a skeleton in sunglasses, still holding his coffee and insisting he is fine.">
       <svg ref={svg} className={f.svg} viewBox="0 0 1440 250" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
         <defs>
           <linearGradient id={wall} x1="0" y1="0" x2="0" y2="1">
@@ -336,7 +336,21 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
                 <path d="M20 79c30-9 66-1 66 17s-34 21-64 14z" fill={FUR} stroke={INK} strokeWidth={3} />
                 <circle cx={17} cy={94} r={14} fill={FUR} />
                 <ellipse cx={84} cy={90} rx={8.5} ry={6.5} fill="#1d120a" />
-                <path d="M50 106q14 5 26-2" fill="none" stroke={INK} strokeWidth={2.5} strokeLinecap="round" />
+                {/* mouth: content smile / flat / nervous wobble / the big forced "I am fine" grin */}
+                <path className={`${f.tl} ${f.mSmile}`} d="M50 106q14 5 26-2" fill="none" stroke={INK} strokeWidth={2.5} strokeLinecap="round" />
+                <path className={`${f.tl} ${f.mFlat}`} d="M52 107q11-2 22 0" fill="none" stroke={INK} strokeWidth={2.5} strokeLinecap="round" />
+                <path className={`${f.tl} ${f.mWavy}`} d="M48 107q3-4 6 0t6 0t6 0t6 0" fill="none" stroke={INK} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+                <g className={`${f.tl} ${f.mGrin}`}>
+                  <path d="M38 98q24 24 48-2q-24 8-48 2z" fill="#fff" stroke={INK} strokeWidth={2.8} strokeLinejoin="round" />
+                  <path d="M47 101v10M55 102v12M63 103v12M71 102v11M79 100v8" stroke={INK} strokeWidth={1.8} />
+                </g>
+                {/* a sweat drop when it gets tense */}
+                <g className={`${f.tl} ${f.sweat}`}>
+                  <g className={`${f.lp} ${f.drip}`}>
+                    <path d="M-16 52c-7 11-10 16-10 20a10 10 0 0 0 20 0c0-4-3-9-10-20z" fill="#5ec4f2" stroke={INK} strokeWidth={2.5} />
+                    <path d="M-20 70a4 4 0 0 0 3 5" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" />
+                  </g>
+                </g>
                 {/* eyes: open (blinking, glancing) / tired / shut */}
                 <g className={`${f.tl} ${f.eOpen}`}>
                   <g className={`${f.lp} ${f.blink}`}>
@@ -348,14 +362,14 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
                     </g>
                   </g>
                 </g>
-                <g className={`${f.tl} ${f.eHalf}`}>
+                <g className={`${f.tl} ${f.eHalf}`}><g className={`${f.tl} ${f.twitch}`}>
                   <circle cx={22} cy={70} r={14} fill="#fff" stroke={INK} strokeWidth={2.5} />
                   <circle cx={48} cy={68} r={13} fill="#fff" stroke={INK} strokeWidth={2.5} />
                   <circle cx={25} cy={76} r={4.4} fill="#111" />
                   <circle cx={50} cy={74} r={4.1} fill="#111" />
                   <path d="M7 71a15 15 0 0 1 30 0z" fill={FUR} stroke={INK} strokeWidth={2.5} />
                   <path d="M34 69a14 14 0 0 1 28 0z" fill={FUR} stroke={INK} strokeWidth={2.5} />
-                </g>
+                </g></g>
                 <g className={`${f.tl} ${f.eShut}`}>
                   <path d="M10 72q12 8 24 0M37 70q11 8 22 0" fill="none" stroke={INK} strokeWidth={3} strokeLinecap="round" />
                 </g>
@@ -452,7 +466,7 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
             <path d="M16 58l-48 36 40-14z" fill="#fff" stroke={INK} strokeWidth={3} strokeLinejoin="round" />
             <ellipse cx={92} cy={42} rx={92} ry={42} fill="#fff" stroke={INK} strokeWidth={3.5} />
             <path d="M6 60l10 16" stroke="#fff" strokeWidth={7} />
-            <text className={f.fine} x={92} y={36} textAnchor="middle">THIS IS</text>
+            <text className={f.fine} x={92} y={36} textAnchor="middle">I AM</text>
             <text className={f.fine} x={92} y={64} textAnchor="middle">FINE.</text>
           </g>
         </g>
