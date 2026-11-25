@@ -428,6 +428,17 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
               {/* the mug sits in front of the arm, the paw wraps round its side */}
               <Mug />
               <circle cx={42} cy={138} r={8} fill={FUR} stroke={INK} strokeWidth={2.5} />
+              {/* burning: the fur chars to soot before he goes to bones (eyes, shades and grin stay on top) */}
+              <g className={`${f.tl} ${f.soot}`}>
+                <ellipse cx={-18} cy={156} rx={38.5} ry={44.5} fill="#2b1b12" />
+                <ellipse cx={10} cy={182} rx={31.5} ry={11.5} fill="#2b1b12" />
+                <path d="M34 186l6 30" stroke="#2b1b12" strokeWidth={9} strokeLinecap="round" />
+                <path d="M-8 132q22 18 46 8" fill="none" stroke="#2b1b12" strokeWidth={11} strokeLinecap="round" />
+                <circle cx={42} cy={138} r={6.8} fill="#2b1b12" />
+                {[[-30, 140], [-8, 170], [-36, 178], [6, 152], [18, 184], [-20, 196]].map(([x, y], i) => (
+                  <circle key={i} cx={x} cy={y} r={2.6} fill="#ff8a1e" className={`${f.lp} ${f.ember}`} style={{ "--ed": `${0.5 + i * 0.13}s` } as V} />
+                ))}
+              </g>
               {/* head */}
               <g className={`${f.lp} ${f.nod}`}>
                 <path d="M-30 70c-22 8-20 48-6 54 8-8 10-28 14-42z" fill="#c9752a" stroke={INK} strokeWidth={3} strokeLinejoin="round" />
@@ -435,6 +446,14 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
                 <path d="M20 79c30-9 66-1 66 17s-34 21-64 14z" fill={FUR} stroke={INK} strokeWidth={3} />
                 <circle cx={17} cy={94} r={14} fill={FUR} />
                 <ellipse cx={84} cy={90} rx={8.5} ry={6.5} fill="#1d120a" />
+                <g className={`${f.tl} ${f.soot}`}>
+                  <path d="M-30 70c-22 8-20 48-6 54 8-8 10-28 14-42z" fill="#24160e" />
+                  <circle cx={0} cy={86} r={36.5} fill="#2b1b12" />
+                  <path d="M21.5 80.5c30-9 63-1 63 15.5s-33 20-62 13z" fill="#2b1b12" />
+                  {[[-18, 70], [6, 104], [30, 86]].map(([x, y], i) => (
+                    <circle key={i} cx={x} cy={y} r={2.3} fill="#ff8a1e" className={`${f.lp} ${f.ember}`} style={{ "--ed": `${0.6 + i * 0.17}s` } as V} />
+                  ))}
+                </g>
                 {/* mouth: content smile / flat / nervous wobble / the big forced "I am fine" grin */}
                 <path className={f.tl} style={anim("mSmile")} d="M50 106q14 5 26-2" fill="none" stroke={INK} strokeWidth={2.5} strokeLinecap="round" />
                 <path className={f.tl} style={anim("mFlat")} d="M52 107q11-2 22 0" fill="none" stroke={INK} strokeWidth={2.5} strokeLinecap="round" />
@@ -488,6 +507,12 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
             </g>
           </g>
 
+          {/* he catches fire: little flames on his hat, shoulders and back (then the puff, then bones) */}
+          <g className={`${f.tl} ${f.onHim}`}>
+            {[[-14, 44, 30], [12, 40, 24], [-44, 126, 34], [-50, 160, 30], [6, 140, 26], [-26, 112, 22], [24, 176, 24]].map(([x, y, h], i) => (
+              <use key={i} href={`#${fl}`} x={x - h * 0.28} y={y - h} width={h * 0.56} height={h} className={`${f.lp} ${f.flick}`} style={{ "--fd": `${0.45 + (i % 3) * 0.12}s`, "--fo": `${-i * 0.2}s` } as V} />
+            ))}
+          </g>
           {/* the skeleton: same pose, same hat, same mug */}
           <g className={`${f.tl} ${f.skel}`}>
             <g className={`${f.lp} ${f.bob}`}>
