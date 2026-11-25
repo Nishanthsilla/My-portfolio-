@@ -68,7 +68,6 @@ const FACE: Record<string, [number, number][]> = {
   mWavy: [[4.95, 5.5]],
   mGrin: [[10.8, 11.2]],
   mTalk: SPEAK,
-  skOpen: [[12.3, 12.5]],
   eOpen: [[0, 3], [4.4, 7.5], [9, 12.5]],
   eHalf: [[3, 4.4], [7.5, 8]],
   eShut: [[8, 9]],
@@ -573,12 +572,6 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
                   </g>
                 </g>
                 <path d="M30 104h48M38 99v10M46 99v10M54 99v10M62 99v10M70 99v10" stroke={INK} strokeWidth={2} />
-                {/* the last frame: his jaw drops wide open (a skeleton's grin, mid-laugh) */}
-                <g className={f.tl} style={anim("skOpen")}>
-                  <path d="M31 104h46c-1 13-11 22-23 22s-22-9-23-22z" fill="#2a160a" stroke={INK} strokeWidth={2} strokeLinejoin="round" />
-                  <path d="M36 121c6 4 30 4 36 0l2 6c-8 5-32 5-40 0z" fill={BONE} stroke={INK} strokeWidth={1.8} strokeLinejoin="round" />
-                  <path d="M42 122v5M48 123v5M54 123v5M60 123v5M66 122v5" stroke={INK} strokeWidth={1.4} />
-                </g>
                 <path d="M-18 104q8 6 16 2" fill="none" stroke={INK} strokeWidth={2} />
                 <Hat />
                 <g className={`${f.tl} ${f.skShades}`}>
