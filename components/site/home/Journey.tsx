@@ -245,7 +245,10 @@ export default function Journey({
   /* ---------- the navbar highlights the scene in view ---------- */
   useEffect(() => {
     dispatchEvent(new CustomEvent(SCENE_EVENT, { detail: SCENES[active].id }));
+    // the page knows which scene is up (the chat face steps aside on the Wall)
+    document.documentElement.dataset.scene = SCENES[active].id;
   }, [active]);
+  useEffect(() => () => void delete document.documentElement.dataset.scene, []);
 
   /* ---------- navbar links (/#about, /#work, /#beyond, /#wall, /#contact) jump to their scene ---------- */
   useEffect(() => {

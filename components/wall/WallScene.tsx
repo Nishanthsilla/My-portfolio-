@@ -34,6 +34,13 @@ export default function WallScene() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- follows the URL (#the-wall)
     if (full) setMounted(true);
   }, [full]);
+  // while the full-screen wall is open, the chat face steps aside
+  useEffect(() => {
+    const html = document.documentElement;
+    if (mounted) html.dataset.wallOpen = "";
+    else delete html.dataset.wallOpen;
+    return () => void delete html.dataset.wallOpen;
+  }, [mounted]);
 
   // open: grow out of the scene
   useLayoutEffect(() => {
