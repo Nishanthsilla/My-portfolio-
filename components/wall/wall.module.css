@@ -553,3 +553,13 @@ img.monkeyArt { width: 96px; height: 96px; object-fit: cover; border-radius: 12p
 @keyframes snack { 0% { opacity: 0; transform: translate(-50%, 16px); } 8%, 88% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 8px); } }
 @media (prefers-reduced-motion: reduce) { .snack, .signAsk, .signAsk2 { animation: none; } }
 .wall .signInput:focus-visible { outline: none; }
+
+/* zoom control (full-screen wall) */
+.zoomBar {
+  position: absolute; top: 16px; right: 16px; z-index: 30; display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92); box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.zoomBar button { display: grid; place-items: center; min-width: 34px; height: 34px; padding: 0 6px; border: 0; border-radius: 999px; background: transparent; color: #222; cursor: pointer; font: 600 13px/1 var(--font-geist-sans), Arial, sans-serif; transition: background 150ms; }
+.zoomBar button:hover { background: rgba(0, 0, 0, 0.06); }
+.zoomPct { min-width: 52px !important; font-variant-numeric: tabular-nums; }

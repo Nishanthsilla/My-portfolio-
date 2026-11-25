@@ -175,10 +175,41 @@ export default function WallApp({
     p.y = clamp(p.y, Math.min(0, v.clientHeight - WORLD.h * z), 0);
     b.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0) scale(${z})`;
   }, []);
+  /* ---------- zoom (full screen): pinch, ctrl/⌘ + wheel or trackpad pinch, and the −/+ buttons ---------- */
+  const [zoomPct, setZoomPct] = useState(100);
+  const startZoom = useRef(1);
+  const pinching = useRef(false);
+  const zoomAt = useCallback(
+    (cx: number, cy: number, factor: number) => {
+      const v = scroller.current;
+      if (!v) return;
+      const r = v.getBoundingClientRect();
+      const z0 = zoom.current;
+      const minZ = Math.max(v.clientWidth / WORLD.w, v.clientHeight / WORLD.h);
+      const z1 = clamp(z0 * factor, minZ, startZoom.current * 2); // up to 200% of the starting view
+      if (z1 === z0) return;
+      // keep the point under the fingers / cursor where it is
+      const wx = (cx - r.left - pan.current.x) / z0, wy = (cy - r.top - pan.current.y) / z0;
+      zoom.current = z1;
+      pan.current = { x: cx - r.left - wx * z1, y: cy - r.top - wy * z1 };
+      applyPan();
+      setZoomPct(Math.round((z1 / startZoom.current) * 100));
+    },
+    [applyPan],
+  );
+  const zoomBy = (factor: number) => {
+    const v = scroller.current;
+    if (!v) return;
+    const r = v.getBoundingClientRect();
+    zoomAt(r.left + r.width / 2, r.top + r.height / 2, factor);
+  };
+  const zoomReset = () => zoomBy(startZoom.current / zoom.current);
+
   useEffect(() => {
     const v = scroller.current;
     if (!v) return;
     zoom.current = embedded ? 0.78 : v.clientWidth < 640 ? 0.82 : 1;
+    startZoom.current = zoom.current;
     // start in the middle of the wall
     pan.current = { x: (v.clientWidth - WORLD.w * zoom.current) / 2, y: (v.clientHeight - WORLD.h * zoom.current) / 2 };
     applyPan();
@@ -188,16 +219,47 @@ export default function WallApp({
     const wheel = (e: WheelEvent) => {
       if (embedded) return;
       e.preventDefault();
+      // trackpad pinch arrives as ctrl + wheel; ctrl/⌘ + mouse wheel zooms too
+      if (e.ctrlKey || e.metaKey) {
+        zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0125)));
+        return;
+      }
       pan.current.x -= e.shiftKey && !e.deltaX ? e.deltaY : e.deltaX;
       pan.current.y -= e.shiftKey && !e.deltaX ? 0 : e.deltaY;
       applyPan();
     };
     v.addEventListener("wheel", wheel, { passive: false });
+    // two fingers: pinch to zoom (around the point between them)
+    let d0 = 0;
+    const dist = (t: TouchList) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+    const tStart = (e: TouchEvent) => {
+      if (embedded || e.touches.length !== 2) return;
+      pinching.current = true;
+      d0 = dist(e.touches);
+    };
+    const tMove = (e: TouchEvent) => {
+      if (!pinching.current || e.touches.length !== 2) return;
+      e.preventDefault();
+      const d = dist(e.touches);
+      zoomAt((e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2, d / (d0 || d));
+      d0 = d;
+    };
+    const tEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) pinching.current = false;
+    };
+    v.addEventListener("touchstart", tStart, { passive: true });
+    v.addEventListener("touchmove", tMove, { passive: false });
+    v.addEventListener("touchend", tEnd, { passive: true });
+    v.addEventListener("touchcancel", tEnd, { passive: true });
     return () => {
       ro.disconnect();
       v.removeEventListener("wheel", wheel);
+      v.removeEventListener("touchstart", tStart);
+      v.removeEventListener("touchmove", tMove);
+      v.removeEventListener("touchend", tEnd);
+      v.removeEventListener("touchcancel", tEnd);
     };
-  }, [embedded, applyPan]);
+  }, [embedded, applyPan, zoomAt]);
   const placing = useRef<(cx: number, cy: number) => void>(() => {});
   const panDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
@@ -208,8 +270,15 @@ export default function WallApp({
     const v = e.currentTarget;
     v.setPointerCapture(e.pointerId);
     v.dataset.panning = "";
-    let lx = e.clientX, ly = e.clientY, lt = performance.now(), vx = 0, vy = 0;
+    let lx = e.clientX, ly = e.clientY, lt = performance.now(), vx = 0, vy = 0, pinched = false;
     const move = (ev: PointerEvent) => {
+      if (pinching.current) {
+        pinched = true;
+        lx = ev.clientX;
+        ly = ev.clientY;
+        vx = vy = 0;
+        return;
+      }
       const now = performance.now(), dt = Math.max(8, now - lt);
       const dx = ev.clientX - lx, dy = ev.clientY - ly;
       vx = dx / dt;
@@ -227,6 +296,7 @@ export default function WallApp({
       v.removeEventListener("pointercancel", up);
       delete v.dataset.panning;
       // placing a note: a click (not a drag) sticks it right there
+      if (pinched) return;
       if (isPlacing && ev.type === "pointerup" && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 6) {
         placing.current(ev.clientX, ev.clientY);
         return;
@@ -576,6 +646,17 @@ export default function WallApp({
             <span aria-hidden="true">←</span> Back to portfolio
           </button>
           {(mode === "offline" || mode === "unconfigured") && <p className={w.fabNote}>Posting isn&apos;t connected here yet</p>}
+          <div className={w.zoomBar} role="group" aria-label="Zoom">
+            <button type="button" onClick={() => zoomBy(1 / 1.25)} aria-label="Zoom out" title="Zoom out">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M6 12h12" /></svg>
+            </button>
+            <button type="button" className={w.zoomPct} onClick={zoomReset} title="Reset zoom" aria-label={`Zoom ${zoomPct}%, reset`}>
+              {zoomPct}%
+            </button>
+            <button type="button" onClick={() => zoomBy(1.25)} aria-label="Zoom in" title="Zoom in">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12" /></svg>
+            </button>
+          </div>
           {step === "browse" && (
             <div className={w.fabBar}>
               <span className={w.fabHint}>Drag to look around · pick up any sticker to move it · stickers: Noto Emoji, CC BY 4.0</span>
