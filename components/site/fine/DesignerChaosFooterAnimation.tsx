@@ -324,9 +324,35 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
           <rect x={770} y={160} width={230} height={12} rx={3} fill="#8a4b22" stroke={INK} strokeWidth={3} />
           <path d="M784 172v56M986 172v56" stroke={INK} strokeWidth={7} />
           <path d="M784 172v56M986 172v56" stroke="#8a4b22" strokeWidth={3} />
-          <path d="M834 106l92-4 6 58h-92z" fill="#e3dccb" stroke={INK} strokeWidth={3} strokeLinejoin="round" />
-          <text x={883} y={146} textAnchor="middle" className={f.lapN}>n</text>
-          <path d="M818 160h124" stroke={INK} strokeWidth={4} strokeLinecap="round" />
+          {/* the laptop: open, a design file on screen */}
+          <g>
+            {/* screen glow on the wall */}
+            <ellipse cx={892} cy={118} rx={62} ry={40} fill="#fff7d6" opacity={0.35} />
+            {/* lid */}
+            <path d="M846 147l-8-60c-.4-3 1.6-5.6 4.6-5.6h92c3 0 5.4 2.3 5.6 5.3l3.6 60.3z" fill="#bdb8ae" stroke={INK} strokeWidth={3} strokeLinejoin="round" />
+            <path d="M851 141l-6.4-49c-.2-1.8 1-3.2 2.8-3.2h83.2c1.8 0 3.2 1.4 3.3 3.2l2.8 49z" fill="#1f2433" />
+            {/* the design tool: toolbar, layers, canvas, a frame, the cursor */}
+            <path d="M845.4 92.6h88.4l.5 6h-88.1z" fill="#2c3245" />
+            <circle cx={850.5} cy={95.6} r={1.4} fill="#ff5f57" />
+            <circle cx={855} cy={95.6} r={1.4} fill="#febc2e" />
+            <circle cx={859.5} cy={95.6} r={1.4} fill="#28c840" />
+            <path d="M846.2 99.4h14.5l5.1 41.4h-14.8z" fill="#283044" />
+            {[104, 110, 116, 122].map((y, i) => (
+              <rect key={y} x={849 + i * 0.4} y={y} width={i === 1 ? 7 : 10} height={2.4} rx={1} fill={i === 1 ? "#7b83eb" : "#56607a"} />
+            ))}
+            <path d="M864 103h52l3.5 33h-51.6z" fill="#f2f1ec" />
+            <path d="M872 109h22l1.6 16h-22.1z" fill="#ff4938" opacity={0.9} />
+            <path d="M898 110h14l1 9h-14.3z" fill="#ffd166" />
+            <path d="M899 122h14l.8 8h-14.1z" fill="#7b83eb" />
+            <path d="M906 124l5 11 1.6-4.6 4.4-1.6z" fill="#111" stroke="#fff" strokeWidth={0.8} />
+            {/* base: keyboard deck, keys, trackpad */}
+            <path d="M816 160l30-13h102l20 13z" fill="#d8d4cb" stroke={INK} strokeWidth={3} strokeLinejoin="round" />
+            {[0, 1, 2].map((r) => (
+              <path key={r} d={`M${846 - r * 7} ${149.5 + r * 2.8}h${96 + r * 9}`} stroke="#8f8a80" strokeWidth={1.6} strokeDasharray="5 2" />
+            ))}
+            <path d="M876 157.4h32l2 2.4h-36z" fill="#b9b4aa" />
+            <path d="M814 160h156" stroke={INK} strokeWidth={4} strokeLinecap="round" />
+          </g>
           <rect x={950} y={140} width={40} height={9} fill="#4a7c59" stroke={INK} strokeWidth={2} />
           <rect x={946} y={149} width={46} height={11} fill="#c4452b" stroke={INK} strokeWidth={2} />
           <g className={`${f.tl} ${f.lapFire}`}>
@@ -354,9 +380,10 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
               <path d="M34 186l6 30" stroke={INK} strokeWidth={15} strokeLinecap="round" />
               <path d="M34 186l6 30" stroke={FUR} strokeWidth={9} strokeLinecap="round" />
               <ellipse cx={46} cy={221} rx={14} ry={6} fill={FUR} stroke={INK} strokeWidth={3} />
-              <Mug />
               <path d="M-8 132q22 18 46 8" fill="none" stroke={INK} strokeWidth={17} strokeLinecap="round" />
               <path d="M-8 132q22 18 46 8" fill="none" stroke={FUR} strokeWidth={11} strokeLinecap="round" />
+              {/* the mug sits in front of the arm, the paw wraps round its side */}
+              <Mug />
               <circle cx={42} cy={138} r={8} fill={FUR} stroke={INK} strokeWidth={2.5} />
               {/* head */}
               <g className={`${f.lp} ${f.nod}`}>
@@ -425,9 +452,9 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
               <path d="M-4 190l38-4 6 30" fill="none" stroke={INK} strokeWidth={9} strokeLinecap="round" strokeLinejoin="round" />
               <path d="M-4 190l38-4 6 30" fill="none" stroke={BONE} strokeWidth={4.5} strokeLinecap="round" strokeLinejoin="round" />
               <ellipse cx={46} cy={221} rx={12} ry={5} fill={BONE} stroke={INK} strokeWidth={2.5} />
-              <Mug />
               <path d="M-12 128q22 22 50 12" fill="none" stroke={INK} strokeWidth={9} strokeLinecap="round" />
               <path d="M-12 128q22 22 50 12" fill="none" stroke={BONE} strokeWidth={4.5} strokeLinecap="round" />
+              <Mug />
               <circle cx={40} cy={136} r={4} fill={BONE} stroke={INK} strokeWidth={2} />
               <circle cx={41} cy={145} r={4} fill={BONE} stroke={INK} strokeWidth={2} />
               <g className={`${f.lp} ${f.nod}`}>
