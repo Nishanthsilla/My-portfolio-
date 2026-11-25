@@ -563,3 +563,5 @@ img.monkeyArt { width: 96px; height: 96px; object-fit: cover; border-radius: 12p
 .zoomBar button { display: grid; place-items: center; min-width: 34px; height: 34px; padding: 0 6px; border: 0; border-radius: 999px; background: transparent; color: #222; cursor: pointer; font: 600 13px/1 var(--font-geist-sans), Arial, sans-serif; transition: background 150ms; }
 .zoomBar button:hover { background: rgba(0, 0, 0, 0.06); }
 .zoomPct { min-width: 52px !important; font-variant-numeric: tabular-nums; }
+.zoomBarEmbedded { top: 14px; right: 70px; transform: scale(0.92); transform-origin: right top; }
+@media (max-width: 640px) { .zoomBarEmbedded { right: 64px; } }

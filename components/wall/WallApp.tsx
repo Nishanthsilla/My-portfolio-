@@ -10,6 +10,7 @@ import { LIMITS, type PublicNote } from "@/lib/wall/types";
 import { addMine, loadDraft, loadLayout, loadMine, pruneMine, saveDraft, saveLayout, type MyNote, type Spot } from "@/lib/wall/local";
 import ElasticSticker from "./ElasticSticker";
 import PromptBar from "./PromptBar";
+import Celebration from "./Celebration";
 import { Gif01Icon, Note01Icon, StickerIcon, TextFontIcon } from "@hugeicons/core-free-icons";
 import { sfx } from "@/lib/sound/engine";
 import { uiSound } from "@/lib/sound/ui";
@@ -217,7 +218,7 @@ export default function WallApp({
     ro.observe(v);
     // full screen: the wheel / trackpad moves around the canvas (embedded, it scrolls the page as usual)
     const wheel = (e: WheelEvent) => {
-      if (embedded) return;
+      if (embedded && !(e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
       // trackpad pinch arrives as ctrl + wheel; ctrl/⌘ + mouse wheel zooms too
       if (e.ctrlKey || e.metaKey) {
@@ -233,7 +234,7 @@ export default function WallApp({
     let d0 = 0;
     const dist = (t: TouchList) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
     const tStart = (e: TouchEvent) => {
-      if (embedded || e.touches.length !== 2) return;
+      if (e.touches.length !== 2) return;
       pinching.current = true;
       d0 = dist(e.touches);
     };
@@ -646,17 +647,6 @@ export default function WallApp({
             <span aria-hidden="true">←</span> Back to portfolio
           </button>
           {(mode === "offline" || mode === "unconfigured") && <p className={w.fabNote}>Posting isn&apos;t connected here yet</p>}
-          <div className={w.zoomBar} role="group" aria-label="Zoom">
-            <button type="button" onClick={() => zoomBy(1 / 1.25)} aria-label="Zoom out" title="Zoom out">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M6 12h12" /></svg>
-            </button>
-            <button type="button" className={w.zoomPct} onClick={zoomReset} title="Reset zoom" aria-label={`Zoom ${zoomPct}%, reset`}>
-              {zoomPct}%
-            </button>
-            <button type="button" onClick={() => zoomBy(1.25)} aria-label="Zoom in" title="Zoom in">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12" /></svg>
-            </button>
-          </div>
           {step === "browse" && (
             <div className={w.fabBar}>
               <span className={w.fabHint}>Drag to look around · pick up any sticker to move it · stickers: Noto Emoji, CC BY 4.0</span>
@@ -668,6 +658,17 @@ export default function WallApp({
         </>
       )}
 
+      <div className={`${w.zoomBar} ${embedded ? w.zoomBarEmbedded : ""}`} role="group" aria-label="Zoom">
+        <button type="button" onClick={() => zoomBy(1 / 1.25)} aria-label="Zoom out" title="Zoom out">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M6 12h12" /></svg>
+        </button>
+        <button type="button" className={w.zoomPct} onClick={zoomReset} title="Reset zoom" aria-label={`Zoom ${zoomPct}%, reset`}>
+          {zoomPct}%
+        </button>
+        <button type="button" onClick={() => zoomBy(1.25)} aria-label="Zoom in" title="Zoom in">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12" /></svg>
+        </button>
+      </div>
       <div ref={scroller} className={`${w.scroller} ${step === "place" ? w.scrollerPlacing : ""}`} onPointerDown={panDown} data-placing={step === "place" ? "" : undefined}>
         <div ref={board} className={w.board} style={{ width: WORLD.w, height: WORLD.h }} aria-label="The wall">
           {DECOR.map((d, i) => {
@@ -750,7 +751,7 @@ export default function WallApp({
         </>
       )}
 
-      {step === "sent" && <ThanksSnack onDone={() => setStep("browse")} />}
+      {step === "sent" && <Celebration offline={mode === "offline"} onSee={() => setStep("browse")} />}
 
       {/* the composer: a minimal prompt bar — words on top, a slim row of tools below */}
       {step === "compose" && draft && seen && (
@@ -916,15 +917,3 @@ export default function WallApp({
 const localId = () => `local-${Date.now()}`;
 const nowIso = () => new Date().toISOString();
 
-/** "Thank you for the note" — a small snackbar at the bottom of the wall, gone on its own */
-function ThanksSnack({ onDone }: { onDone: () => void }) {
-  useEffect(() => {
-    const id = window.setTimeout(onDone, 3600);
-    return () => clearTimeout(id);
-  }, [onDone]);
-  return (
-    <div className={w.snack} role="status" aria-live="polite">
-      <span aria-hidden="true">💛</span> Thank you for the note!
-    </div>
-  );
-}
