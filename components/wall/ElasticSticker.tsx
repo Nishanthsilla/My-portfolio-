@@ -7,6 +7,8 @@ import { useEffect, useRef, type KeyboardEvent, type PointerEvent as RPointerEve
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const X = [0.04, 0.96], Y = [0.03, 0.97];
 const reduced = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+/** touch: how long a finger rests on a note before it lifts off the wall */
+export const HOLD_MS = 1000;
 
 /**
  * A sticker you can pick up and move anywhere on the wall. It behaves like a
@@ -14,6 +16,9 @@ const reduced = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-
  * into the direction you drag it, and wobbles back into place when you let go.
  * Position is wall-relative (0–1), so it holds at any screen size.
  * Keyboard: arrow keys move it (Shift = further).
+ *
+ * Touch: a swipe or a two-finger pinch never moves a note. Hold a finger on it for a
+ * second and it lifts off the wall (bigger, with a deep shadow); then it follows the finger.
  */
 export default function ElasticSticker({
   board,
@@ -52,25 +57,63 @@ export default function ElasticSticker({
     if (e.button !== 0 || (e.target as HTMLElement).closest("[data-nodrag]")) return;
     const el = outer.current, art = inner.current, b = board.current;
     if (!el || !art || !b) return;
-    const rect = b.getBoundingClientRect();
-    const ox = e.clientX - (rect.left + x * rect.width), oy = e.clientY - (rect.top + y * rect.height);
-    const sx = e.clientX, sy = e.clientY;
+    const touch = e.pointerType === "touch";
+    const sx = e.clientX, sy = e.clientY, id = e.pointerId;
     const calm = reduced();
-    let moved = false, lastX = e.clientX, lastT = performance.now(), nx = x, ny = y;
+    let moved = false, live = !touch, lastX = e.clientX, lastT = performance.now(), nx = x, ny = y, ox = 0, oy = 0;
     const tilt = gsap.quickTo(art, "rotation", { duration: 0.45, ease: "power3.out" });
     const skew = gsap.quickTo(art, "skewX", { duration: 0.5, ease: "power3.out" });
-    el.setPointerCapture(e.pointerId);
+    let hold = 0;
 
+    const lift = (cx: number, cy: number) => {
+      const rect = b.getBoundingClientRect();
+      ox = cx - (rect.left + x * rect.width);
+      oy = cy - (rect.top + y * rect.height);
+      moved = true;
+      dragging.current = true;
+      b.dataset.holding = "";
+      el.dataset.lifted = "";
+      el.style.zIndex = "1000000"; // above everything while held, own notes included
+      sfx("pick");
+      // lifts off the wall: a quick stretch up
+      if (!calm) gsap.to(art, { scale: 1.12, duration: 0.35, ease: "back.out(3)", overwrite: true });
+    };
+    const finish = (drop: boolean) => {
+      clearTimeout(hold);
+      removeEventListener("pointermove", move);
+      removeEventListener("pointerup", up);
+      removeEventListener("pointercancel", cancel);
+      removeEventListener("touchstart", twoFingers);
+      removeEventListener("touchmove", noScroll);
+      delete el.dataset.holding;
+      if (!moved) {
+        if (touch && !calm) gsap.to(art, { scale: 1, duration: 0.25, ease: "power2.out", overwrite: true });
+        return;
+      }
+      dragging.current = false;
+      delete b.dataset.holding;
+      delete el.dataset.lifted;
+      el.style.zIndex = "";
+      // let go: it settles back with an elastic wobble
+      gsap.to(art, { rotation, skewX: 0, scale: 1, duration: calm ? 0 : 1.15, ease: "elastic.out(1.15, 0.32)", overwrite: true });
+      sfx("drop");
+      if (drop) onMove(nx, ny);
+      else {
+        el.style.left = `${x * 100}%`;
+        el.style.top = `${y * 100}%`;
+      }
+    };
     const move = (ev: PointerEvent) => {
+      if (ev.pointerId !== id) return;
+      if (!live) {
+        // touch, still waiting: moving the finger means a swipe or a pan, not a pick-up
+        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 8) finish(false);
+        return;
+      }
       if (!moved) {
         if (Math.hypot(ev.clientX - sx, ev.clientY - sy) < 4) return;
-        moved = true;
-        dragging.current = true;
-        el.dataset.lifted = "";
-        el.style.zIndex = "1000000"; // above everything while held, own notes included
-        sfx("pick");
-        // pick it up: a quick stretch
-        if (!calm) gsap.to(art, { scale: 1.08, duration: 0.35, ease: "back.out(3)" });
+        lift(sx, sy);
+        el.setPointerCapture(id);
       }
       ev.preventDefault();
       const r = b.getBoundingClientRect();
@@ -87,22 +130,38 @@ export default function ElasticSticker({
         skew(clamp(-vx * 5, -9, 9));
       }
     };
-    const up = () => {
-      el.removeEventListener("pointermove", move);
-      el.removeEventListener("pointerup", up);
-      el.removeEventListener("pointercancel", up);
-      if (!moved) return;
-      dragging.current = false;
-      delete el.dataset.lifted;
-      el.style.zIndex = "";
-      // let go: it snaps back with an elastic wobble
-      gsap.to(art, { rotation, skewX: 0, scale: 1, duration: calm ? 0 : 1.15, ease: "elastic.out(1.15, 0.32)", overwrite: true });
-      sfx("drop");
-      onMove(nx, ny);
+    const up = (ev: PointerEvent) => {
+      if (ev.pointerId === id) finish(true);
     };
-    el.addEventListener("pointermove", move);
-    el.addEventListener("pointerup", up);
-    el.addEventListener("pointercancel", up);
+    const cancel = (ev: PointerEvent) => {
+      if (ev.pointerId === id) finish(moved);
+    };
+    // a second finger means a pinch: nothing gets picked up (a held note is put back down)
+    const twoFingers = (ev: TouchEvent) => {
+      if (ev.touches.length > 1) finish(false);
+    };
+    // once a note is up, the finger drags the note, not the page
+    const noScroll = (ev: TouchEvent) => {
+      if (live && ev.cancelable) ev.preventDefault();
+    };
+
+    addEventListener("pointermove", move);
+    addEventListener("pointerup", up);
+    addEventListener("pointercancel", cancel);
+    if (touch) {
+      addEventListener("touchstart", twoFingers, { passive: true });
+      addEventListener("touchmove", noScroll, { passive: false });
+      el.dataset.holding = "";
+      if (!calm) gsap.to(art, { scale: 1.04, duration: HOLD_MS / 1000, ease: "power1.in", overwrite: true });
+      hold = window.setTimeout(() => {
+        live = true;
+        lift(sx, sy);
+        try {
+          el.setPointerCapture(id);
+        } catch {}
+        navigator.vibrate?.(12);
+      }, HOLD_MS);
+    }
   };
 
   const key = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -123,7 +182,7 @@ export default function ElasticSticker({
       tabIndex={0}
       role="group"
       aria-roledescription="movable sticker"
-      aria-label={`${label}. Drag, or use the arrow keys, to move it.`}
+      aria-label={`${label}. Drag (on a phone: hold, then drag), or use the arrow keys, to move it.`}
       onPointerDown={down}
       onKeyDown={key}
     >

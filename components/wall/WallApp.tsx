@@ -178,6 +178,17 @@ export default function WallApp({
   }, []);
   /* ---------- zoom (full screen): pinch, ctrl/⌘ + wheel or trackpad pinch, and the −/+ buttons ---------- */
   const [zoomPct, setZoomPct] = useState(100);
+  // phones only: a hint at the bottom of the wall, until a note has been moved once
+  const [showHoldHint, setShowHoldHint] = useState(false);
+  useEffect(() => {
+    let seen = false;
+    try {
+      seen = localStorage.getItem("wall.holdHint") === "1";
+    } catch {}
+    const coarse = matchMedia("(pointer: coarse)").matches;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time read of the device + browser storage
+    setShowHoldHint(coarse && !seen);
+  }, []);
   const startZoom = useRef(1);
   const pinching = useRef(false);
   const zoomAt = useCallback(
@@ -266,13 +277,20 @@ export default function WallApp({
     if (e.button !== 0) return;
     const sx = e.clientX, sy = e.clientY;
     const isPlacing = e.currentTarget.dataset.placing !== undefined;
-    if (!isPlacing && (e.target as HTMLElement).closest("[data-sticker-art], button, input, textarea, [data-nodrag]")) return;
+    const onNote = !!(e.target as HTMLElement).closest("[data-sticker-art]");
+    if (!isPlacing && (e.target as HTMLElement).closest("button, input, textarea, [data-nodrag]")) return;
+    if (!isPlacing && onNote && e.pointerType === "mouse") return; // mouse: notes drag straight away
     if (embedded && e.pointerType !== "mouse" && !isPlacing) return; // phones: the page swipes; "Explore canvas" opens it full screen
     const v = e.currentTarget;
     v.setPointerCapture(e.pointerId);
     v.dataset.panning = "";
     let lx = e.clientX, ly = e.clientY, lt = performance.now(), vx = 0, vy = 0, pinched = false;
     const move = (ev: PointerEvent) => {
+      // a held note has taken over this finger
+      if (board.current?.dataset.holding !== undefined) {
+        pinched = true;
+        return;
+      }
       if (pinching.current) {
         pinched = true;
         lx = ev.clientX;
@@ -295,7 +313,9 @@ export default function WallApp({
       v.removeEventListener("pointermove", move);
       v.removeEventListener("pointerup", up);
       v.removeEventListener("pointercancel", up);
+      v.removeEventListener("lostpointercapture", up);
       delete v.dataset.panning;
+      if (board.current?.dataset.holding !== undefined) return; // a note took this finger
       // placing a note: a click (not a drag) sticks it right there
       if (pinched) return;
       if (isPlacing && ev.type === "pointerup" && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 6) {
@@ -318,6 +338,7 @@ export default function WallApp({
     v.addEventListener("pointermove", move);
     v.addEventListener("pointerup", up);
     v.addEventListener("pointercancel", up);
+    v.addEventListener("lostpointercapture", up);
   };
 
   // GIF search (GIPHY, through our server): trending first, then whatever is typed
@@ -404,13 +425,20 @@ export default function WallApp({
 
   /* ---------- the visitor's own arrangement (this device only) ---------- */
   const spot = (id: string, x: number, y: number) => layout[id] ?? { x, y, z: 1 };
-  const moveTo = (id: string) => (x: number, y: number) =>
+  const moveTo = (id: string) => (x: number, y: number) => {
+    if (showHoldHint) {
+      setShowHoldHint(false); // they've got it
+      try {
+        localStorage.setItem("wall.holdHint", "1");
+      } catch {}
+    }
     setLayout((l) => {
       const top = Object.values(l).reduce((m, v) => Math.max(m, v.z), 1);
       const next = { ...l, [id]: { x, y, z: top + 1 } };
       saveLayout(next);
       return next;
     });
+  };
 
   /* ---------- writing a note ---------- */
   const visibleSpot = () => {
@@ -751,6 +779,12 @@ export default function WallApp({
         </>
       )}
 
+      {/* phones: how to move a note (until they've done it once) */}
+      {showHoldHint && (step === "browse" || step === "compose") && (
+        <p className={`${w.holdHint} ${embedded ? "" : w.holdHintFull}`} aria-hidden="true">
+          <span>✋</span> Hold a note for a second to move it
+        </p>
+      )}
       {step === "sent" && <Celebration offline={mode === "offline"} onSee={() => setStep("browse")} />}
 
       {/* the composer: a minimal prompt bar — words on top, a slim row of tools below */}
