@@ -20,6 +20,8 @@ import w from "./wall.module.css";
 type Mode = "loading" | "sqlite" | "postgres" | "unconfigured" | "offline";
 type Step = "browse" | "compose" | "place" | "sent";
 type Draft = { sticker: string; font: string; shape: string; color: string; x: number; y: number; rotation: number };
+/** a note written on the homepage, carried into the full-screen wall to be stuck on */
+export type Handoff = { draft: Draft; msg: string; who: string; startedAt: number };
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 /** the canvas, in px — bigger than any screen, so there's always room to stick another note */
@@ -81,6 +83,8 @@ function Doodle({ kind }: { kind: (typeof SCRIBBLES)[number]["doodle"] }) {
 export default function WallApp({
   onClose,
   compose = false,
+  onHandoff,
+  handoff,
   embedded = false,
   onExpand,
   onCompose,
@@ -88,6 +92,10 @@ export default function WallApp({
 }: {
   onClose?: () => void;
   compose?: boolean;
+  /** homepage: a finished note goes to the full-screen wall to be placed */
+  onHandoff?: (h: Handoff) => void;
+  /** full screen: a note handed over from the homepage, ready to place */
+  handoff?: Handoff;
   /** inside the homepage journey (scene 4): fits its scene, doesn't lock the page */
   embedded?: boolean;
   onExpand?: () => void;
@@ -282,7 +290,14 @@ export default function WallApp({
     /* eslint-disable react-hooks/set-state-in-effect -- one-time sync from browser storage */
     setMine(loadMine());
     setLayout(loadLayout());
-    if (saved?.draft && !embedded) {
+    if (handoff && !embedded) {
+      // straight from the homepage: the note is in hand, ready to stick
+      setDraft(handoff.draft);
+      setMsg(handoff.msg);
+      setWho(handoff.who);
+      setStartedAt(handoff.startedAt || Date.now());
+      setStep("place");
+    } else if (saved?.draft && !embedded) {
       setDraft({ ...saved.draft, font: saved.draft.font ?? DEFAULT_FONT, shape: saved.draft.shape ?? DEFAULT_SHAPE, color: saved.draft.color ?? DEFAULT_COLOR });
       setMsg(saved.message);
       setWho(saved.name || "");
@@ -741,6 +756,12 @@ export default function WallApp({
                 setAskName((n) => n + 1);
                 nameRef.current?.focus({ preventScroll: true });
                 requestAnimationFrame(() => nameRef.current?.focus({ preventScroll: true }));
+                return;
+              }
+              // homepage: the wall opens full screen with the note in hand
+              if (embedded && onHandoff && draft && valid) {
+                setPanel(null);
+                onHandoff({ draft, msg, who, startedAt });
                 return;
               }
               toPlace();

@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useHashLayer } from "@/components/site/home/useHashLayer";
-import WallApp from "./WallApp";
+import WallApp, { type Handoff } from "./WallApp";
 import w from "./wall.module.css";
 
 const EASE = "cubic-bezier(0.7, 0, 0.2, 1)";
@@ -18,7 +18,8 @@ export default function WallScene() {
   const { hash, open, close } = useHashLayer();
   const full = hash.startsWith("the-wall");
   const [mounted, setMounted] = useState(false);
-  const [gen, setGen] = useState(0); // remount the embedded wall after full screen (it re-reads the visitor's layout)
+  const [gen, setGen] = useState(0);
+  const [handoff, setHandoff] = useState<Handoff | undefined>(); // a note written here, placed full screen // remount the embedded wall after full screen (it re-reads the visitor's layout)
   const slot = useRef<HTMLDivElement>(null);
   const layer = useRef<HTMLDivElement>(null);
 
@@ -55,6 +56,7 @@ export default function WallScene() {
     const done = () => {
       setMounted(false);
       setGen((g) => g + 1);
+      setHandoff(undefined);
     };
     if (!el || calm()) return done();
     const a = el.animate([{ clipPath: "inset(0px 0px 0px 0px round 0px)" }, { clipPath: from() }], { duration: 540, easing: EASE, fill: "forwards" });
@@ -70,12 +72,20 @@ export default function WallScene() {
         <p className={w.sceneLine}>A thought, a note, or just a little sticker. I&apos;d love to see what you leave.</p>
       </div>
       <div ref={slot} className={w.sceneWall}>
-        <WallApp key={gen} embedded onExpand={() => open("the-wall")} />
+        <WallApp
+          key={gen}
+          embedded
+          onExpand={() => open("the-wall")}
+          onHandoff={(h) => {
+            setHandoff(h);
+            open("the-wall/place");
+          }}
+        />
       </div>
       {mounted &&
         createPortal(
           <div ref={layer} className={w.fullLayer}>
-            <WallApp onClose={close} compose={hash === "the-wall/note"} />
+            <WallApp onClose={close} compose={hash === "the-wall/note"} handoff={hash === "the-wall/place" ? handoff : undefined} />
           </div>,
           document.body,
         )}
