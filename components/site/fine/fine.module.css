@@ -143,3 +143,15 @@
   66% { transform: translate(0.8px, -0.6px); } 66.4% { transform: translate(-0.8px, 0.4px); } 66.8% { transform: none; }
   68.6% { transform: translate(0.9px, -0.5px); } 69% { transform: translate(-0.7px, 0.5px); } 69.4%, 100% { transform: none; }
 }
+
+/* the incoming call */
+.callInitial { font: 800 14px/1 var(--font-geist-sans), Arial, sans-serif; fill: #fff; }
+.callName { font: 700 14px/1 var(--font-geist-sans), Arial, sans-serif; fill: #f4f4f5; }
+.callSub { font: 500 12px/1 var(--font-geist-sans), Arial, sans-serif; fill: #a1a1aa; }
+.ring { transform-box: fill-box; transform-origin: 50% 50%; animation: ring 0.5s ease-in-out infinite; }
+@keyframes ring { 0%, 100% { transform: rotate(0); } 15% { transform: rotate(-2.5deg); } 30% { transform: rotate(2.5deg); } 45% { transform: rotate(-1.5deg); } 60% { transform: rotate(1deg); } 75% { transform: rotate(0); } }
+@media (prefers-reduced-motion: reduce) { .ring { animation: none; } }
+
+/* the last frame: the room's things catch, one after another */
+.objFire { transform-box: fill-box; transform-origin: 50% 100%; animation-name: objFire; }
+@keyframes objFire { 0%, 79.9% { opacity: 0; transform: scaleY(0.1); } 80% { opacity: 1; transform: scaleY(0.25); } 87% { transform: scaleY(0.85); } 93%, 100% { opacity: 1; transform: scaleY(1); } }

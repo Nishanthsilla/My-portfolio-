@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, type CSSProperties, type ReactNode } from "react";
-import { notifySound, primeNotify, type Notify } from "@/lib/sound/notify";
+import { fireSound, notifySound, primeNotify, type Notify } from "@/lib/sound/notify";
 import f from "./fine.module.css";
 
 /**
@@ -41,6 +41,19 @@ function flames(seed: number, from: number, to: number, step: number, base: numb
   }
   return out;
 }
+
+/** the last frame: everything in the room is burning (he isn't bothered) — [base x, base y, flame height] per object */
+const BURNING: { name: string; at: number; flames: [number, number, number][] }[] = [
+  { name: "window", at: 0.2, flames: [[-60, 34, 40], [-22, 28, 54], [10, 36, 38]] },
+  { name: "shelf", at: 0.05, flames: [[232, 46, 36], [262, 40, 46], [298, 46, 32], [332, 44, 38]] },
+  { name: "frame", at: 0, flames: [[446, 38, 42], [470, 30, 56], [494, 40, 36]] },
+  { name: "plant", at: 0.3, flames: [[558, 104, 42], [586, 98, 50]] },
+  { name: "laptop", at: 0, flames: [[858, 106, 58], [886, 102, 76], [916, 108, 52]] },
+  { name: "books", at: 0.15, flames: [[954, 142, 34], [980, 144, 30]] },
+  { name: "table", at: 0.25, flames: [[792, 162, 36], [988, 162, 32]] },
+  { name: "clock", at: 0.1, flames: [[1118, 50, 32], [1144, 48, 40]] },
+  { name: "poster", at: 0.35, flames: [[1218, 46, 42], [1246, 40, 56], [1272, 48, 36]] },
+];
 
 const FIRE = {
   left: flames(11, 360, 600, 26, 230, 26, 58),
@@ -176,17 +189,31 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
     const ro = new ResizeObserver(fit);
     ro.observe(s);
     // plays once, when most of it is on screen; loops (flicker, steam) only run while visible
+    const html = document.documentElement;
+    const calm = matchMedia("(prefers-reduced-motion: reduce)");
+    let fire: { stop: () => void } | null = null;
     const io = new IntersectionObserver(
       ([e]) => {
         el.classList.toggle(f.vis, e.isIntersecting);
-        if (e.intersectionRatio >= 0.55) el.classList.add(f.play);
+        if (e.intersectionRatio >= 0.55 && !el.classList.contains(f.play)) {
+          el.classList.add(f.play);
+          // the fire's sound starts with the cartoon (frame 0)
+          if (!calm.matches) fire = fireSound();
+        }
+        // the chat face steps aside so the cartoon is clear
+        if (e.isIntersecting) html.dataset.footerFine = "";
+        else delete html.dataset.footerFine;
+        // scrolled away: the fire's sound dies down (the cartoon pauses too)
+        if (!e.isIntersecting && fire) {
+          fire.stop();
+          fire = null;
+        }
       },
       { threshold: [0, 0.55] },
     );
     io.observe(el);
     // a notification sound as each message pops in (not with reduced motion: the frames jump straight to the end)
     primeNotify();
-    const calm = matchMedia("(prefers-reduced-motion: reduce)");
     const onStart = (e: AnimationEvent) => {
       const kind = (e.target as Element).getAttribute?.("data-sfx") as Notify | null;
       if (kind && !calm.matches) notifySound(kind);
@@ -196,6 +223,8 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
       el.removeEventListener("animationstart", onStart);
       ro.disconnect();
       io.disconnect();
+      fire?.stop();
+      delete html.dataset.footerFine;
     };
   }, []);
 
@@ -440,6 +469,13 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
           ))}
         </g>
 
+        {/* the last frame: the laptop, the table, the shelf, the frame, the clock, the poster — all burning */}
+        {BURNING.map((o) => (
+          <g key={o.name} className={`${f.tl} ${f.objFire}`} style={{ animationDelay: `${o.at}s` }}>
+            {o.flames.map(([x, y, h], i) => flame({ x, y, w: h * 0.55, h, d: 0.5 + ((i * 7 + o.name.length) % 5) * 0.08, o: -i * 0.3 }, i))}
+          </g>
+        ))}
+
         {/* the fire in front, at the end the whole room */}
         <g className={`${f.tl} ${f.grow} ${f.gFront}`}>{FIRE.front.map(flame)}</g>
 
@@ -460,6 +496,23 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
         <Sticky x={400} y={20} mx={488} my={-114} r={-7} t={8} d={1} lines={["The CEO has", "a small", "suggestion."]} w={124} />
         <Sticky x={820} y={8} mx={650} my={-120} r={4} t={8.12} d={0.88} lines={["Let's discuss", "in another", "meeting."]} w={124} />
         <Sticky x={1000} y={30} mx={810} my={-104} r={8} t={8.24} d={0.76} lines={["Actually, can", "we go back", "to v1? 😅"]} w={124} />
+        {/* the client calls (06–07): a ringing card */}
+        <g className={f.pos} style={{ "--x": 1150, "--y": 28, "--mx": 768, "--my": 4 } as V}>
+          <g className={`${f.tl} ${f.pop}`} style={{ "--t": 7.45, "--d": 1.45 } as V} data-sfx="call">
+            <g className={`${f.lp} ${f.ring}`}>
+              <rect x={4} y={5} width={186} height={56} rx={14} fill={INK} />
+              <rect width={186} height={56} rx={14} fill="#2b2a33" stroke={INK} strokeWidth={2.5} />
+              <circle cx={28} cy={28} r={15} fill="#7b83eb" />
+              <text x={28} y={33} textAnchor="middle" className={f.callInitial}>C</text>
+              <text className={f.callName} x={52} y={24}>Client</text>
+              <text className={f.callSub} x={52} y={41}>Incoming call…</text>
+              <circle cx={140} cy={28} r={12} fill="#e5484d" />
+              <path d="M134 29.5c3-2.4 9-2.4 12 0l-1.4 2.4-2.6-.8v-2c-1.3-.4-2.7-.4-4 0v2l-2.6.8z" fill="#fff" />
+              <circle cx={168} cy={28} r={12} fill="#30a46c" />
+              <path d="M163.5 23.5c.8-.8 2-.6 2.5.3l.9 1.6c.3.6.2 1.3-.3 1.7l-.8.7c.6 1.3 1.6 2.3 2.9 2.9l.7-.8c.4-.5 1.1-.6 1.7-.3l1.6.9c.9.5 1.1 1.7.3 2.5-1.3 1.3-3.3 1.5-4.8.5a14 14 0 0 1-4.8-4.8c-1-1.5-.8-3.5.5-4.8z" fill="#fff" />
+            </g>
+          </g>
+        </g>
         {/* 08 */}
         <g className={f.pos} style={{ "--x": 790, "--y": 4, "--mx": 712, "--my": -100 } as V}>
           <g className={`${f.tl} ${f.pop}`} style={{ "--t": 9, "--d": 1 } as V} data-sfx="fine">

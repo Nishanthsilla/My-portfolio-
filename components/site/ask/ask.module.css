@@ -118,8 +118,8 @@ html[data-embed] .sticker { display: none; }
 
 /* on the Wall (homepage scene or full screen) the face and its bubbles step aside, so the prompt bar is free */
 .sticker { transition: opacity 260ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s; }
-:global(html[data-scene="wall"]) .sticker, :global(html[data-wall-open]) .sticker {
+:global(html[data-scene="wall"]) .sticker, :global(html[data-wall-open]) .sticker, :global(html[data-footer-fine]) .sticker {
   opacity: 0; transform: translateY(24px) scale(0.9); pointer-events: none; visibility: hidden;
   transition: opacity 220ms ease, transform 260ms ease, visibility 0s linear 260ms;
 }
-@media (prefers-reduced-motion: reduce) { .sticker, :global(html[data-scene="wall"]) .sticker, :global(html[data-wall-open]) .sticker { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .sticker, :global(html[data-scene="wall"]) .sticker, :global(html[data-wall-open]) .sticker, :global(html[data-footer-fine]) .sticker { transition: none; } }
