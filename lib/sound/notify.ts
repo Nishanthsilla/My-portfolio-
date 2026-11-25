@@ -214,7 +214,7 @@ export function fineSoundtrack(): { stop: () => void } {
   src.start(t0);
   // 11.5 s: the whoosh into ash, on top of the music
   const nodes: AudioScheduledSourceNode[] = [src];
-  const ash = t0 + 11.45;
+  const ash = t0 + 11.75;
   const wh = c.createBufferSource();
   wh.buffer = noise(c);
   const wf = c.createBiquadFilter();

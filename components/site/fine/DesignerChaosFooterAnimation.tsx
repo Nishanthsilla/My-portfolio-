@@ -68,6 +68,7 @@ const FACE: Record<string, [number, number][]> = {
   mWavy: [[4.95, 5.5]],
   mGrin: [[10.8, 11.2]],
   mTalk: SPEAK,
+  skOpen: [[12.3, 12.5]],
   eOpen: [[0, 3], [4.4, 7.5], [9, 12.5]],
   eHalf: [[3, 4.4], [7.5, 8]],
   eShut: [[8, 9]],
@@ -428,6 +429,20 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
               {/* the mug sits in front of the arm, the paw wraps round its side */}
               <Mug />
               <circle cx={42} cy={138} r={8} fill={FUR} stroke={INK} strokeWidth={2.5} />
+              {/* under the fur: cartoon muscle (anatomy-chart style), shown once the soot flakes off */}
+              <g className={`${f.tl} ${f.muscle}`}>
+                <ellipse cx={-18} cy={156} rx={38.5} ry={44.5} fill="#b8443a" />
+                <ellipse cx={10} cy={182} rx={31.5} ry={11.5} fill="#b8443a" />
+                <path d="M34 186l6 30" stroke="#b8443a" strokeWidth={9} strokeLinecap="round" />
+                <path d="M-8 132q22 18 46 8" fill="none" stroke="#b8443a" strokeWidth={11} strokeLinecap="round" />
+                <circle cx={42} cy={138} r={6.8} fill="#b8443a" />
+                <g fill="none" stroke="#e88a74" strokeWidth={1.6} strokeLinecap="round" opacity={0.85}>
+                  <path d="M-44 132q10 24 4 52M-34 120q12 30 6 70M-20 114q10 34 4 82M-6 118q8 30 2 70M8 130q6 22 0 44" />
+                  <path d="M-16 176q14 4 28 2q12-2 22 4M-14 186q16 4 30 2q10-2 20 4" />
+                  <path d="M-2 134q18 10 36 4M2 140q16 8 30 2" />
+                </g>
+                <path d="M-18 112v88" stroke="#8f2f27" strokeWidth={1.4} opacity={0.6} />
+              </g>
               {/* burning: the fur chars to soot before he goes to bones (eyes, shades and grin stay on top) */}
               <g className={`${f.tl} ${f.soot}`}>
                 <ellipse cx={-18} cy={156} rx={38.5} ry={44.5} fill="#2b1b12" />
@@ -446,6 +461,16 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
                 <path d="M20 79c30-9 66-1 66 17s-34 21-64 14z" fill={FUR} stroke={INK} strokeWidth={3} />
                 <circle cx={17} cy={94} r={14} fill={FUR} />
                 <ellipse cx={84} cy={90} rx={8.5} ry={6.5} fill="#1d120a" />
+                <g className={`${f.tl} ${f.muscle}`}>
+                  <path d="M-30 70c-22 8-20 48-6 54 8-8 10-28 14-42z" fill="#a33a31" />
+                  <circle cx={0} cy={86} r={36.5} fill="#b8443a" />
+                  <path d="M21.5 80.5c30-9 63-1 63 15.5s-33 20-62 13z" fill="#b8443a" />
+                  <g fill="none" stroke="#e88a74" strokeWidth={1.5} strokeLinecap="round" opacity={0.85}>
+                    <path d="M-24 76q8-20 30-22M-28 92q10-26 40-28M-22 108q14-20 40-20M-8 118q14-10 30-10" />
+                    <path d="M30 88q24-6 46 0M32 98q22-4 44 2M36 106q18-2 30 0" />
+                  </g>
+                  <ellipse cx={84} cy={90} rx={8.5} ry={6.5} fill="#5a1a14" />
+                </g>
                 <g className={`${f.tl} ${f.soot}`}>
                   <path d="M-30 70c-22 8-20 48-6 54 8-8 10-28 14-42z" fill="#24160e" />
                   <circle cx={0} cy={86} r={36.5} fill="#2b1b12" />
@@ -548,6 +573,12 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
                   </g>
                 </g>
                 <path d="M30 104h48M38 99v10M46 99v10M54 99v10M62 99v10M70 99v10" stroke={INK} strokeWidth={2} />
+                {/* the last frame: his jaw drops wide open (a skeleton's grin, mid-laugh) */}
+                <g className={f.tl} style={anim("skOpen")}>
+                  <path d="M31 104h46c-1 13-11 22-23 22s-22-9-23-22z" fill="#2a160a" stroke={INK} strokeWidth={2} strokeLinejoin="round" />
+                  <path d="M36 121c6 4 30 4 36 0l2 6c-8 5-32 5-40 0z" fill={BONE} stroke={INK} strokeWidth={1.8} strokeLinejoin="round" />
+                  <path d="M42 122v5M48 123v5M54 123v5M60 123v5M66 122v5" stroke={INK} strokeWidth={1.4} />
+                </g>
                 <path d="M-18 104q8 6 16 2" fill="none" stroke={INK} strokeWidth={2} />
                 <Hat />
                 <g className={`${f.tl} ${f.skShades}`}>

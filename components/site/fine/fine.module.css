@@ -173,6 +173,21 @@
 .onHim { animation-name: onHim; transform-box: fill-box; transform-origin: 50% 100%; }
 @keyframes onHim { 0%, 84.6% { opacity: 0; transform: scale(0.2); } 86.4% { opacity: 1; transform: scale(0.75); } 90% { opacity: 1; transform: scale(1.15); } 92.6% { opacity: 1; transform: scale(1.2); } 93.6%, 100% { opacity: 0; transform: scale(1.3); } }
 .soot { animation-name: soot; }
-@keyframes soot { 0%, 85.6% { opacity: 0; } 88.4% { opacity: 0.5; } 91.2% { opacity: 0.93; } 100% { opacity: 0.93; } }
+@keyframes soot { 0%, 84.6% { opacity: 0; } 87.2% { opacity: 0.96; } 89.6% { opacity: 0.96; } 91.6%, 100% { opacity: 0; } }
 .ember { animation: ember var(--ed, 0.6s) ease-in-out infinite alternate; }
 @keyframes ember { from { opacity: 0.35; } to { opacity: 1; } }
+
+/* the muscle layer: hidden under the soot, revealed as the soot flakes off (11.2–11.45s) */
+.muscle { animation-name: muscle; }
+@keyframes muscle { 0%, 86.4% { opacity: 0; } 88%, 100% { opacity: 1; } }
+/* the puff and the bones come a beat later, so the muscle stage reads */
+.dog { animation-name: dog2; }
+@keyframes dog2 { 0%, 94% { opacity: 1; } 96%, 100% { opacity: 0; } }
+.puff { animation-name: puff2; }
+@keyframes puff2 { 0%, 93% { opacity: 0; transform: scale(0.3); } 95% { opacity: 1; transform: scale(1.05); } 96.5% { opacity: 0.9; transform: scale(1.15); } 99.5%, 100% { opacity: 0; transform: scale(1.45); } }
+.skel { animation-name: skel2; }
+@keyframes skel2 { 0%, 95% { opacity: 0; } 97.4%, 100% { opacity: 1; } }
+.skShades { animation-name: skShades2; }
+@keyframes skShades2 { 0%, 97.6% { opacity: 0; transform: translateY(-44px); } 97.7% { opacity: 1; transform: translateY(-44px); } 99.2% { transform: translateY(3px); } 100% { opacity: 1; transform: translateY(0); } }
+.onHim { animation-name: onHim2; }
+@keyframes onHim2 { 0%, 84.6% { opacity: 0; transform: scale(0.2); } 86.4% { opacity: 1; transform: scale(0.75); } 90% { opacity: 1; transform: scale(1.15); } 94.4% { opacity: 1; transform: scale(1.2); } 95.6%, 100% { opacity: 0; transform: scale(1.3); } }
