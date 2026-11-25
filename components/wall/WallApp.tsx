@@ -513,6 +513,7 @@ export default function WallApp({
   const [aim, setAim] = useState<{ x: number; y: number; z: number } | null>(null);
   const toPlace = () => {
     if (!valid) return;
+    (document.activeElement as HTMLElement | null)?.blur?.(); // keyboard away while placing
     setPanel(null);
     setError("");
     setStep("place");
@@ -758,6 +759,8 @@ export default function WallApp({
                 requestAnimationFrame(() => nameRef.current?.focus({ preventScroll: true }));
                 return;
               }
+              // the note's done: put the keyboard away before the wall takes over
+              (document.activeElement as HTMLElement | null)?.blur?.();
               // homepage: the wall opens full screen with the note in hand
               if (embedded && onHandoff && draft && valid) {
                 setPanel(null);
