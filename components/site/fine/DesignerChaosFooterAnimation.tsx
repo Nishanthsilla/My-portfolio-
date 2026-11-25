@@ -57,8 +57,24 @@ const BURNING: { name: string; at: number; flames: [number, number, number][] }[
 
 /* ---------- lip sync: his mouth follows the voice in the soundtrack ---------- */
 const DUR = 12.5;
-/** how open his mouth is, 20 times a second (measured from the voice in /audio/sfx/fine-bgm.mp3) */
-const TALK: number[] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.14, 0.54, 0.9, 1.0, 0.99, 0.93, 0.77, 0.47, 0.14, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.21, 0.66, 0.92, 0.96, 0.93, 0.63, 0.19, 0.0, 0.22, 0.66, 0.73, 0.52, 0.36, 0.18, 0.14, 0.44, 0.7, 0.49, 0.38, 0.74, 0.85, 0.47, 0.13, 0.01, 0.25, 0.75, 0.98, 0.95, 0.96, 0.78, 0.33, 0.04, 0.06, 0.37, 0.81, 0.79, 0.35, 0.1, 0.07, 0.03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.02, 0.29, 0.68, 0.57, 0.16, 0.21, 0.45, 0.28, 0.04, 0.21, 0.63, 0.7, 0.38, 0.09, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.72, 0.83, 0.54, 0.44, 0.49, 0.47, 0.67, 0.76, 0.51, 0.28, 0.38, 0.67, 0.88, 0.93, 0.64, 0.2, 0.0, 0.05, 0.1, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0];
+/**
+ * Lip sync, drawn: for every 1/12 s while he talks, which mouth drawing shows (picked from the
+ * voice in /audio/sfx/fine-bgm.mp3 — how loud, and whether it's an "oo"/"o" or an "ee" sound).
+ * 0 closed · 1 slightly open · 2 open · 3 wide · 4 round "O" · 5 "ee" · -1 not talking.
+ */
+const MOUTH_FPS = 12;
+const VIS: number[] = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 0, 2, 3, 3, 2, 1, 1, 0, 0, 0, -1, -1, -1, 0, 2, 4, 4, 0, 5, 3, 2, 1, 5, 3, 3, 3, 2, 2, 2, 3, 3, 2, 1, 1, 4, 4, 1, 1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 2, 1, 0, 2, 2, 0, 0, 0, -1, -1, -1, -1, 2, 3, 4, 2, 2, 2, 2, 2, 3, 4, 0, 1, 1, 0, -1, -1];
+/** time windows (s) when each mouth drawing is up */
+const visWindows = (k: number) => {
+  const w: [number, number][] = [];
+  VIS.forEach((v, i) => {
+    if (v !== k) return;
+    const a = i / MOUTH_FPS, b = (i + 1) / MOUTH_FPS;
+    if (w.length && Math.abs(w[w.length - 1][1] - a) < 1e-6) w[w.length - 1][1] = b;
+    else w.push([a, b]);
+  });
+  return w;
+};
 /** when he speaks: "This is fine." · "I'm okay with the events that are unfolding currently." · the last line */
 const SPEAK: [number, number][] = [[4.4, 4.95], [5.5, 7.5], [10.0, 10.8], [11.2, 12.25]];
 /** which mouth / eyes show when (seconds) */
@@ -84,8 +100,7 @@ function onOff(name: string, wins: [number, number][]) {
   return `@keyframes fine-${name}{${k.join("")}}`;
 }
 const FACE_CSS =
-  Object.entries(FACE).map(([n, w]) => onOff(n, w)).join("") +
-  `@keyframes fine-jaw{${TALK.map((o, i) => `${((i / (TALK.length - 1)) * 100).toFixed(2)}%{transform:scaleY(${(0.1 + 0.9 * o).toFixed(2)})}`).join("")}}`;
+  Object.entries(FACE).map(([n, w]) => onOff(n, w)).join("") + [0, 1, 2, 3, 4, 5].map((k) => onOff(`vis${k}`, visWindows(k))).join("");
 const anim = (n: string): CSSProperties => ({ animationName: `fine-${n}` });
 
 /** subtitles for the dialogue (seconds on the cartoon's clock) */
@@ -233,14 +248,22 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
     // plays once, when most of it is on screen; loops (flicker, steam) only run while visible
     const html = document.documentElement;
     const calm = matchMedia("(prefers-reduced-motion: reduce)");
+    /** where the cartoon is, in seconds (null before it starts or once it's over) */
+    const playhead = () => {
+      const a = el.getAnimations({ subtree: true }).find((x) => x.effect?.getTiming().iterations === 1 && x.effect?.getTiming().duration === 12500);
+      const ms = a ? Number(a.currentTime ?? 0) : 0;
+      return a && ms < 12500 ? ms / 1000 : el.classList.contains(f.play) ? null : 0;
+    };
     let fire: { stop: () => void } | null = null;
     const io = new IntersectionObserver(
       ([e]) => {
         el.classList.toggle(f.vis, e.isIntersecting);
         if (e.intersectionRatio >= 0.55 && !el.classList.contains(f.play)) {
           el.classList.add(f.play);
-          // the fire's sound starts with the cartoon (frame 0)
-          if (!calm.matches) fire = fineSoundtrack();
+          if (!calm.matches) fire = fineSoundtrack(playhead);
+        } else if (e.isIntersecting && !fire && el.classList.contains(f.play) && !calm.matches) {
+          // back on screen mid-cartoon: the sound picks up where the picture is
+          fire = fineSoundtrack(playhead);
         }
         // the chat face steps aside so the cartoon is clear
         if (e.isIntersecting) html.dataset.footerFine = "";
@@ -428,31 +451,6 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
               {/* the mug sits in front of the arm, the paw wraps round its side */}
               <Mug />
               <circle cx={42} cy={138} r={8} fill={FUR} stroke={INK} strokeWidth={2.5} />
-              {/* under the fur: cartoon muscle (anatomy-chart style), shown once the soot flakes off */}
-              <g className={`${f.tl} ${f.muscle}`}>
-                <ellipse cx={-18} cy={156} rx={38.5} ry={44.5} fill="#b8443a" />
-                <ellipse cx={10} cy={182} rx={31.5} ry={11.5} fill="#b8443a" />
-                <path d="M34 186l6 30" stroke="#b8443a" strokeWidth={9} strokeLinecap="round" />
-                <path d="M-8 132q22 18 46 8" fill="none" stroke="#b8443a" strokeWidth={11} strokeLinecap="round" />
-                <circle cx={42} cy={138} r={6.8} fill="#b8443a" />
-                <g fill="none" stroke="#e88a74" strokeWidth={1.6} strokeLinecap="round" opacity={0.85}>
-                  <path d="M-44 132q10 24 4 52M-34 120q12 30 6 70M-20 114q10 34 4 82M-6 118q8 30 2 70M8 130q6 22 0 44" />
-                  <path d="M-16 176q14 4 28 2q12-2 22 4M-14 186q16 4 30 2q10-2 20 4" />
-                  <path d="M-2 134q18 10 36 4M2 140q16 8 30 2" />
-                </g>
-                <path d="M-18 112v88" stroke="#8f2f27" strokeWidth={1.4} opacity={0.6} />
-              </g>
-              {/* burning: the fur chars to soot before he goes to bones (eyes, shades and grin stay on top) */}
-              <g className={`${f.tl} ${f.soot}`}>
-                <ellipse cx={-18} cy={156} rx={38.5} ry={44.5} fill="#2b1b12" />
-                <ellipse cx={10} cy={182} rx={31.5} ry={11.5} fill="#2b1b12" />
-                <path d="M34 186l6 30" stroke="#2b1b12" strokeWidth={9} strokeLinecap="round" />
-                <path d="M-8 132q22 18 46 8" fill="none" stroke="#2b1b12" strokeWidth={11} strokeLinecap="round" />
-                <circle cx={42} cy={138} r={6.8} fill="#2b1b12" />
-                {[[-30, 140], [-8, 170], [-36, 178], [6, 152], [18, 184], [-20, 196]].map(([x, y], i) => (
-                  <circle key={i} cx={x} cy={y} r={2.6} fill="#ff8a1e" className={`${f.lp} ${f.ember}`} style={{ "--ed": `${0.5 + i * 0.13}s` } as V} />
-                ))}
-              </g>
               {/* head */}
               <g className={`${f.lp} ${f.nod}`}>
                 <path d="M-30 70c-22 8-20 48-6 54 8-8 10-28 14-42z" fill="#c9752a" stroke={INK} strokeWidth={3} strokeLinejoin="round" />
@@ -460,35 +458,34 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
                 <path d="M20 79c30-9 66-1 66 17s-34 21-64 14z" fill={FUR} stroke={INK} strokeWidth={3} />
                 <circle cx={17} cy={94} r={14} fill={FUR} />
                 <ellipse cx={84} cy={90} rx={8.5} ry={6.5} fill="#1d120a" />
-                <g className={`${f.tl} ${f.muscle}`}>
-                  <path d="M-30 70c-22 8-20 48-6 54 8-8 10-28 14-42z" fill="#a33a31" />
-                  <circle cx={0} cy={86} r={36.5} fill="#b8443a" />
-                  <path d="M21.5 80.5c30-9 63-1 63 15.5s-33 20-62 13z" fill="#b8443a" />
-                  <g fill="none" stroke="#e88a74" strokeWidth={1.5} strokeLinecap="round" opacity={0.85}>
-                    <path d="M-24 76q8-20 30-22M-28 92q10-26 40-28M-22 108q14-20 40-20M-8 118q14-10 30-10" />
-                    <path d="M30 88q24-6 46 0M32 98q22-4 44 2M36 106q18-2 30 0" />
-                  </g>
-                  <ellipse cx={84} cy={90} rx={8.5} ry={6.5} fill="#5a1a14" />
-                </g>
-                <g className={`${f.tl} ${f.soot}`}>
-                  <path d="M-30 70c-22 8-20 48-6 54 8-8 10-28 14-42z" fill="#24160e" />
-                  <circle cx={0} cy={86} r={36.5} fill="#2b1b12" />
-                  <path d="M21.5 80.5c30-9 63-1 63 15.5s-33 20-62 13z" fill="#2b1b12" />
-                  {[[-18, 70], [6, 104], [30, 86]].map(([x, y], i) => (
-                    <circle key={i} cx={x} cy={y} r={2.3} fill="#ff8a1e" className={`${f.lp} ${f.ember}`} style={{ "--ed": `${0.6 + i * 0.17}s` } as V} />
-                  ))}
-                </g>
                 {/* mouth: content smile / flat / nervous wobble / the big forced "I am fine" grin */}
                 <path className={f.tl} style={anim("mSmile")} d="M50 106q14 5 26-2" fill="none" stroke={INK} strokeWidth={2.5} strokeLinecap="round" />
                 <path className={f.tl} style={anim("mFlat")} d="M52 107q11-2 22 0" fill="none" stroke={INK} strokeWidth={2.5} strokeLinecap="round" />
                 <path className={f.tl} style={anim("mWavy")} d="M48 107q3-4 6 0t6 0t6 0t6 0" fill="none" stroke={INK} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
                 {/* talking: the mouth opens and closes with each word of the voice */}
-                <g className={f.tl} style={anim("mTalk")}>
-                  <g className={`${f.tl} ${f.jaw}`} style={anim("jaw")}>
-                    <path d="M46 102c10 3 21 3 31-2-1 9-7 15-15 15s-14-5-16-13z" fill="#3a1610" stroke={INK} strokeWidth={2.5} strokeLinejoin="round" />
-                    <path d="M54 111c4-3 10-3 14 0-3 3-11 3-14 0z" fill="#e0605a" />
-                    <path d="M50 102.6h8v3.4h-7z" fill="#fff" />
-                  </g>
+                <g className={f.tl} style={anim("vis0")}>
+                  <path d="M49 106q14 4 27-2" fill="none" stroke={INK} strokeWidth={2.5} strokeLinecap="round" />
+                </g>
+                <g className={f.tl} style={anim("vis1")}>
+                  <path d="M48 104c9 2.6 19 2.4 28-1.4c-2.2 4.6-7.6 7-14 7s-11.8-2.2-14-5.6z" fill="#3a1610" stroke={INK} strokeWidth={2.4} strokeLinejoin="round" />
+                </g>
+                <g className={f.tl} style={anim("vis2")}>
+                  <path d="M47 102.5c10 3 20 2.8 30-1.5c-1.4 8.4-7.4 13-15 13s-13.6-4.4-15-11.5z" fill="#3a1610" stroke={INK} strokeWidth={2.4} strokeLinejoin="round" />
+                  <path d="M55 110.5c3.6-2.6 9-2.6 12.6 0c-2.6 2.4-10 2.4-12.6 0z" fill="#e0605a" />
+                  <path d="M50.5 103.4h7.5v3h-6.8z" fill="#fff" />
+                </g>
+                <g className={f.tl} style={anim("vis3")}>
+                  <path d="M46 101.5c10.5 3 21.5 2.8 32-1.8c-.6 11.6-7.6 18.3-16 18.3s-15.4-6-16-16.5z" fill="#3a1610" stroke={INK} strokeWidth={2.4} strokeLinejoin="round" />
+                  <path d="M53.5 113.5c4.4-3.4 11-3.4 15.4 0c-3 3.2-12.4 3.2-15.4 0z" fill="#e0605a" />
+                  <path d="M49.5 102.6h9v3.4h-8.4zM61 102.8h8v3h-7.6z" fill="#fff" />
+                </g>
+                <g className={f.tl} style={anim("vis4")}>
+                  <path d="M56 101c5.4-1.2 11.6-.6 14.4 2.6c1.6 6.6-2 12.6-7.6 12.6s-9.2-5.6-8.4-11.4c.2-1.6.6-2.8 1.6-3.8z" fill="#3a1610" stroke={INK} strokeWidth={2.4} strokeLinejoin="round" />
+                  <path d="M58.6 112.4c2.4-1.6 6-1.6 8.2 0c-1.8 1.8-6.4 1.8-8.2 0z" fill="#e0605a" />
+                </g>
+                <g className={f.tl} style={anim("vis5")}>
+                  <path d="M46 102.5c11 2.6 22 2.2 32.5-1.6c-1.6 5-7.4 7.8-16.4 7.8s-14.4-2.4-16.1-6.2z" fill="#3a1610" stroke={INK} strokeWidth={2.4} strokeLinejoin="round" />
+                  <path d="M49 103.4c8.6 1.8 19.6 1.6 27-.8l-.6 2.2c-7.6 2.2-18 2.4-25.8.6z" fill="#fff" />
                 </g>
                 <g className={f.tl} style={anim("mGrin")}>
                   <path d="M38 98q24 24 48-2q-24 8-48 2z" fill="#fff" stroke={INK} strokeWidth={2.8} strokeLinejoin="round" />
@@ -531,12 +528,6 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
             </g>
           </g>
 
-          {/* he catches fire: little flames on his hat, shoulders and back (then the puff, then bones) */}
-          <g className={`${f.tl} ${f.onHim}`}>
-            {[[-14, 44, 30], [12, 40, 24], [-44, 126, 34], [-50, 160, 30], [6, 140, 26], [-26, 112, 22], [24, 176, 24]].map(([x, y, h], i) => (
-              <use key={i} href={`#${fl}`} x={x - h * 0.28} y={y - h} width={h * 0.56} height={h} className={`${f.lp} ${f.flick}`} style={{ "--fd": `${0.45 + (i % 3) * 0.12}s`, "--fo": `${-i * 0.2}s` } as V} />
-            ))}
-          </g>
           {/* the skeleton: same pose, same hat, same mug */}
           <g className={`${f.tl} ${f.skel}`}>
             <g className={`${f.lp} ${f.bob}`}>
@@ -566,11 +557,12 @@ export default function DesignerChaosFooterAnimation({ className = "" }: { class
                 <ellipse cx={22} cy={72} rx={10} ry={12} fill="#2a160a" />
                 <ellipse cx={48} cy={70} rx={9} ry={11} fill="#2a160a" />
                 <path d="M78 86l6 8h-10z" fill="#2a160a" />
-                <g className={f.tl} style={anim("mTalk")}>
-                  <g className={`${f.tl} ${f.jaw}`} style={anim("jaw")}>
-                    <path d="M32 104h44c-2 10-10 14-22 14s-20-4-22-14z" fill="#2a160a" />
-                  </g>
-                </g>
+                {/* talking jaw, drawn: a small drop, an open drop and a wide drop */}
+                <g className={f.tl} style={anim("vis1")}><path d="M32 104h44c-2 4-10 6-22 6s-20-2-22-6z" fill="#2a160a" /></g>
+                <g className={f.tl} style={anim("vis5")}><path d="M32 104h44c-2 4-10 6-22 6s-20-2-22-6z" fill="#2a160a" /></g>
+                <g className={f.tl} style={anim("vis2")}><path d="M32 104h44c-2 8-10 11-22 11s-20-3-22-11z" fill="#2a160a" /></g>
+                <g className={f.tl} style={anim("vis4")}><path d="M44 104h22c0 7-5 11-11 11s-11-4-11-11z" fill="#2a160a" /></g>
+                <g className={f.tl} style={anim("vis3")}><path d="M32 104h44c-2 11-10 15-22 15s-20-4-22-15z" fill="#2a160a" /></g>
                 <path d="M30 104h48M38 99v10M46 99v10M54 99v10M62 99v10M70 99v10" stroke={INK} strokeWidth={2} />
                 <path d="M-18 104q8 6 16 2" fill="none" stroke={INK} strokeWidth={2} />
                 <Hat />

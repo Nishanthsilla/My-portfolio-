@@ -77,13 +77,33 @@ let callLoading = false;
 /** create the audio context early (so it can wake on the first click) and fetch the call's ringtone */
 export function primeNotify() {
   const c = context();
-  if (!c || callLoading || (callBuf && bgmBuf)) return;
+  if (!c) return;
+  loadBgm();
+  if (callBuf || callLoading) return;
   callLoading = true;
-  const load = (url: string) => fetch(url).then((r) => r.arrayBuffer()).then((b) => c.decodeAudioData(b));
-  Promise.all([
-    load("/audio/sfx/client-call.mp3").then((b) => (callBuf = b)).catch(() => {}),
-    load("/audio/sfx/fine-bgm.mp3").then((b) => (bgmBuf = b)).catch(() => {}),
-  ]).finally(() => (callLoading = false));
+  fetch("/audio/sfx/client-call.mp3")
+    .then((r) => r.arrayBuffer())
+    .then((b) => c.decodeAudioData(b))
+    .then((b) => (callBuf = b))
+    .catch(() => {})
+    .finally(() => (callLoading = false));
+}
+let bgmLoading: Promise<AudioBuffer | null> | null = null;
+/** the footer soundtrack, fetched once (and fetched again if an earlier try failed) */
+function loadBgm(): Promise<AudioBuffer | null> {
+  const c = context();
+  if (!c) return Promise.resolve(null);
+  if (bgmBuf) return Promise.resolve(bgmBuf);
+  if (!bgmLoading)
+    bgmLoading = fetch("/audio/sfx/fine-bgm.mp3")
+      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(r.status)))
+      .then((b) => c.decodeAudioData(b))
+      .then((b) => (bgmBuf = b))
+      .catch(() => {
+        bgmLoading = null; // try again next time
+        return null;
+      });
+  return bgmLoading;
 }
 
 /* ---------------- the fire: a crackle that builds with the flames, then the crumble into ash ---------------- */
@@ -198,46 +218,63 @@ export function fireSound(): { stop: () => void } {
 
 /**
  * The footer cartoon's soundtrack (/audio/sfx/fine-bgm.mp3: music, fire and the voice the dog
- * lip-syncs to), started with the cartoon's first frame, plus the whoosh as he turns to ash.
- * Falls back to the generated fire if the file hasn't loaded. Returns stop().
+ * lip-syncs to) plus the whoosh into ash. `at()` says where the cartoon is (seconds, or null when
+ * it isn't playing), so the sound always starts in step with the picture:
+ *  - if the file is still loading, it starts as soon as it arrives, at the cartoon's current point;
+ *  - browsers keep sound off until the first click / tap / key, so until then it waits and joins in
+ *    at the right point the moment the visitor interacts.
+ * Returns stop().
  */
-export function fineSoundtrack(): { stop: () => void } {
+export function fineSoundtrack(at: () => number | null): { stop: () => void } {
   const c = context();
-  if (!c || c.state !== "running" || document.hidden) return { stop() {} };
-  if (!bgmBuf) return fireSound();
-  const t0 = c.currentTime + 0.02;
+  if (!c) return { stop() {} };
+  let stopped = false, started = false;
   const out = c.createGain();
   out.connect(c.destination);
-  const src = c.createBufferSource();
-  src.buffer = bgmBuf;
-  src.connect(out);
-  src.start(t0);
-  // 11.5 s: the whoosh into ash, on top of the music
-  const nodes: AudioScheduledSourceNode[] = [src];
-  const ash = t0 + 11.75;
-  const wh = c.createBufferSource();
-  wh.buffer = noise(c);
-  const wf = c.createBiquadFilter();
-  wf.type = "lowpass";
-  wf.frequency.setValueAtTime(5000, ash);
-  wf.frequency.exponentialRampToValueAtTime(250, ash + 1.1);
-  const wg = c.createGain();
-  wg.gain.setValueAtTime(0.0001, ash);
-  wg.gain.exponentialRampToValueAtTime(0.22, ash + 0.12);
-  wg.gain.exponentialRampToValueAtTime(0.0001, ash + 1.2);
-  wh.connect(wf).connect(wg).connect(out);
-  wh.start(ash, 0, 1.3);
-  nodes.push(wh);
-  let stopped = false;
+  const nodes: AudioScheduledSourceNode[] = [];
+  const tryStart = () => {
+    if (stopped || started || !bgmBuf || c.state !== "running" || document.hidden) return;
+    const off = at();
+    if (off === null || off >= bgmBuf.duration - 0.1) return;
+    started = true;
+    const t0 = c.currentTime + 0.02;
+    const src = c.createBufferSource();
+    src.buffer = bgmBuf;
+    src.connect(out);
+    src.start(t0, Math.max(0, off));
+    nodes.push(src);
+    // the whoosh into ash, as the puff of smoke goes up
+    const ash = t0 + (11.45 - off);
+    if (ash > t0) {
+      const wh = c.createBufferSource();
+      wh.buffer = noise(c);
+      const wf = c.createBiquadFilter();
+      wf.type = "lowpass";
+      wf.frequency.setValueAtTime(5000, ash);
+      wf.frequency.exponentialRampToValueAtTime(250, ash + 1.1);
+      const wg = c.createGain();
+      wg.gain.setValueAtTime(0.0001, ash);
+      wg.gain.exponentialRampToValueAtTime(0.22, ash + 0.12);
+      wg.gain.exponentialRampToValueAtTime(0.0001, ash + 1.2);
+      wh.connect(wf).connect(wg).connect(out);
+      wh.start(ash, 0, 1.3);
+      nodes.push(wh);
+    }
+  };
+  const onState = () => tryStart();
+  c.addEventListener("statechange", onState);
+  loadBgm().then(tryStart);
+  tryStart();
   return {
     stop() {
       if (stopped) return;
       stopped = true;
+      c.removeEventListener("statechange", onState);
       const now = c.currentTime;
       out.gain.cancelScheduledValues(now);
       out.gain.setValueAtTime(out.gain.value, now);
-      out.gain.linearRampToValueAtTime(0, now + 0.5);
-      setTimeout(() => nodes.forEach((n) => { try { n.stop(); } catch {} }), 600);
+      out.gain.linearRampToValueAtTime(0, now + 0.4);
+      setTimeout(() => nodes.forEach((n) => { try { n.stop(); } catch {} }), 500);
     },
   };
 }
