@@ -162,7 +162,9 @@
 /* subtitles: pixel type, 12px, white on a dark bar at the bottom of the scene */
 .subs { position: absolute; left: 0; right: 0; bottom: 10px; display: grid; justify-items: center; pointer-events: none; z-index: 2; }
 .sub {
-  grid-area: 1 / 1; margin: 0; max-width: min(92%, 640px); padding: 6px 10px 5px; background: rgba(12, 8, 4, 0.78); color: #fff;
+  grid-area: 1 / 1; margin: 0; max-width: min(92%, 640px); padding: 0; background: none; color: #fff;
+  /* a 1px dark pixel outline keeps it readable over the wall and the fire, with no box behind it */
+  text-shadow: 1px 0 0 #1b1008, -1px 0 0 #1b1008, 0 1px 0 #1b1008, 0 -1px 0 #1b1008, 1px 1px 0 #1b1008, -1px -1px 0 #1b1008, 1px -1px 0 #1b1008, -1px 1px 0 #1b1008, 2px 2px 0 #1b1008;
   font: 400 12px/1.6 "Press Start 2P", ui-monospace, monospace; letter-spacing: 0; text-align: center; text-wrap: balance;
   -webkit-font-smoothing: none; -moz-osx-font-smoothing: unset; font-smooth: never; image-rendering: pixelated; opacity: 0;
 }
