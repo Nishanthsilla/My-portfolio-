@@ -114,7 +114,7 @@ export default function ScrollHint({ track }: { track: React.RefObject<HTMLEleme
         </defs>
         <g className={h.scrollHintRing}>
           <text>
-            <textPath href="#scroll-hint-ring" startOffset="0" textLength="285" lengthAdjust="spacing">Scroll Right <tspan className={h.scrollHintStar}>✦</tspan> Scroll Right <tspan className={h.scrollHintStar}>✦</tspan></textPath>
+            <textPath href="#scroll-hint-ring" startOffset="0" textLength="285" lengthAdjust="spacing">Swipe Right <tspan className={h.scrollHintStar}>✦</tspan> Swipe Right <tspan className={h.scrollHintStar}>✦</tspan></textPath>
           </text>
         </g>
       </svg>

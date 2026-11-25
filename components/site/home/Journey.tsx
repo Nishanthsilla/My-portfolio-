@@ -140,10 +140,25 @@ export default function Journey({
       target = current = Math.min(dist, Math.max(0, scrollY - top));
       paint();
       addEventListener("scroll", onScroll, { passive: true });
+
+      // trackpads: a left/right swipe moves the page left/right too (up/down already does),
+      // and the browser's own back/forward swipe stays out of the way on the homepage
+      const onWheel = (e: WheelEvent) => {
+        if (e.ctrlKey || Math.abs(e.deltaX) <= Math.abs(e.deltaY) || html.dataset.placing !== undefined) return;
+        if ((e.target as Element).closest?.("[data-own-wheel], .circular-gallery, [role=dialog]")) return;
+        e.preventDefault();
+        const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerWidth : 1;
+        scrollBy({ top: e.deltaX * k, behavior: "instant" as ScrollBehavior });
+      };
+      addEventListener("wheel", onWheel, { passive: false });
+      const prevOver = html.style.overscrollBehaviorX;
+      html.style.overscrollBehaviorX = "none";
       return () => {
         ro.disconnect();
         cancelAnimationFrame(raf);
         removeEventListener("scroll", onScroll);
+        removeEventListener("wheel", onWheel);
+        html.style.overscrollBehaviorX = prevOver;
         delete html.dataset.paging;
         sec.style.height = "";
         sec.style.removeProperty("--jw");
