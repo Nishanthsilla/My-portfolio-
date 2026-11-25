@@ -492,27 +492,6 @@ export default function WallApp({
     };
   }, [step]);
 
-  /* ---------- the breeze: now and then a soft gust from the right; the notes flutter ---------- */
-  const [gust, setGust] = useState(-1);
-  useEffect(() => {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let id = 0;
-    const next = (ms: number) => {
-      id = window.setTimeout(() => {
-        if (!document.hidden) setGust((g) => g + 1);
-        next(4200 + Math.random() * 4000);
-      }, ms);
-    };
-    next(1800);
-    return () => clearTimeout(id);
-  }, []);
-  /** each note catches the gust a little after the one to its right, by a slightly different amount */
-  const flap = (id: string, x: number) => {
-    let h = 0;
-    for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 997;
-    return { ["--bd" as string]: `${((1 - x) * 1.5 + (h % 7) * 0.04).toFixed(2)}s`, ["--amp" as string]: (0.55 + (h % 10) * 0.06).toFixed(2) } as React.CSSProperties;
-  };
-
   useEffect(() => { placing.current = stickAt; });
   const report = async (id: string) => {
     setHidden((h) => [...h, id]);
@@ -562,7 +541,7 @@ export default function WallApp({
       )}
 
       <div ref={scroller} className={`${w.scroller} ${step === "place" ? w.scrollerPlacing : ""}`} onPointerDown={panDown} data-placing={step === "place" ? "" : undefined}>
-        <div ref={board} className={w.board} style={{ width: WORLD.w, height: WORLD.h }} aria-label="The wall" data-gust={gust < 0 ? undefined : gust % 2}>
+        <div ref={board} className={w.board} style={{ width: WORLD.w, height: WORLD.h }} aria-label="The wall">
           {DECOR.map((d, i) => {
             const id = `decor-${i}`, p = spot(id, d.x, d.y);
             return (
@@ -588,9 +567,7 @@ export default function WallApp({
             const p = spot(PINNED.id, PINNED.x, PINNED.y);
             return (
               <ElasticSticker board={board} x={p.x} y={p.y} z={p.z} rotation={PINNED.rotation} onMove={moveTo(PINNED.id)} label="Pinned note from Nishanth" className={w.placed}>
-                <span className={w.flap} style={flap(PINNED.id, p.x)}>
-                  <NoteCard sticker={PINNED.sticker} font={PINNED.font} shape={PINNED.shape} color={PINNED.color} message={PINNED.message} name={PINNED.name} />
-                </span>
+                <NoteCard sticker={PINNED.sticker} font={PINNED.font} shape={PINNED.shape} color={PINNED.color} message={PINNED.message} name={PINNED.name} />
               </ElasticSticker>
             );
           })()}
@@ -599,9 +576,7 @@ export default function WallApp({
             const p = spot(n.id, n.x, n.y);
             return (
               <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Note from ${n.name}: ${n.message}`} className={w.placed}>
-                <span className={w.flap} style={flap(n.id, p.x)}>
-                  <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name={n.name} />
-                </span>
+                <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name={n.name} />
                 <button type="button" data-nodrag className={w.report} onClick={() => report(n.id)} aria-label={`Report the note from ${n.name}`}>
                   Report
                 </button>
@@ -614,9 +589,7 @@ export default function WallApp({
             return (
               // the visitor's own notes always sit above everyone else's
               <ElasticSticker key={n.id} board={board} x={p.x} y={p.y} z={MINE_Z + p.z} rotation={n.rotation} onMove={moveTo(n.id)} label={`Your note: ${n.message}`} className={w.placed}>
-                <span className={w.flap} style={flap(n.id, p.x)}>
-                  <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name={n.name} />
-                </span>
+                <NoteCard sticker={n.sticker} font={n.font} shape={n.shape} color={n.color} message={n.message} name={n.name} />
               </ElasticSticker>
             );
           })}
@@ -631,12 +604,6 @@ export default function WallApp({
           )}
 
         </div>
-        {/* the breeze itself: a few faint streaks crossing from the right */}
-        {gust >= 0 && (
-          <div key={gust} className={w.breeze} aria-hidden="true">
-            {[0, 1, 2, 3, 4].map((i) => <i key={i} style={{ top: `${14 + i * 17 + (gust * 7 + i * 13) % 9}%`, animationDelay: `${i * 0.18}s` }} />)}
-          </div>
-        )}
       </div>
 
       {/* placing: the note rides on the cursor until it's stuck to the wall */}

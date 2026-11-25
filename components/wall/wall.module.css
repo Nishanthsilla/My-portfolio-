@@ -441,41 +441,7 @@ img.monkeyArt { width: 96px; height: 96px; object-fit: cover; border-radius: 12p
 .placeBusy { position: absolute; left: 50%; top: 18px; transform: translateX(-50%); z-index: 41; display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: #fff; color: #222; font: 500 13px/1 var(--font-geist-sans), Arial, sans-serif; box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.4); }
 @media (max-width: 599px) { .placeHint { white-space: normal; text-align: left; width: calc(100% - 24px); justify-content: space-between; } }
 
-/* the breeze: notes hinge on their top edge and flutter as a gust passes right → left */
-.flap { display: block; transform-origin: 50% 4%; }
-.board[data-gust="0"] .flap { animation: flapA 2.6s cubic-bezier(0.37, 0, 0.3, 1) var(--bd, 0s) both; }
-.board[data-gust="1"] .flap { animation: flapB 2.6s cubic-bezier(0.37, 0, 0.3, 1) var(--bd, 0s) both; }
-@keyframes flapA {
-  0%, 100% { transform: none; }
-  14% { transform: rotate(calc(-5deg * var(--amp, 1))) skewY(calc(1.2deg * var(--amp, 1))); }
-  32% { transform: rotate(calc(3.4deg * var(--amp, 1))) skewY(calc(-1.1deg * var(--amp, 1))); }
-  50% { transform: rotate(calc(-2.2deg * var(--amp, 1))); }
-  68% { transform: rotate(calc(1.2deg * var(--amp, 1))); }
-  84% { transform: rotate(calc(-0.4deg * var(--amp, 1))); }
-}
-@keyframes flapB {
-  0%, 100% { transform: none; }
-  14% { transform: rotate(calc(-5deg * var(--amp, 1))) skewY(calc(1.2deg * var(--amp, 1))); }
-  32% { transform: rotate(calc(3.4deg * var(--amp, 1))) skewY(calc(-1.1deg * var(--amp, 1))); }
-  50% { transform: rotate(calc(-2.2deg * var(--amp, 1))); }
-  68% { transform: rotate(calc(1.2deg * var(--amp, 1))); }
-  84% { transform: rotate(calc(-0.4deg * var(--amp, 1))); }
-}
-.breeze { position: absolute; inset: 0; z-index: 30; pointer-events: none; overflow: hidden; }
-.breeze i {
-  position: absolute; right: -40%; width: 34%; height: 2px; border-radius: 2px; opacity: 0;
-  background: linear-gradient(90deg, transparent, rgba(110, 100, 86, 0.5) 40%, rgba(110, 100, 86, 0.2) 80%, transparent);
-  animation: streak 2.2s cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-.breeze i:nth-child(even) { width: 22%; height: 1.5px; }
-@keyframes streak {
-  0% { opacity: 0; transform: translateX(0); }
-  15% { opacity: 1; }
-  80% { opacity: 0.8; }
-  100% { opacity: 0; transform: translateX(-320%); }
-}
-:global(html[data-theme="dark"]) .breeze i { background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22) 40%, rgba(255, 255, 255, 0.08) 80%, transparent); }
-@media (prefers-reduced-motion: reduce) { .flap, .board .flap, .breeze, .pad, .prompt.promptCard { animation: none !important; } .breeze { display: none; } }
+@media (prefers-reduced-motion: reduce) { .pad, .prompt.promptCard { animation: none !important; } }
 
 /* on the homepage the card sits in the middle of the scene's wall */
 .wallEmbedded .prompt.promptCard { width: min(520px, calc(100% - 24px)); max-height: calc(100% - 24px); overflow: auto; }

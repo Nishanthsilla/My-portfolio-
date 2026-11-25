@@ -170,8 +170,67 @@ export default function Journey({
         if (el) fr.scrollTo({ left: el.offsetLeft, behavior: smooth ? "smooth" : ("instant" as ScrollBehavior) });
       };
       fr.addEventListener("scroll", onScroll, { passive: true });
+
+      // pulling up where there's nothing more below: the scene stretches like rubber, then springs back
+      // (instead of the page scrolling into empty space). Sideways swipes and inner scrolling are left alone.
+      let sx = 0, sy = 0, on = false, decided = false, pulled = false;
+      const canScrollDown = (t: Element | null) => {
+        for (let n = t as HTMLElement | null; n && n !== fr; n = n.parentElement) {
+          const oy = getComputedStyle(n).overflowY;
+          if ((oy === "auto" || oy === "scroll") && n.scrollHeight > n.clientHeight + 1 && n.scrollTop + n.clientHeight < n.scrollHeight - 1) return true;
+        }
+        return false;
+      };
+      const onStart = (e: TouchEvent) => {
+        on = false;
+        if (e.touches.length !== 1) return;
+        if ((e.target as Element).closest?.("input, textarea, select, [contenteditable], [data-sticker-art], [data-nodrag], .prompt-bar__menu")) return;
+        sx = e.touches[0].clientX;
+        sy = e.touches[0].clientY;
+        on = true;
+        decided = false;
+        pulled = false;
+      };
+      const onMove = (e: TouchEvent) => {
+        if (!on) return;
+        const x = e.touches[0].clientX, y = e.touches[0].clientY;
+        if (!decided) {
+          const dx = x - sx, dy = y - sy;
+          if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+          decided = true;
+          if (!(dy < 0 && Math.abs(dy) > Math.abs(dx) * 1.2) || canScrollDown(e.target as Element)) {
+            on = false;
+            return;
+          }
+          sy = y;
+          fr.style.transition = "none";
+          fr.style.transformOrigin = "50% 100%";
+        }
+        const pull = Math.max(0, sy - y);
+        // resistance: it gives a little, then less and less
+        const s = 1 + (1 - Math.exp(-pull / 240)) * 0.075;
+        fr.style.transform = `scaleY(${s.toFixed(4)})`;
+        pulled = true;
+        e.preventDefault();
+      };
+      const onEnd = () => {
+        if (!on) return;
+        on = false;
+        if (!pulled) return;
+        fr.style.transition = "transform 560ms cubic-bezier(0.18, 1.25, 0.4, 1)";
+        fr.style.transform = "";
+      };
+      fr.addEventListener("touchstart", onStart, { passive: true });
+      fr.addEventListener("touchmove", onMove, { passive: false });
+      fr.addEventListener("touchend", onEnd, { passive: true });
+      fr.addEventListener("touchcancel", onEnd, { passive: true });
       return () => {
         fr.removeEventListener("scroll", onScroll);
+        fr.removeEventListener("touchstart", onStart);
+        fr.removeEventListener("touchmove", onMove);
+        fr.removeEventListener("touchend", onEnd);
+        fr.removeEventListener("touchcancel", onEnd);
+        fr.style.transform = fr.style.transition = fr.style.transformOrigin = "";
         clearTimeout(still);
         delete document.documentElement.dataset.paging;
       };
