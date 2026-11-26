@@ -9,7 +9,20 @@ const VOL_KEY = "nishanth.music.volume";
 const MAX = 0.5; // the slider's top; the default sits at 0.24 so the sticker and chat sounds stay on top
 const TRACK = { title: "Biting Bullets", artist: "Ridgeclub", src: "/audio/ambient/biting-bullets" };
 
-type Engine = { ctx: AudioContext; gain: GainNode; src: AudioBufferSourceNode | null; buf: Promise<AudioBuffer | null>; dur: number; startedAt: number; offset: number };
+type Engine = { ctx: AudioContext; gain: GainNode; an: AnalyserNode; src: AudioBufferSourceNode | null; buf: Promise<AudioBuffer | null>; dur: number; startedAt: number; offset: number };
+
+const BARS = 52;
+/** the song's own shape: the loudness of each slice, scaled so the loudest slice is 1 */
+function waveform(b: AudioBuffer, n: number) {
+  const d = b.getChannelData(0), step = Math.floor(d.length / n), out: number[] = [];
+  for (let i = 0; i < n; i++) {
+    let sum = 0;
+    for (let j = i * step, k = 0; k < step; j += 16, k += 16) sum += d[j] * d[j];
+    out.push(Math.sqrt(sum / (step / 16)));
+  }
+  const max = Math.max(...out, 1e-6);
+  return out.map((v) => Math.max(0.08, v / max));
+}
 
 const fmt = (t: number) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
 
@@ -25,6 +38,9 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState(0);
   const [dur, setDur] = useState(0);
+  const [peaks, setPeaks] = useState<number[]>([]);
+  const [hoverAt, setHoverAt] = useState<number | null>(null);
+  const screen = useRef<HTMLCanvasElement>(null);
   const [vol, setVol] = useState(0.24 / MAX);
   const eng = useRef<Engine | null>(null);
   const wanted = useRef(true);
@@ -54,15 +70,20 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
     const ctx = new AC();
     const gain = ctx.createGain();
     gain.gain.value = 0;
-    gain.connect(ctx.destination);
+    const an = ctx.createAnalyser();
+    an.fftSize = 256;
+    an.smoothingTimeConstant = 0.8;
+    gain.connect(an);
+    an.connect(ctx.destination);
     const ext = document.createElement("audio").canPlayType('audio/ogg; codecs="opus"') ? "ogg" : "mp3";
-    const e: Engine = { ctx, gain, src: null, buf: Promise.resolve(null), dur: 0, startedAt: 0, offset: 0 };
+    const e: Engine = { ctx, gain, an, src: null, buf: Promise.resolve(null), dur: 0, startedAt: 0, offset: 0 };
     e.buf = fetch(`${TRACK.src}.${ext}`)
       .then((r) => r.arrayBuffer())
       .then((b) => ctx.decodeAudioData(b))
       .then((b) => {
         e.dur = b.duration;
         setDur(b.duration);
+        setPeaks(waveform(b, BARS));
         return b;
       })
       .catch(() => null);
@@ -150,6 +171,43 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
     return () => cancelAnimationFrame(raf);
   }, [open]);
 
+  // the little screen: the music drawn live, like a video of the sound
+  useEffect(() => {
+    const cv = screen.current;
+    if (!open || !cv) return;
+    const g = cv.getContext("2d");
+    if (!g) return;
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const freq = new Uint8Array(128);
+    let raf = 0, t = 0;
+    const draw = () => {
+      const w = (cv.width = cv.clientWidth * devicePixelRatio), h = (cv.height = cv.clientHeight * devicePixelRatio);
+      const e = eng.current;
+      if (e?.src) e.an.getByteFrequencyData(freq);
+      else freq.fill(0);
+      t += still ? 0 : 0.012;
+      const bass = freq.slice(1, 8).reduce((a, b) => a + b, 0) / 7 / 255;
+      // a slow-moving colour field that pulses with the beat
+      const bg = g.createLinearGradient(0, 0, w, h);
+      bg.addColorStop(0, `hsl(${(12 + Math.sin(t) * 18 + 360) % 360} 85% ${48 + bass * 12}%)`);
+      bg.addColorStop(0.55, `hsl(${330 + Math.sin(t * 0.7) * 20} 60% ${34 + bass * 10}%)`);
+      bg.addColorStop(1, `hsl(${262 + Math.cos(t * 0.5) * 16} 50% 26%)`);
+      g.fillStyle = bg;
+      g.fillRect(0, 0, w, h);
+      // the spectrum, mirrored from the centre line
+      const n = 48, bw = w / n;
+      g.fillStyle = "rgba(255,255,255,0.85)";
+      for (let i = 0; i < n; i++) {
+        const v = (freq[Math.floor((i / n) * 90) + 2] ?? 0) / 255;
+        const bh = Math.max(2 * devicePixelRatio, v * h * 0.8);
+        g.fillRect(i * bw + bw * 0.25, (h - bh) / 2, bw * 0.5, bh);
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => cancelAnimationFrame(raf);
+  }, [open]);
+
   // phones: a tap outside the player closes it
   useEffect(() => {
     if (!open || !isTouch) return;
@@ -184,15 +242,6 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
       play(t);
     } else e.offset = t;
   };
-  const changeVol = (v: number) => {
-    volRef.current = v;
-    setVol(v);
-    try {
-      localStorage.setItem(VOL_KEY, String(v));
-    } catch {}
-    const e = eng.current;
-    if (e?.src) e.gain.gain.setTargetAtTime(v * MAX, e.ctx.currentTime, 0.05);
-  };
 
   const show = () => {
     clearTimeout(closeT.current);
@@ -209,45 +258,63 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
     <div className={s.dock} data-music onPointerEnter={(e) => e.pointerType === "mouse" && show()} onPointerLeave={(e) => e.pointerType === "mouse" && hide()} onFocus={() => !isTouch && show()} onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node) && hide()}>
       <div className={s.player} data-open={open ? "" : undefined} role="group" aria-label="Music player" aria-hidden={!open} inert={!open}>
         <div className={s.track}>
-          <span className={s.art} data-on={live ? "" : undefined} aria-hidden="true">
-            <i /><i /><i /><i />
-          </span>
+          <canvas ref={screen} className={s.screen} aria-hidden="true" />
           <span className={s.meta}>
             <b>{TRACK.title}</b>
             <span>{TRACK.artist}</span>
           </span>
-        </div>
-        <div className={s.scrub}>
-          <input
-            type="range"
-            min={0}
-            max={dur || 1}
-            step={0.1}
-            value={Math.min(pos, dur || 1)}
-            onChange={(e) => seek(Number(e.target.value))}
-            aria-label="Seek"
-            style={{ ["--p" as string]: `${dur ? (pos / dur) * 100 : 0}%` }}
-          />
-          <span className={s.times}>
-            <span>{fmt(pos)}</span>
-            <span>{dur ? fmt(dur) : "–:––"}</span>
-          </span>
-        </div>
-        <div className={s.controls}>
-          <button type="button" className={s.ctl} onClick={() => seek(0)} aria-label="Back to the start">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14M18 6 9 12l9 6V6Z" fill="currentColor" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
-          </button>
           <button type="button" className={`${s.ctl} ${s.playBtn}`} onClick={toggle} aria-label={live ? "Pause" : "Play"}>
             {live ? (
-              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2" fill="currentColor" /><rect x="14" y="5" width="4" height="14" rx="1.2" fill="currentColor" /></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="3.6" height="14" rx="1.2" fill="currentColor" /><rect x="13.9" y="5" width="3.6" height="14" rx="1.2" fill="currentColor" /></svg>
             ) : (
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor" /></svg>
             )}
           </button>
-          <label className={s.vol}>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4v-5Z" fill="currentColor" />{vol > 0.02 && <path d="M15.5 9a4 4 0 0 1 0 6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />}</svg>
-            <input type="range" min={0} max={1} step={0.01} value={vol} onChange={(e) => changeVol(Number(e.target.value))} aria-label="Volume" style={{ ["--p" as string]: `${vol * 100}%` }} />
-          </label>
+        </div>
+        <div className={s.scrub}>
+          <div
+            className={s.wave}
+            role="slider"
+            tabIndex={0}
+            aria-label="Seek"
+            aria-valuemin={0}
+            aria-valuemax={Math.round(dur)}
+            aria-valuenow={Math.round(pos)}
+            aria-valuetext={`${fmt(pos)} of ${fmt(dur)}`}
+            onPointerDown={(e) => {
+              e.currentTarget.setPointerCapture(e.pointerId);
+              const r = e.currentTarget.getBoundingClientRect();
+              seek(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * dur);
+            }}
+            onPointerMove={(e) => {
+              const r = e.currentTarget.getBoundingClientRect();
+              const f = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+              setHoverAt(f);
+              if (e.buttons) setPos(f * dur);
+            }}
+            onPointerUp={(e) => {
+              const r = e.currentTarget.getBoundingClientRect();
+              seek(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * dur);
+            }}
+            onPointerLeave={() => setHoverAt(null)}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight") seek(Math.min(dur, pos + 5));
+              else if (e.key === "ArrowLeft") seek(Math.max(0, pos - 5));
+              else return;
+              e.preventDefault();
+            }}
+          >
+            {(peaks.length ? peaks : Array.from({ length: BARS }, () => 0.15)).map((v, i) => {
+              const at = (i + 0.5) / BARS;
+              const played = dur > 0 && at <= pos / dur;
+              const ahead = hoverAt !== null && !played && at <= hoverAt;
+              return <i key={i} data-p={played ? "" : ahead ? "h" : undefined} style={{ height: `${Math.round(v * 100)}%` }} />;
+            })}
+          </div>
+          <span className={s.times}>
+            <span>{fmt(pos)}</span>
+            <span>{dur ? fmt(dur) : "–:––"}</span>
+          </span>
         </div>
       </div>
       <button
