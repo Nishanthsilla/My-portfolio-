@@ -5,6 +5,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { warmNotify } from "@/lib/sound/notify";
 import AskPanel from "./ask/AskPanel";
 import MusicToggle from "./MusicToggle";
+import Analytics from "./Analytics";
 import s from "./site.module.css";
 
 /**
@@ -33,6 +34,7 @@ export default function GlobalWidgets({ face }: { face: string | null }) {
     <div className={s.site} style={{ display: "contents" }}>
       {/* the music keeps playing; only its button steps aside (unmounting would start a second player) */}
       <MusicToggle hidden={hide} />
+      <Analytics />
       {!hide && <AskPanel face={face} />}
     </div>
   );

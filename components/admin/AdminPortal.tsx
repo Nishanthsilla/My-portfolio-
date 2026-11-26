@@ -4,17 +4,20 @@ import { useCallback, useEffect, useState } from "react";
 import NoteCard from "@/components/wall/NoteCard";
 import a from "@/components/wall/admin.module.css";
 import type { NoteStatus, WallNote } from "@/lib/wall/types";
+import { FONTS_HREF } from "@/lib/wall/fonts";
+import AnalyticsPanel from "./AnalyticsPanel";
 import { ambientAi } from "@/lib/site/studies/ambientAi";
 import { selfReadyStudy } from "@/lib/site/studies/selfReady";
 
 /**
- * Nishanth's admin portal, in three tabs:
+ * Nishanth's admin portal:
+ *   Analytics      — visits, pages, sources, devices and countries, with the Wall and requests at a glance
  *   Notes          — approve, reject or remove notes on the Wall
  *   Notifications  — requests to see the confidential screens (approve / decline) and phone alerts
  *   Images         — upload the real confidential screenshots (kept in the database, not the code)
  * Every request carries the moderator token (WALL_ADMIN_TOKEN); the server checks it.
  */
-export type AdminTab = "notes" | "notifications" | "images";
+export type AdminTab = "analytics" | "notes" | "notifications" | "images";
 type Req = { id: string; name: string; email: string; company: string; reason: string; status: "pending" | "approved" | "declined"; createdAt: string };
 type Access = { requests: Req[]; images: string[]; ntfy: boolean };
 
@@ -36,11 +39,21 @@ export default function AdminPortal({ initial = "notes", fromUrl = false }: { in
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // the same handwriting fonts as the Wall, so each note looks exactly as its writer made it
+  useEffect(() => {
+    if (document.querySelector("link[data-wall-fonts]")) return;
+    const l = document.createElement("link");
+    l.rel = "stylesheet";
+    l.href = FONTS_HREF;
+    l.dataset.wallFonts = "";
+    document.head.appendChild(l);
+  }, []);
+
   useEffect(() => {
     if (fromUrl) {
       const t = new URLSearchParams(location.search).get("tab");
       // eslint-disable-next-line react-hooks/set-state-in-effect -- the tab named in the link, read once
-      if (t === "notes" || t === "notifications" || t === "images") setTab(t);
+      if (t === "analytics" || t === "notes" || t === "notifications" || t === "images") setTab(t);
     }
     try {
       const t = sessionStorage.getItem(KEY);
@@ -162,6 +175,7 @@ export default function AdminPortal({ initial = "notes", fromUrl = false }: { in
   const pendingReq = access?.requests.filter((r) => r.status === "pending").length ?? 0;
   const missing = SCREENS.filter((s) => !access?.images.includes(s.id)).length;
   const TABS: { id: AdminTab; label: string; count?: number }[] = [
+    { id: "analytics", label: "Analytics" },
     { id: "notes", label: "Notes", count: waiting },
     { id: "notifications", label: "Notifications", count: pendingReq },
     { id: "images", label: "Images" },
@@ -183,6 +197,8 @@ export default function AdminPortal({ initial = "notes", fromUrl = false }: { in
         <button type="button" className={a.signOut} onClick={() => signOut()}>Sign out</button>
       </header>
       {msg && <p className={a.msg} role="status">{msg}</p>}
+
+      {tab === "analytics" && <AnalyticsPanel token={token} onOpen={(t) => setTab(t)} />}
 
       {tab === "notes" && (
         <section aria-label="Notes">

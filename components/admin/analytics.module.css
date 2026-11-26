@@ -1,0 +1,50 @@
+/* the admin's Analytics tab: headline tiles, a daily bar chart, ranked lists */
+.wrap { display: grid; gap: 16px; max-width: 1100px; }
+.msg { color: #777; font-size: 14px; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.range { display: flex; gap: 6px; }
+.range button { height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid #ddd8cf; background: transparent; font: 500 13px/1 var(--font-geist-sans), Arial; cursor: pointer; }
+.range button[aria-selected="true"] { background: #222; color: #fff; border-color: #222; }
+.ga { font-size: 13px; color: #8a8d93; display: inline-flex; align-items: center; gap: 8px; }
+.ga::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #c9c5bd; }
+.ga[data-on] { color: #0f6b4f; }
+.ga[data-on]::before { background: #0f8f7f; }
+
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.tile { display: grid; gap: 4px; padding: 18px; border-radius: 16px; background: #fff; border: 1px solid #ebe7df; text-align: left; font: inherit; color: inherit; }
+.tile span { font-size: 13px; color: #6b6f76; }
+.tile b { font-size: 34px; line-height: 1.05; letter-spacing: -0.03em; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tile small { font-size: 12.5px; color: #8a8d93; }
+.tileLink { cursor: pointer; transition: border-color 150ms, transform 150ms; }
+.tileLink:hover { border-color: #c9c2b6; transform: translateY(-2px); }
+.tileLink:focus-visible { outline: 2px solid #ff4938; outline-offset: 2px; }
+
+.card { padding: 18px; border-radius: 16px; background: #fff; border: 1px solid #ebe7df; display: grid; gap: 12px; align-content: start; }
+.card h3 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.chartHead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+.readout { font-size: 13px; color: #45484e; font-variant-numeric: tabular-nums; }
+.chart { position: relative; height: 180px; display: grid; grid-template-columns: 32px 1fr; gap: 8px; }
+.grid { display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; color: #8a8d93; text-align: right; font-variant-numeric: tabular-nums; }
+.bars { position: relative; display: flex; align-items: flex-end; gap: 2px; height: 100%; border-bottom: 1px solid #e2ddd4;
+  background: linear-gradient(#efebe4, #efebe4) 0 0 / 100% 1px no-repeat, linear-gradient(#efebe4, #efebe4) 0 50% / 100% 1px no-repeat; }
+.col { flex: 1; height: 100%; display: flex; align-items: flex-end; cursor: default; }
+.col i { display: block; width: 100%; min-height: 2px; border-radius: 4px 4px 0 0; background: #ff6a55; transition: background-color 120ms; }
+.col[data-on] i { background: #d9301f; }
+.axis { display: flex; justify-content: space-between; padding-left: 40px; font-size: 11.5px; color: #8a8d93; }
+.table summary { font-size: 13px; color: #6b6f76; cursor: pointer; }
+.table table { margin-top: 8px; width: 100%; max-width: 420px; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.table th, .table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #f0ece5; }
+
+.lists { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.rank { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.rank li { position: relative; display: flex; justify-content: space-between; gap: 12px; padding: 8px 10px; border-radius: 8px; font-size: 14px; isolation: isolate; }
+.rank li::before { content: ""; position: absolute; inset: 0; width: var(--w); border-radius: 8px; background: #f6efe6; z-index: -1; }
+.rankName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: none; }
+.rank b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.empty { margin: 0; font-size: 13px; color: #8a8d93; }
+.note { margin: 0; font-size: 12.5px; color: #8a8d93; }
+
+@media (max-width: 860px) {
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lists { grid-template-columns: 1fr; }
+}

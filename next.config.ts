@@ -13,7 +13,7 @@ const nextConfig: NextConfig = staticExport
       // the admin portal lives at /admin; its two old addresses open it on the matching tab
       async redirects() {
         return [
-          { source: "/wall/admin", destination: "/admin", permanent: false },
+          { source: "/wall/admin", destination: "/admin?tab=notes", permanent: false },
           { source: "/access-admin", destination: "/admin?tab=notifications", permanent: false },
         ];
       },
