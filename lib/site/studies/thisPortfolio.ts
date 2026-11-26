@@ -10,7 +10,6 @@ export const thisPortfolio: Study = {
   title: "This portfolio",
   subtitle: "A portfolio that makes you laugh, and still gets a hiring manager to the right work in one click.",
   category: "End to end · design and build",
-  back: { href: "/#work", label: "All work" },
   meta: [
     { k: "Role", v: "Designer, art director and product owner" },
     { k: "Timeline", v: "Two weeks, November 2026" },

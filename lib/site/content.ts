@@ -37,7 +37,7 @@ export type Project = {
     | { kind: "visual"; id: VisualId }
     | { kind: "image"; src: string; alt: string; fit?: "cover" | "contain" | "window"; bg?: string }
     /** an animated product-UI cover (Self-Ready) */
-    | { kind: "scene"; id: "self-ready" | "field-ops" | "ambient" }
+    | { kind: "scene"; id: "self-ready" | "field-ops" | "ambient" | "portfolio" }
     /** no visual yet: a designed "ADD IMAGE HERE" cover */
     | { kind: "placeholder"; need: string };
   /** facts that still need Nishanth's confirmation, shown with a marker */
@@ -189,10 +189,10 @@ export const projects: Project[] = [
     year: "2026",
     role: "Designer and product owner",
     description: "A portfolio that makes you laugh, and still gets a hiring manager to the right work in one click.",
-    preview: { kind: "image", src: "/images/case-studies/this-portfolio/cover.webp", alt: "The Work section of this portfolio: four doors, each with live project covers", fit: "cover" },
+    preview: { kind: "scene", id: "portfolio" },
     featured: {
       overview: "/work/this-portfolio",
-      caseStudy: "/work/this-portfolio",
+      caseStudy: "/work/this-portfolio/case-study",
       tags: ["UX case study", "Design and build", "Personal"],
     },
     source: "site",
