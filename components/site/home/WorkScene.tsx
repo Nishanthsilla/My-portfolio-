@@ -162,14 +162,7 @@ export default function WorkScene() {
                         <span className={h.doorNum}>0{n + 1}</span>
                         <span className={h.doorTitle}>{s.title}</span>
                         <span className={h.doorLine}>{s.line}</span>
-                        <span className={h.peek} aria-hidden="true">
-                          {ps.map((p, i) => (
-                            <span key={p.slug} className={h.peekCard} style={{ ["--tone" as string]: toneOf(p), ["--i" as string]: i, ["--n" as string]: ps.length }}>
-                              <ProjectMedia project={p} className={h.peekMedia} fill={0.86} />
-                              <b>{p.title.split(" — ")[0]}</b>
-                            </span>
-                          ))}
-                        </span>
+                        <PeekStack ps={ps} />
                         <span className={h.doorFoot}>
                           <span>{ps.length} case {ps.length === 1 ? "study" : "studies"}</span>
                           <span className={h.doorGo}>Go down <span aria-hidden="true">↓</span></span>
@@ -230,6 +223,44 @@ export default function WorkScene() {
         <ProjectDrawer project={drawer.p} mode={drawer.mode} onMode={(mode) => setDrawer({ ...drawer, mode })} onProject={(p, mode) => setDrawer({ p, mode })} onClose={() => setDrawer(null)} />
       )}
     </section>
+  );
+}
+
+/**
+ * The case studies behind a door, stacked with their live covers. While the door is hovered (or
+ * focused) the stack shuffles: every couple of seconds the front card slips to the back and the
+ * next project comes forward.
+ */
+function PeekStack({ ps }: { ps: Project[] }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [front, setFront] = useState(0);
+  const [out, setOut] = useState(-1);
+  useEffect(() => {
+    const door = ref.current?.closest("button");
+    if (!door || ps.length < 2 || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let first = 0, every = 0;
+    const step = () => setFront((f) => { setOut(f); return (f + 1) % ps.length; });
+    const start = () => { stop(); first = window.setTimeout(() => { step(); every = window.setInterval(step, 1900); }, 1100); };
+    const stop = () => { clearTimeout(first); clearInterval(every); };
+    const leave = () => { stop(); setOut(-1); setFront(0); };
+    door.addEventListener("pointerenter", start);
+    door.addEventListener("focus", start);
+    door.addEventListener("pointerleave", leave);
+    door.addEventListener("blur", leave);
+    return () => { stop(); door.removeEventListener("pointerenter", start); door.removeEventListener("focus", start); door.removeEventListener("pointerleave", leave); door.removeEventListener("blur", leave); };
+  }, [ps.length]);
+  return (
+    <span ref={ref} className={h.peek} aria-hidden="true">
+      {ps.map((p, i) => {
+        const k = (i - front + ps.length) % ps.length;
+        return (
+          <span key={p.slug} className={h.peekCard} data-out={i === out ? "" : undefined} onAnimationEnd={() => i === out && setOut(-1)} style={{ ["--tone" as string]: toneOf(p), ["--i" as string]: k, ["--n" as string]: ps.length }}>
+            <ProjectMedia project={p} className={h.peekMedia} fill={0.86} />
+            <b>{p.title.split(" — ")[0]}</b>
+          </span>
+        );
+      })}
+    </span>
   );
 }
 
