@@ -127,6 +127,48 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
         </div>
       </section>
 
+      {/* why this design: the personality behind it */}
+      {st.personality && (
+        <section className={`${site.container} ${s.section}`} aria-labelledby="personality">
+          <Reveal className={s.split}>
+            <div>
+              <Label n={N()}>Why this design</Label>
+              <h2 id="personality" className={s.h2}>{st.personality.title}</h2>
+            </div>
+            <div className={s.flow}><Blocks items={st.personality.body} lead /></div>
+          </Reveal>
+          <ol className={s.decisions}>
+            {st.personality.traits.map((d, i) => (
+              <li key={d.t}>
+                <span className={s.decN}>{String(i + 1).padStart(2, "0")}</span>
+                <h3>{d.t}</h3>
+                <p>{d.d}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {/* the tools behind it */}
+      {st.toolkit && (
+        <section className={`${site.container} ${s.section}`} aria-labelledby="toolkit">
+          <Reveal>
+            <Label n={N()}>Tools</Label>
+            <h2 id="toolkit" className={s.h2}>{st.toolkit.title}</h2>
+            <p className={s.p}>{st.toolkit.lead}</p>
+          </Reveal>
+          <ul className={s.kit}>
+            {st.toolkit.items.map((k) => (
+              <li key={k.t}>
+                <b>{k.t}</b>
+                <p>{k.d}</p>
+              </li>
+            ))}
+          </ul>
+          {st.toolkit.shot && <div className={s.wide}><Screen slug={st.slug} screen={screen(st.toolkit.shot)} /></div>}
+        </section>
+      )}
+
       {/* 05 approach */}
       <section className={`${site.container} ${s.section}`} aria-labelledby="approach">
         <Reveal>
@@ -158,6 +200,32 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
         </ol>
       </section>
 
+      {/* screen by screen */}
+      {st.tour && (
+        <section className={`${site.container} ${s.section}`} aria-labelledby="tour">
+          <Reveal>
+            <Label n={N()}>Screen by screen</Label>
+            <h2 id="tour" className={s.h2}>Every screen, and why it&rsquo;s there</h2>
+          </Reveal>
+          <ol className={s.contribs}>
+            {st.tour.map((c, i) => (
+              <li key={c.id} className={s.contrib}>
+                <Reveal className={s.contribHead}>
+                  <span className={s.stepN}>{String(i + 1).padStart(2, "0")}</span>
+                  <h3 className={s.h3}>{c.t}</h3>
+                </Reveal>
+                <div className={s.wide}><Screen slug={st.slug} screen={screen(c.id)} /></div>
+                <Reveal className={s.contribBody}>
+                  <div><p className={s.contribK}>What it is</p><p className={s.p}>{c.what}</p></div>
+                  <div><p className={s.contribK}>Why I did it</p><p className={s.p}>{c.why}</p></div>
+                  <div><p className={s.contribK}>The outcome</p><p className={s.p}>{c.outcome}</p></div>
+                </Reveal>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       {/* 06 user journey */}
       {st.journey && (
       <section className={`${site.container} ${s.section}`} aria-labelledby="journey">
@@ -180,6 +248,19 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
         </Reveal>
         <Flowchart slug={st.slug} name="architecture" fig="2" note={st.architecture.note} alt={`${st.title} product architecture: ${st.architecture.layers.map((l) => `${l.label} — ${l.items.join(", ")}`).join("; ")}`} />
       </section>
+      )}
+
+      {/* how it's built: code and data */}
+      {st.build && (
+        <section className={`${site.container} ${s.section}`} aria-labelledby="build">
+          <Reveal className={s.split}>
+            <div>
+              <Label n={N()}>Code and data</Label>
+              <h2 id="build" className={s.h2}>{st.build.title}</h2>
+            </div>
+            <div className={s.flow}><Blocks items={st.build.body} lead /></div>
+          </Reveal>
+        </section>
       )}
 
       {/* key design contributions */}
@@ -209,6 +290,44 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
               </li>
             ))}
           </ol>
+        </section>
+      )}
+
+      {/* problems and solutions */}
+      {st.problems && (
+        <section className={`${site.container} ${s.section}`} aria-labelledby="problems">
+          <Reveal>
+            <Label n={N()}>Problems and solutions</Label>
+            <h2 id="problems" className={s.h2}>What went wrong, and how I fixed it</h2>
+          </Reveal>
+          <ol className={s.contribs}>
+            {st.problems.map((c, i) => (
+              <li key={c.t} className={s.contrib}>
+                <Reveal className={s.contribHead}>
+                  <span className={s.stepN}>{String(i + 1).padStart(2, "0")}</span>
+                  <h3 className={s.h3}>{c.t}</h3>
+                </Reveal>
+                <Reveal className={`${s.contribBody} ${s.twoCol}`}>
+                  <div><p className={s.contribK}>The problem</p><p className={s.p}>{c.problem}</p></div>
+                  <div><p className={s.contribK}>The solution</p><p className={s.p}>{c.solution}</p></div>
+                </Reveal>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {/* optimisations */}
+      {st.optimisations && (
+        <section className={`${site.container} ${s.section}`} aria-labelledby="optimisations">
+          <Reveal className={s.split}>
+            <div>
+              <Label n={N()}>Optimisation</Label>
+              <h2 id="optimisations" className={s.h2}>{st.optimisations.title}</h2>
+              <p className={s.p} style={{ marginTop: 16 }}>{st.optimisations.lead}</p>
+            </div>
+            <ul className={s.list}>{st.optimisations.items.map((x) => <li key={x}>{x}</li>)}</ul>
+          </Reveal>
         </section>
       )}
 
