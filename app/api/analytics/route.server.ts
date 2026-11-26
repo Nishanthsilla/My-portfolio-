@@ -20,7 +20,7 @@ export async function GET(req: Request) {
       ...s,
       wall: { waiting: notes.filter((n) => n.status === "pending").length, approved: notes.filter((n) => n.status === "approved").length },
       access: { waiting: reqs.filter((r) => r.status === "pending").length, total: reqs.length },
-      ga: !!process.env.NEXT_PUBLIC_GA_ID,
+      ga: true, // Google Analytics: G-1YQK2Z18MY (components/site/Analytics.tsx)
     });
   } catch {
     return json({ ok: false, error: "Couldn't read the numbers." }, 503);
