@@ -9,21 +9,22 @@ import type { TileSize } from "@/lib/site/home";
 import { categoryLabel } from "@/lib/site/routes";
 import h from "./home.module.css";
 
-/** rich colour fields behind each project (in turn), so the covers read like product shots on a backdrop */
+/** the colour fields behind each project, kept but softened: less saturation and a gentler light-to-dark
+ * range, so the backdrops stay warm without being loud */
 const TONES = [
-  "linear-gradient(180deg, #F2A24E 0%, #D9612A 100%)",
-  "linear-gradient(160deg, #BFF3CD 0%, #3E9D63 100%)",
-  "radial-gradient(120% 90% at 50% 100%, #2D50FF 0%, #12207A 55%, #0A1244 100%)",
-  "linear-gradient(170deg, #C93A2C 0%, #5C1013 100%)",
-  "linear-gradient(180deg, #F8CDB0 0%, #E07A57 100%)",
-  "linear-gradient(170deg, #9C8BF5 0%, #3B2B95 100%)",
+  "linear-gradient(180deg, #E8B07A 0%, #C98552 100%)", // orange
+  "linear-gradient(160deg, #B5D9BE 0%, #6FA683 100%)", // green
+  "radial-gradient(120% 90% at 50% 100%, #5A6FC4 0%, #3A4888 55%, #2E3A6E 100%)", // blue
+  "linear-gradient(170deg, #B9675C 0%, #7E3E38 100%)", // red
+  "linear-gradient(180deg, #EECBB4 0%, #D59A80 100%)", // peach
+  "linear-gradient(170deg, #ABA0E0 0%, #6A5DAE 100%)", // violet
 ];
 /** a project that needs its own backdrop (it sets off its cover) */
 const TONE_FOR: Record<string, string> = {
-  // deep plum and wine: the Critical red box glows on it
-  "salespulze-heat-map": "radial-gradient(120% 90% at 50% 30%, #6B1E3E 0%, #3A0F22 55%, #1C0711 100%)",
-  // the platform's own violet
-  "ambient-ai": "linear-gradient(170deg, #9C8BF5 0%, #3B2B95 100%)",
+  // muted plum: the Critical red box still glows on it
+  "salespulze-heat-map": "radial-gradient(120% 90% at 50% 30%, #7A4058 0%, #5A2E42 55%, #43222F 100%)",
+  // the platform's own violet, softened
+  "ambient-ai": "linear-gradient(170deg, #ABA0E0 0%, #6A5DAE 100%)",
 };
 /**
  * The work, told as four things Nishanth can do — each a statement with the projects that prove
