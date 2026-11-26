@@ -490,7 +490,7 @@ button.tileCta { font-family: inherit; cursor: pointer; }
   --ch: min(calc(min(84cqw, 300px) * 0.6875), calc((100cqh - 28px) / 2));
   --w: calc(var(--ch) / 0.6875);
   --yc: calc((100cqh - var(--ch)) / 2);
-  --s: max(calc(var(--ch) + 14px), 50cqh);
+  --s: calc(var(--ch) + 16px);
   position: absolute; left: 50%; top: 0; width: var(--w); aspect-ratio: 16 / 11; margin-left: calc(var(--w) / -2);
   display: flex; align-items: flex-end; padding: 12px 14px; border-radius: 12px; background: var(--tone); color: #fff;
   overflow: hidden; isolation: isolate;

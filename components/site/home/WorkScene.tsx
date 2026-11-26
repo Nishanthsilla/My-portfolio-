@@ -43,16 +43,16 @@ export const STATEMENTS: { id: string; title: string; line: string; slugs: strin
     slugs: ["salespulze-heat-map", "mao", "disprz"],
   },
   {
-    id: "pixels",
-    title: "I care about the pixels",
-    line: "Interfaces, branding and posters where the detail is the point.",
-    slugs: ["fitness-app", "design-system-frustration-logic", "extreme-appcoders-website", "eeve-poster", "food-engineers-logo"],
-  },
-  {
     id: "systems",
     title: "I build systems that scale",
     line: "The components and rules that keep a product consistent as it grows.",
     slugs: ["covasant-design-system"],
+  },
+  {
+    id: "pixels",
+    title: "I care about the pixels",
+    line: "Interfaces, branding and posters where the detail is the point.",
+    slugs: ["fitness-app", "design-system-frustration-logic", "extreme-appcoders-website", "eeve-poster", "food-engineers-logo"],
   },
 ];
 const HIDDEN = ["superkalam"];
