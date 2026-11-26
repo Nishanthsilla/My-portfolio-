@@ -42,4 +42,4 @@
   .switch a { padding: 8px 14px; }
 }
 
-:global(html[data-theme="dark"]) .cover { background: linear-gradient(180deg, #1a1a1e 0%, #141417 100%); }
+:global(html[data-theme="dark"]) .cover { background: linear-gradient(180deg, #32322f 0%, #2a2a28 100%); }

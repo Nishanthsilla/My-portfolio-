@@ -79,12 +79,13 @@
 
 /* ---------- dark theme: the same tokens, night values ---------- */
 :global(html[data-theme="dark"]) .site {
-  --bg: #0d0d0f;
-  --ink: #edebe6;
-  --muted: #8f8c86;
-  --line: #26262b;
-  --surface: #151518;
-  --tile: #1b1b1f;
+  /* a warm dark grey (not near-black): easier on the eyes */
+  --bg: #262624;
+  --ink: #eceae4;
+  --muted: #a19e97;
+  --line: #3b3a37;
+  --surface: #30302e;
+  --tile: #2d2d2b;
   --accent: #ff5a47;
   --accent-press: #ff6f5e;
   --accent-ink: #ff7d6d;

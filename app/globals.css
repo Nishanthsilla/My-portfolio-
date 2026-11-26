@@ -21,7 +21,7 @@ html[data-embed] main { padding-top: 8px; }
 
 
 /* dark theme: page background behind everything, and a soft cross-fade when switching */
-html[data-theme="dark"], html[data-theme="dark"] body { background: #0d0d0f; color-scheme: dark; }
+html[data-theme="dark"], html[data-theme="dark"] body { background: #262624; color-scheme: dark; }
 html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after { transition: background-color 400ms ease, color 400ms ease, border-color 400ms ease !important; }
 /* the theme switch's ink bleed: the new page is clipped to the traced ink outline (ThemeToggle.tsx + inkMask.ts) */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
