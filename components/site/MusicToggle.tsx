@@ -5,8 +5,9 @@ import { onIntroDone } from "@/lib/introState";
 import s from "./music.module.css";
 
 const KEY = "nishanth.music.v2"; // on/off (remembered)
-const VOL_KEY = "nishanth.music.volume";
-const MAX = 0.5; // the slider's top; the default sits at 0.24 so the sticker and chat sounds stay on top
+const VOL_KEY = "nishanth.music.volume.v2"; // (a new key: everyone starts at the new, quieter level)
+const MAX = 0.4; // the slider's top (full level)
+const DEFAULT_VOL = 0.3; // the starting level: quiet background, well under the sticker and chat sounds
 const TRACK = { title: "Biting Bullets", artist: "Ridgeclub", src: "/audio/ambient/biting-bullets", cover: "/audio/ambient/biting-bullets-cover.webp" };
 
 type Engine = { ctx: AudioContext; gain: GainNode; an: AnalyserNode; src: AudioBufferSourceNode | null; buf: Promise<AudioBuffer | null>; dur: number; startedAt: number; offset: number };
@@ -40,7 +41,7 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
   const [dur, setDur] = useState(0);
   const [peaks, setPeaks] = useState<number[]>([]);
   const [hoverAt, setHoverAt] = useState<number | null>(null);
-  const [vol, setVol] = useState(0.24 / MAX);
+  const [vol, setVol] = useState(DEFAULT_VOL);
   const eng = useRef<Engine | null>(null);
   const wanted = useRef(true);
   const volRef = useRef(vol);
@@ -205,6 +206,16 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
     } else e.offset = t;
   };
 
+  const changeVol = (v: number) => {
+    volRef.current = v;
+    setVol(v);
+    try {
+      localStorage.setItem(VOL_KEY, String(v));
+    } catch {}
+    const e = eng.current;
+    if (e?.src) e.gain.gain.setTargetAtTime(v * MAX, e.ctx.currentTime, 0.05);
+  };
+
   const show = () => {
     clearTimeout(closeT.current);
     setOpen(true);
@@ -279,6 +290,15 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
             <span>{dur ? fmt(dur) : "–:––"}</span>
           </span>
         </div>
+        <label className={s.vol}>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4v-5Z" fill="currentColor" />
+            {vol > 0.02 && <path d="M15.5 9.5a3.5 3.5 0 0 1 0 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />}
+            {vol > 0.55 && <path d="M18 7a7 7 0 0 1 0 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />}
+          </svg>
+          <input type="range" min={0} max={1} step={0.01} value={vol} onChange={(e) => changeVol(Number(e.target.value))} aria-label="Volume" aria-valuetext={`${Math.round(vol * 100)}%`} style={{ ["--p" as string]: `${vol * 100}%` }} />
+          <span className={s.volN}>{Math.round(vol * 100)}</span>
+        </label>
       </div>
       <button
         type="button"
