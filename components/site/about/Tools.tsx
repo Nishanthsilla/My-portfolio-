@@ -72,7 +72,7 @@ export default function Tools() {
                   data-logo
                   tabIndex={0}
                   data-mono={"mono" in t && t.mono ? "" : undefined}
-                  style={{ ["--glow" as string]: t.glow }}
+                  style={{ ["--src" as string]: `url(/images/tools/${t.logo}.svg)` }}
                   onPointerEnter={(e) => fit(e.currentTarget)}
                   onFocus={(e) => fit(e.currentTarget)}
                 >
