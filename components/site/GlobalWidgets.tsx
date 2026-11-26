@@ -25,7 +25,7 @@ export default function GlobalWidgets({ face }: { face: string | null }) {
     () => location.hash.startsWith("#the-wall"),
     () => false,
   );
-  const hide = path.startsWith("/wall") || onWall;
+  const hide = path.startsWith("/wall") || path.startsWith("/admin") || path.startsWith("/access-admin") || onWall;
   // the sound effects' audio is set up as the site loads, so the first tap anywhere unlocks it
   useEffect(() => warmNotify(), []);
   return (

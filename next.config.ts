@@ -10,9 +10,12 @@ const nextConfig: NextConfig = staticExport
   ? { output: "export" }
   : {
       pageExtensions: ["tsx", "ts", "jsx", "js", "server.ts"],
-      // a short, easy-to-remember address for The Wall's moderation page
+      // the admin portal lives at /admin; its two old addresses open it on the matching tab
       async redirects() {
-        return [{ source: "/admin", destination: "/wall/admin", permanent: false }];
+        return [
+          { source: "/wall/admin", destination: "/admin", permanent: false },
+          { source: "/access-admin", destination: "/admin?tab=notifications", permanent: false },
+        ];
       },
       cacheComponents: true,
       partialPrefetching: true,

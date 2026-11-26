@@ -5,7 +5,8 @@
  * (The .server.ts name keeps this file out of the static offline preview,
  * which has no server; see next.config.ts.)
  */
-import { connection } from "next/server";
+import { after, connection } from "next/server";
+import { notifyNote } from "@/lib/access/guard";
 import { isClean, normalizeText } from "@/lib/wall/moderation";
 import { STICKER_IDS, isGiphy } from "@/lib/wall/stickers";
 import { DEFAULT_FONT, FONT_IDS } from "@/lib/wall/fonts";
@@ -75,6 +76,9 @@ export async function POST(req: Request) {
     if ((await recentSameMessage(message, 24 * 3600_000)) > 0) return json({ ok: false, error: "That note is already on its way." }, 409);
     const note = await insertPending({ message, name, sticker: body.sticker, font, shape, color, x: body.x, y: body.y, rotation: body.rotation }, id);
     recordPost(id);
+    // a phone alert, sent after the reply so the visitor never waits for it
+    const origin = new URL(req.url).origin;
+    after(() => notifyNote(origin, { name: note.name, message: note.message }));
     // the id lets the visitor's browser keep showing its own pending note (to them only) until approved
     return json({ ok: true, status: "pending", note: { id: note.id, message: note.message, name: note.name, sticker: note.sticker, font: note.font, shape: note.shape, color: note.color, x: note.x, y: note.y, rotation: note.rotation, createdAt: note.createdAt } }, 201);
   } catch {

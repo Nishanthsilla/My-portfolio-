@@ -55,12 +55,30 @@ export async function notify(origin: string, r: { id: string; name: string; emai
         message: `${r.email}\n${r.reason || "No reason given."}\n\nWants to see the real client screenshots (Self-Ready, Ambient AI).`,
         tags: ["lock"],
         priority: 4,
-        click: `${origin}/access-admin`,
+        click: `${origin}/admin?tab=notifications`,
         actions: [
           { action: "http", label: "Approve", url: link("approve"), method: "POST", clear: true },
           { action: "http", label: "Decline", url: link("decline"), method: "POST", clear: true },
         ],
       }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** A push to the same phone when someone leaves a note on the Wall (it waits for approval in /admin). */
+export async function notifyNote(origin: string, n: { name: string; message: string }) {
+  const topic = (process.env.NTFY_TOPIC ?? "").trim();
+  if (!topic) return false;
+  const server = (process.env.NTFY_SERVER ?? "https://ntfy.sh").replace(/\/$/, "");
+  try {
+    const res = await fetch(server, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic, title: `New note on the Wall from ${n.name}`, message: `"${n.message}"\n\nIt's waiting for your approval.`, tags: ["memo"], priority: 3, click: `${origin}/admin` }),
+      signal: AbortSignal.timeout(4000),
     });
     return res.ok;
   } catch {

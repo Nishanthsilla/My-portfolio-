@@ -50,7 +50,8 @@ export default function IntroFilm() {
     try {
       seen = FILM_REPLAY === "once-per-session" && sessionStorage.getItem(SESSION_KEY) === "1" && !/[?&]intro=replay/.test(location.search);
     } catch {}
-    if (reduce || seen || html.hasAttribute("data-embed")) {
+    const admin = /^\/(admin|wall\/admin|access-admin)(\/|$)/.test(location.pathname);
+    if (reduce || seen || admin || html.hasAttribute("data-embed")) {
       announceDone();
       setActive(false);
       return;

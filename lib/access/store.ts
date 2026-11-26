@@ -2,7 +2,7 @@
  * Confidential screenshots — storage (server only).
  *
  * The real client screenshots never go in the repository (it is public): they
- * are uploaded through /access-admin and kept in the database, next to the
+ * are uploaded through /admin (the Images tab) and kept in the database, next to the
  * access requests. Same database as the Wall: Postgres when DATABASE_URL (or
  * Vercel's POSTGRES_URL / STORAGE_URL) is set, otherwise a local SQLite file.
  */
