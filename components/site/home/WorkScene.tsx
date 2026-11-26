@@ -9,22 +9,22 @@ import type { TileSize } from "@/lib/site/home";
 import { categoryLabel } from "@/lib/site/routes";
 import h from "./home.module.css";
 
-/** rich colour fields behind each project (in turn), so the covers read like product shots on a backdrop */
+/** soft, calm colour fields behind each project's animation (pastel, so the work leads, not the backdrop) */
 const TONES = [
-  "linear-gradient(180deg, #F2A24E 0%, #D9612A 100%)",
-  "linear-gradient(160deg, #BFF3CD 0%, #3E9D63 100%)",
-  "radial-gradient(120% 90% at 50% 100%, #2D50FF 0%, #12207A 55%, #0A1244 100%)",
-  "linear-gradient(170deg, #C93A2C 0%, #5C1013 100%)",
-  "linear-gradient(180deg, #F8CDB0 0%, #E07A57 100%)",
-  "linear-gradient(170deg, #9C8BF5 0%, #3B2B95 100%)",
+  "linear-gradient(170deg, #EFE7DC 0%, #DCCAB4 100%)", // sand
+  "linear-gradient(170deg, #E3ECE5 0%, #BFD4C5 100%)", // sage
+  "linear-gradient(170deg, #E1E8F0 0%, #BACADB 100%)", // powder blue
+  "linear-gradient(170deg, #F2E2DF 0%, #DDBDB6 100%)", // blush
+  "linear-gradient(170deg, #E9E4F1 0%, #CBC1DF 100%)", // lavender
+  "linear-gradient(170deg, #E0ECEB 0%, #B9D3D1 100%)", // mist
 ];
-/** a project that needs its own backdrop (it sets off its cover) */
+/** a project that wants a particular soft tone behind its animation */
 const TONE_FOR: Record<string, string> = {
-  // deep plum and wine: the Critical red box glows on it
-  "salespulze-heat-map": "radial-gradient(120% 90% at 50% 30%, #6B1E3E 0%, #3A0F22 55%, #1C0711 100%)",
-  // the platform's own violet
-  "ambient-ai": "linear-gradient(170deg, #9C8BF5 0%, #3B2B95 100%)",
+  "salespulze-heat-map": "linear-gradient(170deg, #F4E3E6 0%, #E2BFC6 100%)", // soft rose, so the red score box still reads
+  "ambient-ai": "linear-gradient(170deg, #E9E4F1 0%, #CBC1DF 100%)",
 };
+/** animated or drawn covers sit on the soft fields with dark text; photo covers keep white text on a dark fade */
+const light = (p: Project) => p.preview.kind !== "image";
 /**
  * The work, told as four things Nishanth can do — each a statement with the projects that prove
  * it — then a compact list of everything. (Superkalam is hidden for now.)
@@ -269,6 +269,7 @@ function PeekStack({ ps }: { ps: Project[] }) {
           <span
             key={p.slug + (wraps ? `-w${front}` : "")}
             className={h.peekCard}
+            data-light={light(p) ? "" : undefined}
             data-out={wraps ? "" : undefined}
             style={{ ["--tone" as string]: toneOf(p), ["--p" as string]: pos, ["--from" as string]: was }}
           >
@@ -301,15 +302,16 @@ function Tile({ p, size, tone, open }: { p: Project; size: TileSize; tone: strin
     </>
   );
   const cls = `${h.tile} ${large ? h.large : h.small}`;
+  const lit = light(p) ? "" : undefined;
   const style = { ["--tone" as string]: tone };
   if (p.external)
     return (
-      <a style={style} className={`${cls} cursor-target`} data-cursor-label={`Open on ${p.external.label}`} href={p.external.href} target="_blank" rel="noopener noreferrer" aria-label={`${p.title} — opens on ${p.external.label}`}>
+      <a style={style} data-light={lit} className={`${cls} cursor-target`} data-cursor-label={`Open on ${p.external.label}`} href={p.external.href} target="_blank" rel="noopener noreferrer" aria-label={`${p.title} — opens on ${p.external.label}`}>
         {body}
       </a>
     );
   return (
-    <div style={style} className={`${cls} ${h.stretchTile} cursor-target`} data-cursor-label="View project">
+    <div style={style} data-light={lit} className={`${cls} ${h.stretchTile} cursor-target`} data-cursor-label="View project">
       {body}
       <button type="button" className={h.stretch} onClick={() => open("simple")} aria-label={`${p.title} — open`} />
       <button type="button" className={h.tileCta} onClick={() => open("deep")}>

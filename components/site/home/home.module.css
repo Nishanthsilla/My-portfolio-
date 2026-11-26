@@ -585,3 +585,15 @@ button.tileCta { font-family: inherit; cursor: pointer; }
   .shaftInner, .peekCard { transition: none; }
   .journey .shaft[data-down] .room { animation: none; }
 }
+
+/* soft fields: animated covers on calm pastels, with dark text on a light fade (photo covers keep the dark fade) */
+.tile[data-light] { color: #1f1d1b; }
+.tile[data-light] .tileBody { background: linear-gradient(to top, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0.5) 55%, rgba(255, 255, 255, 0) 100%); }
+.tile[data-light] .tileTitle { color: #1f1d1b; }
+.tile[data-light] .tileMeta { color: rgba(31, 29, 27, 0.62); }
+.tile[data-light] .tileDesc { color: rgba(31, 29, 27, 0.76); }
+.tile[data-light] .arrow { color: rgba(31, 29, 27, 0.5); }
+.tile[data-light]:hover .arrow { color: var(--accent-ink); }
+.peekCard[data-light] { color: #1f1d1b; box-shadow: 0 12px 28px -20px rgba(40, 30, 20, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.5); }
+.peekCard[data-light]::after { background: linear-gradient(to top, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0)); }
+.peekCard[data-light] b { text-shadow: none; }
