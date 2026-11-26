@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ProjectMedia from "../ProjectMedia";
 import CursorScope from "../CursorScope";
 import ProjectDrawer, { type DrawerMode } from "./ProjectDrawer";
 import { projects, type Project } from "@/lib/site/content";
-import { bento, type TileSize } from "@/lib/site/home";
+import type { TileSize } from "@/lib/site/home";
 import { categoryLabel } from "@/lib/site/routes";
 import h from "./home.module.css";
 
@@ -57,69 +57,154 @@ export const STATEMENTS: { id: string; title: string; line: string; slugs: strin
 ];
 const HIDDEN = ["superkalam"];
 const bySlug = (s: string) => projects.find((p) => p.slug === s);
-const size = (slug: string, i: number): TileSize => (i === 0 ? "large" : bento.find((b) => b.slug === slug)?.size === "large" && i < 2 ? "large" : "small");
 const ALL: Project[] = projects.filter((p) => !HIDDEN.includes(p.slug));
-
-/** jump to a statement inside the sideways journey (desktop) or the stacked scene (phones) */
-function jumpTo(id: string) {
-  const el = document.getElementById(`work-${id}`);
-  if (!el) return;
-  const journey = el.closest<HTMLElement>("section[data-mode]");
-  if (journey?.dataset.mode === "desktop") {
-    const track = el.closest<HTMLElement>("[data-scene]")?.parentElement;
-    if (!track) return;
-    const x = el.getBoundingClientRect().left - track.getBoundingClientRect().left;
-    scrollTo({ top: journey.getBoundingClientRect().top + scrollY + x - 24, behavior: "smooth" });
-  } else el.scrollIntoView({ behavior: "smooth", block: "start", inline: "start" });
-}
+/** each project keeps one backdrop everywhere (the peek cards and its tile) */
+const toneOf = (p: Project) => TONE_FOR[p.slug] ?? TONES[Math.max(0, ALL.indexOf(p)) % TONES.length];
+const roomProjects = (id: string) => (STATEMENTS.find((s) => s.id === id)?.slugs ?? []).map(bySlug).filter((p): p is Project => !!p);
+/** in a room the first project leads (large) once there are three or more; two or four share the space */
+const roomSize = (n: number, i: number): TileSize => (i === 0 && (n === 1 || n === 3 || n >= 5) ? "large" : "small");
 
 /**
- * Scene 2 of the homepage: the work, as four statements in a row (stacked on phones), each with
- * its projects, then "All work". Opening a project slides a panel in from the right with a
- * Simplified and a Deep-dive view, so visitors never lose their place.
+ * Scene 2 of the homepage: the work as one floor with four doors (one per thing Nishanth does well).
+ * Hovering a door fans out the case studies inside; opening it takes the view down a level into
+ * that room, a bento grid sized to how many projects it holds. "Back to the floor" (or Esc, or the
+ * browser's back button) rises again. After the floor comes "All work", then the journey goes on.
  */
 export default function WorkScene() {
   const [drawer, setDrawer] = useState<{ p: Project; mode: DrawerMode } | null>(null);
+  const [room, setRoom] = useState<string | null>(null);
+  // the room stays rendered while the view rises back to the floor
+  const [shown, setShown] = useState<string | null>(null);
   const open = (p: Project, mode: DrawerMode) => setDrawer({ p, mode });
+  const scene = useRef<HTMLElement>(null);
 
-  // a shared link (?lens=hard-problems) lands on that statement
+  const goDown = (id: string, push = true) => {
+    setShown(id);
+    setRoom(id);
+    if (push) history.pushState({ ...history.state, workRoom: id }, "", `?lens=${id}#work`);
+  };
+  const goUp = (pop = false) => {
+    setRoom(null);
+    if (!pop && history.state?.workRoom) history.back();
+    else if (!pop) history.replaceState(history.state, "", location.pathname + "#work");
+  };
+
+  // a shared link (?lens=pixels) lands in that room; the browser's back button rises to the floor
   useEffect(() => {
     const lens = new URLSearchParams(location.search).get("lens");
-    if (!lens || !STATEMENTS.some((s) => s.id === lens)) return;
-    const id = setTimeout(() => jumpTo(lens), 900);
-    return () => clearTimeout(id);
+    let t = 0;
+    if (lens && STATEMENTS.some((s) => s.id === lens)) {
+      t = window.setTimeout(() => {
+        scene.current?.closest<HTMLElement>("[data-scene]")?.scrollIntoView({ block: "start", inline: "start" });
+        goDown(lens, false);
+      }, 900);
+    }
+    const onPop = () => {
+      const id = (history.state as { workRoom?: string } | null)?.workRoom;
+      if (id) goDown(id, false);
+      else setRoom(null);
+    };
+    addEventListener("popstate", onPop);
+    return () => { clearTimeout(t); removeEventListener("popstate", onPop); };
   }, []);
 
+  // while down in a room, the sideways journey holds still (Esc rises)
+  useEffect(() => {
+    if (!room) return;
+    const html = document.documentElement;
+    const desktop = scene.current?.closest<HTMLElement>("section[data-mode]")?.dataset.mode === "desktop";
+    html.dataset.placing = "";
+    html.dataset.workRoom = room;
+    const inGrid = (t: EventTarget | null) => {
+      const g = (t as HTMLElement | null)?.closest?.("[data-room-scroll]") as HTMLElement | null;
+      return !!g && g.scrollHeight > g.clientHeight + 1;
+    };
+    const wheel = (e: WheelEvent) => {
+      if (!desktop || inGrid(e.target) || e.ctrlKey) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    };
+    const key = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !document.querySelector("[role=dialog]")) goUp();
+      else if (desktop && ["ArrowDown", "ArrowUp", "PageDown", "PageUp", " ", "Home", "End"].includes(e.key) && !(e.target as HTMLElement)?.closest?.("input,textarea")) e.preventDefault();
+    };
+    addEventListener("wheel", wheel, { capture: true, passive: false });
+    addEventListener("keydown", key);
+    scene.current?.closest<HTMLElement>("[data-scene]")?.scrollTo({ top: 0, behavior: "smooth" });
+    return () => {
+      delete html.dataset.placing;
+      delete html.dataset.workRoom;
+      removeEventListener("wheel", wheel, { capture: true });
+      removeEventListener("keydown", key);
+    };
+  }, [room]);
+
+  const st = STATEMENTS.find((s) => s.id === shown);
+  const list = shown ? roomProjects(shown) : [];
+
   return (
-    <section id="work" className={h.workScene} aria-labelledby="work-title">
-      <h2 id="work-title" className={h.srOnly}>Selected work</h2>
+    <section ref={scene} id="work" className={h.workScene} aria-labelledby="work-title">
       <CursorScope>
-        {STATEMENTS.map((st, n) => (
-          <div key={st.id} id={`work-${st.id}`} className={h.statement} aria-labelledby={`st-${st.id}`}>
-            <div className={h.statementHead}>
-              <p className={h.eyebrow}>{n === 0 ? "Selected work · " : ""}{n + 1} / {STATEMENTS.length}</p>
-              <h3 id={`st-${st.id}`} className={h.statementTitle}>{st.title}</h3>
-              <p className={h.workLine}>{st.line}</p>
-              {n === 0 && (
-                <nav className={h.jumpRow} aria-label="Jump to">
-                  {STATEMENTS.slice(1).map((s) => (
-                    <a key={s.id} href={`/?lens=${s.id}#work`} onClick={(e) => { e.preventDefault(); jumpTo(s.id); }}>
-                      {s.title.replace(/^I (can )?/, "").replace(/^./, (c) => c.toUpperCase())} <span aria-hidden="true">→</span>
-                    </a>
-                  ))}
-                  <a href="#work-all" onClick={(e) => { e.preventDefault(); jumpTo("all"); }}>
-                    All work <span aria-hidden="true">→</span>
-                  </a>
-                </nav>
+        <div className={h.shaft} data-down={room ? "" : undefined} onTransitionEnd={(e) => { if (e.target === e.currentTarget && !room) setShown(null); }}>
+          <div className={h.shaftInner}>
+            {/* the floor */}
+            <div className={h.floor} aria-hidden={room ? true : undefined} inert={room ? true : undefined}>
+              <header className={h.floorHead}>
+                <p className={h.eyebrow}>Selected work</p>
+                <h2 id="work-title" className={h.floorTitle}>Four things I do well. Pick a door.</h2>
+              </header>
+              <ul className={h.doors}>
+                {STATEMENTS.map((s, n) => {
+                  const ps = roomProjects(s.id);
+                  return (
+                    <li key={s.id}>
+                      <button type="button" className={`${h.door} cursor-target`} data-cursor-label="Go down" onClick={() => goDown(s.id)} aria-label={`${s.title}: ${ps.length} case ${ps.length === 1 ? "study" : "studies"}`}>
+                        <span className={h.doorNum}>0{n + 1}</span>
+                        <span className={h.doorTitle}>{s.title}</span>
+                        <span className={h.doorLine}>{s.line}</span>
+                        <span className={h.peek} aria-hidden="true">
+                          {ps.map((p, i) => (
+                            <span key={p.slug} className={h.peekCard} style={{ ["--tone" as string]: toneOf(p), ["--i" as string]: i, ["--n" as string]: ps.length }}>
+                              <b>{p.title.split(" — ")[0]}</b>
+                            </span>
+                          ))}
+                        </span>
+                        <span className={h.doorFoot}>
+                          <span>{ps.length} case {ps.length === 1 ? "study" : "studies"}</span>
+                          <span className={h.doorGo}>Go down <span aria-hidden="true">↓</span></span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            {/* the ground between the floor and the rooms below */}
+            <div className={h.ground} aria-hidden="true" />
+            {/* the room below */}
+            <div className={h.room} aria-hidden={room ? undefined : true} inert={room ? undefined : true}>
+              {st && (
+                <>
+                  <header className={h.roomHead}>
+                    <button type="button" className={h.backUp} onClick={() => goUp()}>
+                      <span aria-hidden="true">↑</span> Back to the floor
+                    </button>
+                    <div>
+                      <p className={h.eyebrow}>0{STATEMENTS.indexOf(st) + 1} · {list.length} case {list.length === 1 ? "study" : "studies"}</p>
+                      <h3 className={h.roomTitle}>{st.title}</h3>
+                    </div>
+                    <p className={h.workLine}>{st.line}</p>
+                  </header>
+                  <div className={h.roomGrid} data-count={Math.min(list.length, 5)} data-room-scroll role="list">
+                    {list.map((p, i) => (
+                      <Tile key={p.slug} p={p} size={roomSize(list.length, i)} tone={toneOf(p)} open={(mode) => open(p, mode)} />
+                    ))}
+                  </div>
+                </>
               )}
             </div>
-            <div className={`${h.bentoRow} ${st.slugs.length === 1 ? h.bentoOne : ""}`} role="list">
-              {st.slugs.map(bySlug).filter((p): p is Project => !!p).map((p, i) => (
-                <Tile key={p.slug} p={p} size={size(p.slug, i)} tone={n * 2 + i} open={(mode) => open(p, mode)} />
-              ))}
-            </div>
           </div>
-        ))}
+        </div>
         <div id="work-all" className={h.allWork} aria-labelledby="all-work-title">
           <p className={h.eyebrow}>Everything</p>
           <h3 id="all-work-title" className={h.statementTitle}>All work</h3>
@@ -147,7 +232,7 @@ export default function WorkScene() {
   );
 }
 
-function Tile({ p, size, tone, open }: { p: Project; size: TileSize; tone: number; open: (mode: DrawerMode) => void }) {
+function Tile({ p, size, tone, open }: { p: Project; size: TileSize; tone: string; open: (mode: DrawerMode) => void }) {
   const large = size === "large";
   const meta = [categoryLabel(p.category), p.org, p.year].filter(Boolean).join(" · ");
   const body = (
@@ -167,7 +252,7 @@ function Tile({ p, size, tone, open }: { p: Project; size: TileSize; tone: numbe
     </>
   );
   const cls = `${h.tile} ${large ? h.large : h.small}`;
-  const style = { ["--tone" as string]: TONE_FOR[p.slug] ?? TONES[tone % TONES.length] };
+  const style = { ["--tone" as string]: tone };
   if (p.external)
     return (
       <a style={style} className={`${cls} cursor-target`} data-cursor-label={`Open on ${p.external.label}`} href={p.external.href} target="_blank" rel="noopener noreferrer" aria-label={`${p.title} — opens on ${p.external.label}`}>
