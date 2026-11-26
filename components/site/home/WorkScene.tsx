@@ -165,6 +165,7 @@ export default function WorkScene() {
                         <span className={h.peek} aria-hidden="true">
                           {ps.map((p, i) => (
                             <span key={p.slug} className={h.peekCard} style={{ ["--tone" as string]: toneOf(p), ["--i" as string]: i, ["--n" as string]: ps.length }}>
+                              <ProjectMedia project={p} className={h.peekMedia} fill={0.86} />
                               <b>{p.title.split(" — ")[0]}</b>
                             </span>
                           ))}
