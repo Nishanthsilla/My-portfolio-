@@ -39,21 +39,29 @@
 
 /* tools */
 .loadoutHead { display: grid; gap: 12px; }
-.tools { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-@media (min-width: 1100px) { .tools { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
-.tools li {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 150px; padding: 20px 12px;
-  border-radius: 18px; background: var(--surface); border: 1px solid var(--line); text-align: center;
-  transition: transform 260ms var(--ease), box-shadow 260ms var(--ease), border-color 200ms ease;
+.tools { list-style: none; margin: 36px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: clamp(24px, 3.4vw, 44px); }
+.tools li { position: relative; display: grid; place-items: center; outline: none; cursor: default; }
+.tools img {
+  width: 56px; height: 56px; object-fit: contain; display: block;
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 300ms ease;
 }
-.tools li:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--ink) 18%, transparent); box-shadow: 0 20px 36px -26px rgba(30, 25, 20, 0.4); }
-.tools img { width: 48px; height: 48px; object-fit: contain; }
-.tools b { font-size: 15px; font-weight: 560; letter-spacing: -0.01em; }
-.tools span { font-size: 12px; line-height: 1.35; color: var(--muted); }
-/* dark logos (Cursor, Notion, Framer) need a light chip to show in dark mode */
-:global([data-theme="dark"]) .tools img { padding: 6px; border-radius: 12px; background: #f4f3f0; box-sizing: content-box; width: 40px; height: 40px; }
-@media (max-width: 520px) { .tools { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; } .tools li { min-height: 124px; padding: 16px 6px; } .tools img { width: 40px; height: 40px; } .tools b { font-size: 13.5px; } }
-@media (prefers-reduced-motion: reduce) { .tools li { transition: none; } }
+.tools li:hover img, .tools li:focus-visible img {
+  transform: translateY(-4px) scale(1.08);
+  filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--glow) 60%, transparent)) drop-shadow(0 0 10px color-mix(in srgb, var(--glow) 35%, transparent));
+}
+/* the name, in a small tooltip above the logo */
+.tip {
+  position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translate(calc(-50% + var(--shift, 0px)), 4px); white-space: nowrap; pointer-events: none;
+  padding: 6px 10px; border-radius: 8px; background: var(--ink); color: var(--bg); font-size: 12.5px; font-weight: 500; letter-spacing: -0.005em;
+  opacity: 0; transition: opacity 160ms ease, transform 200ms var(--ease); z-index: 2;
+}
+.tip::after { content: ""; position: absolute; top: 100%; left: calc(50% - var(--shift, 0px)); margin-left: -5px; border: 5px solid transparent; border-top-color: var(--ink); }
+.tools li:hover .tip, .tools li:focus-visible .tip, .tools li:focus .tip { opacity: 1; transform: translate(calc(-50% + var(--shift, 0px)), 0); }
+/* black logos turn light in dark mode */
+:global([data-theme="dark"]) .tools li[data-mono] img { filter: invert(1) hue-rotate(180deg); }
+:global([data-theme="dark"]) .tools li[data-mono]:hover img { filter: invert(1) hue-rotate(180deg) drop-shadow(0 10px 18px color-mix(in srgb, var(--glow) 60%, transparent)); }
+@media (max-width: 520px) { .tools { gap: 22px 26px; } .tools img { width: 44px; height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .tools img, .tip { transition: none; } }
 
 /* outside work */
 .life { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(32px, 5vw, 72px); align-items: start; }
