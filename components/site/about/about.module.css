@@ -55,9 +55,14 @@
 .toolStage[data-on] [data-logo] { opacity: 1; transform: none; }
 .toolStage h3 { opacity: 0; transition: opacity 500ms ease 900ms; }
 .toolStage[data-on] h3 { opacity: 1; }
+/* phones: he stays on the left (hands pointing at the logos), the logos in a column on the right */
 @media (max-width: 760px) {
-  .toolStage { grid-template-columns: 1fr; }
-  .presenter { position: static; width: min(62%, 260px); }
+  .toolStage { grid-template-columns: 40% minmax(0, 1fr); gap: 12px; }
+  .presenter { top: 88px; margin-left: -8px; width: calc(100% + 8px); }
+  .toolStage .toolGroups { gap: 26px; padding-top: 4px; }
+  .toolStage .toolGroup h3 { margin-bottom: 12px; font-size: 11px; }
+  .toolStage .tools { gap: 16px 18px; }
+  .toolStage .tools img { width: 34px; height: 34px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .presenter, .toolStage [data-logo], .toolStage h3 { transition: none; opacity: 1; transform: none; }
