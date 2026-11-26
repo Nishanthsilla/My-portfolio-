@@ -181,6 +181,23 @@ export const projects: Project[] = [
     source: "site",
   },
 
+  {
+    slug: "this-portfolio",
+    category: "design-engineering",
+    title: "This portfolio",
+    eyebrow: "Personal project / Design and build",
+    year: "2026",
+    role: "Designer and product owner",
+    description: "A portfolio that makes you laugh, and still gets a hiring manager to the right work in one click.",
+    preview: { kind: "image", src: "/images/case-studies/this-portfolio/cover.webp", alt: "The Work section of this portfolio: four doors, each with live project covers", fit: "cover" },
+    featured: {
+      overview: "/work/this-portfolio",
+      caseStudy: "/work/this-portfolio",
+      tags: ["UX case study", "Design and build", "Personal"],
+    },
+    source: "site",
+  },
+
   // ---------- Visual Craft ----------
   {
     slug: "disprz",

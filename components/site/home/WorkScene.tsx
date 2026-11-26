@@ -35,7 +35,7 @@ export const STATEMENTS: { id: string; title: string; line: string; slugs: strin
     id: "idea-to-launch",
     title: "I can take a product from idea to launch",
     line: "Products I owned from the business problem to the shipped release.",
-    slugs: ["ambient-ai", "self-ready", "thriving-springs-e-learning", "ryzeup"],
+    slugs: ["ambient-ai", "self-ready", "thriving-springs-e-learning", "ryzeup", "this-portfolio"],
   },
   {
     id: "hard-problems",
