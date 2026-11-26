@@ -582,3 +582,4 @@ button.tileCta { font-family: inherit; cursor: pointer; }
   .shaftInner, .peekCard { transition: none; }
   .journey .shaft[data-down] .room { animation: none; }
 }
+:global(html[data-overlay]) .scrollHint { display: none; }

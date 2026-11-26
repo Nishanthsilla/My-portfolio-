@@ -144,7 +144,7 @@ export default function Journey({
       // trackpads: a left/right swipe moves the page left/right too (up/down already does),
       // and the browser's own back/forward swipe stays out of the way on the homepage
       const onWheel = (e: WheelEvent) => {
-        if (e.ctrlKey || Math.abs(e.deltaX) <= Math.abs(e.deltaY) || html.dataset.placing !== undefined) return;
+        if (e.defaultPrevented || e.ctrlKey || Math.abs(e.deltaX) <= Math.abs(e.deltaY) || html.dataset.placing !== undefined || html.dataset.overlay !== undefined) return;
         if ((e.target as Element).closest?.("[data-own-wheel], .circular-gallery, [role=dialog]")) return;
         e.preventDefault();
         const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerWidth : 1;
@@ -369,7 +369,7 @@ export default function Journey({
     <JourneyContext.Provider value={ctx}>
       <section ref={section} className={h.journey} data-mode={mode} aria-label="Homepage">
         {mode !== "stack" && <ScrollHint track={track} />}
-        <div ref={frame} className={h.journeyFrame}>
+        <div ref={frame} className={h.journeyFrame} data-journey-frame>
           <div ref={track} className={h.journeyTrack}>
             <div className={h.sceneIntro} data-scene="intro">
               {intro}

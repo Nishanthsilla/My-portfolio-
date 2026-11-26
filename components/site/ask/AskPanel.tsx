@@ -6,6 +6,7 @@ import { respond } from "@/lib/ask/match";
 import { SUGGESTED, topicById, type Topic } from "@/lib/ask/faq";
 import SwagGlasses from "./SwagGlasses";
 import { preloadUiSounds, uiSound } from "@/lib/sound/ui";
+import { lockPage } from "@/lib/site/pageLock";
 
 import { contact } from "@/lib/site/content";
 import a from "./ask.module.css";
@@ -124,15 +125,14 @@ export default function AskPanel({ face }: { face: string | null }) {
   // open: lock the page, focus the field; Escape closes
   useEffect(() => {
     if (!open) return;
-    const html = document.documentElement;
-    const prev = html.style.overflow;
-    html.style.overflow = "hidden";
+    // the page stays visible (and still) behind the chat
+    const unlock = lockPage(() => document.querySelector('[role="dialog"][aria-label="Ask about Nishanth"]'));
     const t = setTimeout(() => field.current?.focus(), 60);
     void fillPool();
     const key = (e: KeyboardEvent) => e.key === "Escape" && closeRef.current();
     addEventListener("keydown", key);
     return () => {
-      html.style.overflow = prev;
+      unlock();
       clearTimeout(t);
       removeEventListener("keydown", key);
     };

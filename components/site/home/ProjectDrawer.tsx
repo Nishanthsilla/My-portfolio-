@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { projects, type Project } from "@/lib/site/content";
+import { lockPage } from "@/lib/site/pageLock";
 import { caseStudyHref, categoryLabel, overviewHref } from "@/lib/site/routes";
 import siteCss from "../site.module.css";
 import d from "./drawer.module.css";
@@ -36,14 +37,7 @@ export default function ProjectDrawer({ project: p, mode, onMode, onProject, onC
     // pinned frame, and the homepage would vanish behind the panel)
     const html = document.documentElement;
     html.dataset.drawer = "1";
-    const block = (e: Event) => e.preventDefault();
-    const blockKeys = (e: KeyboardEvent) => {
-      if ([" ", "PageDown", "PageUp", "ArrowDown", "ArrowUp", "Home", "End"].includes(e.key) && !(e.target as HTMLElement)?.closest?.("input, textarea, [contenteditable]")) e.preventDefault();
-    };
-    const layerEl = panel.current?.parentElement;
-    layerEl?.addEventListener("wheel", block, { passive: false });
-    layerEl?.addEventListener("touchmove", block, { passive: false });
-    addEventListener("keydown", blockKeys);
+    const unlock = lockPage(() => panel.current);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
     };
@@ -71,9 +65,7 @@ export default function ProjectDrawer({ project: p, mode, onMode, onProject, onC
       removeEventListener("keydown", onKey);
       removeEventListener("message", onMsg);
       delete html.dataset.drawer;
-      layerEl?.removeEventListener("wheel", block);
-      layerEl?.removeEventListener("touchmove", block);
-      removeEventListener("keydown", blockKeys);
+      unlock();
       opener?.focus?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

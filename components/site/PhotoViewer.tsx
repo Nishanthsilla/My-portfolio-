@@ -1,5 +1,6 @@
 "use client";
 
+import { lockPage } from "@/lib/site/pageLock";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import s from "./beyond.module.css";
@@ -24,11 +25,10 @@ export default function PhotoViewer({ photos, index, onClose }: { photos: Photo[
     opener.current = document.activeElement;
     const raf = requestAnimationFrame(() => setShown(true));
     closeBtn.current?.focus();
-    const prevOverflow = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = "hidden";
+    const unlock = lockPage(() => closeBtn.current?.closest('[role="dialog"]'));
     return () => {
       cancelAnimationFrame(raf);
-      document.documentElement.style.overflow = prevOverflow;
+      unlock();
       (opener.current as HTMLElement | null)?.focus?.();
     };
   }, []);
