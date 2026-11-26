@@ -24,8 +24,7 @@ function context() {
   if (!AC) return null;
   ctx = new AC();
   const resume = () => void ctx?.resume();
-  addEventListener("pointerdown", resume, { capture: true });
-  addEventListener("keydown", resume, { capture: true });
+  for (const ev of ["pointerdown", "touchend", "click", "keydown"]) addEventListener(ev, resume, { capture: true });
   return ctx;
 }
 

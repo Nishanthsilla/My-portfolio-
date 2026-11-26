@@ -12,9 +12,13 @@ function context() {
   if (!AC) return null;
   ctx = new AC();
   const wake = () => void ctx?.resume();
-  addEventListener("pointerdown", wake, { capture: true });
-  addEventListener("keydown", wake, { capture: true });
+  // iPhones only unlock sound on touchend/click, not on pointerdown
+  for (const ev of ["pointerdown", "touchend", "click", "keydown"]) addEventListener(ev, wake, { capture: true });
   return ctx;
+}
+/** create the audio context as the site loads, so the visitor's very first tap unlocks it */
+export function warmNotify() {
+  context();
 }
 
 /** one soft bell-like note */
@@ -32,7 +36,16 @@ function note(c: AudioContext, at: number, freq: number, len: number, vol: numbe
 
 export function notifySound(kind: Notify) {
   const c = context();
-  if (!c || c.state !== "running" || document.hidden) return;
+  if (!c || document.hidden) return;
+  // the page may already have had a tap (the browser remembers it): wake the context and play then
+  if (c.state !== "running") {
+    void c.resume().then(() => c.state === "running" && !document.hidden && playNotify(c, kind)).catch(() => {});
+    return;
+  }
+  playNotify(c, kind);
+}
+
+function playNotify(c: AudioContext, kind: Notify) {
   const t = c.currentTime + 0.01;
   if (kind === "ding" || kind === "pop") {
     // a soft work-chat "ba-dum": two warm rising notes with a little shimmer
@@ -311,6 +324,7 @@ export function fineSoundtrack(at: () => number | null): { stop: () => void } {
   };
   const onState = () => tryStart();
   c.addEventListener("statechange", onState);
+  if (c.state !== "running") void c.resume().catch(() => {}); // an earlier tap on the page is enough
   loadBgm().then(tryStart);
   tryStart();
   return {

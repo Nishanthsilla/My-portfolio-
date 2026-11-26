@@ -43,7 +43,7 @@
 .toolStage { display: grid; grid-template-columns: clamp(220px, 24vw, 340px) minmax(0, 1fr); gap: clamp(24px, 4vw, 64px); align-items: start; margin-top: 32px; }
 .presenter {
   width: 100%; height: auto; position: sticky; top: 96px; display: block;
-  filter: drop-shadow(0 30px 40px rgba(30, 25, 20, 0.18));
+  filter: drop-shadow(0 0 1px rgba(30, 25, 20, 0.28)) drop-shadow(0 2px 3px rgba(30, 25, 20, 0.12)) drop-shadow(0 26px 36px rgba(30, 25, 20, 0.2));
   opacity: 0; transform: translateX(-60px) rotate(-4deg); transform-origin: 30% 100%;
   transition: opacity 400ms ease, transform 700ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }

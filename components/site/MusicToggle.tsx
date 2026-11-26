@@ -72,8 +72,8 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
       gesture = true;
       tryStart();
     };
-    addEventListener("pointerdown", onGesture, { capture: true });
-    addEventListener("keydown", onGesture, { capture: true });
+    const GESTURES = ["pointerdown", "touchend", "click", "keydown"];
+    for (const ev of GESTURES) addEventListener(ev, onGesture, { capture: true });
     const off = onIntroDone(() => {
       introDone = true;
       tryStart();
@@ -81,8 +81,7 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
     const vis = () => audio.current && (document.hidden ? audio.current.ctx.suspend() : wanted.current && audio.current.ctx.resume());
     document.addEventListener("visibilitychange", vis);
     return () => {
-      removeEventListener("pointerdown", onGesture, { capture: true });
-      removeEventListener("keydown", onGesture, { capture: true });
+      for (const ev of GESTURES) removeEventListener(ev, onGesture, { capture: true });
       document.removeEventListener("visibilitychange", vis);
       off();
     };

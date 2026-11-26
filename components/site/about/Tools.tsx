@@ -60,7 +60,7 @@ export default function Tools() {
   return (
     <div ref={stage} className={a.toolStage}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className={a.presenter} data-presenter src="/images/about/tada.webp" alt="Nishanth in a tweed jacket, smiling and presenting his tools with both palms open: ta-da!" width={720} height={865} loading="lazy" />
+      <img className={a.presenter} data-presenter src="/images/about/tada.webp" alt="Nishanth in a tweed jacket, smiling and presenting his tools with both palms open: ta-da!" width={752} height={897} loading="lazy" />
       <div className={a.toolGroups}>
         {about.tools.map((g) => (
           <div key={g.group} className={a.toolGroup}>
