@@ -48,22 +48,22 @@ export const about = {
     { when: "Jul 2021 — Oct 2021", org: "Xiaomi", role: "Creative Design Intern", note: "UI assets, icons, illustration and motion in MIUI's design language.", where: "Bengaluru" },
     { when: "Jan 2021 — Mar 2022", org: "Extreme Appcoders", role: "Freelance Product Designer", note: "Client projects from wireframe to handoff; module redesigns lifted usage and retention 15%.", where: "Remote" },
   ],
-  // [cv] tools, as a loadout (the lines are jokes; the tools are the ones on his CV)
-  weapons: [
-    { name: "Figma", mark: "F", c1: "#F24E1E", c2: "#A259FF", tier: "Legendary", use: "Daily", quip: "Where I live. Rent is due every month." },
-    { name: "FigJam", mark: "Fj", c1: "#9747FF", c2: "#FFC700", tier: "Rare", use: "Weekly", quip: "Where ideas go to get sticky." },
-    { name: "Figma Make", mark: "Fm", c1: "#0ACF83", c2: "#1ABCFE", tier: "New", use: "Weekly", quip: "I write the prompt, the screens show up, the juniors cheer." },
-    { name: "Claude", mark: "C", c1: "#D97757", c2: "#B4532F", tier: "Legendary", use: "Daily", quip: "My pair programmer. Writes the CSS, lets me take the credit." },
-    { name: "Cursor", mark: "Cu", c1: "#2B2B2B", c2: "#555555", tier: "Epic", use: "Weekly", quip: "The day a designer ships HTML. That day is most days now." },
-    { name: "Lovable", mark: "L", c1: "#FF5E8A", c2: "#FF8A3D", tier: "Epic", use: "When it's urgent", quip: "Proof of concept by lunch." },
-    { name: "HTML / CSS", mark: "</>", c1: "#E34F26", c2: "#1572B6", tier: "Rare", use: "Weekly", quip: "So engineering gets working code, not just pretty pictures." },
-    { name: "Framer", mark: "Fr", c1: "#0055FF", c2: "#00AAFF", tier: "Rare", use: "When it has to feel real", quip: "For prototypes that people forget are prototypes." },
-    { name: "Maze", mark: "Mz", c1: "#2B3BFF", c2: "#6C7BFF", tier: "Rare", use: "Before every launch", quip: "Lets users tell me I'm wrong. Politely, with charts." },
-    { name: "Hotjar", mark: "H", c1: "#FD3A5C", c2: "#FF7A59", tier: "Rare", use: "After every launch", quip: "Watching people rage-click so you don't have to." },
-    { name: "Miro", mark: "M", c1: "#FFD02F", c2: "#F2B705", tier: "Common", use: "Workshop days", quip: "Workshop chaos, neatly arranged in sticky notes." },
-    { name: "Notion", mark: "N", c1: "#1F1F1F", c2: "#4A4A4A", tier: "Common", use: "Daily", quip: "My second brain. The first one is busy designing." },
-    { name: "Adobe Creative Suite", mark: "Ad", c1: "#FF0000", c2: "#B30000", tier: "Veteran", use: "Posters and logos", quip: "The old guard. Still undefeated at posters." },
-    { name: "Lottie", mark: "Lo", c1: "#00DDB3", c2: "#00A28A", tier: "Rare", use: "When it should wiggle", quip: "Makes things wiggle. Professionally." },
+  // [cv] tools, shown with their logos (FigJam and Figma Make live under Figma; Adobe Creative Suite is Photoshop + Illustrator)
+  tools: [
+    { name: "Figma", logo: "figma", note: "with FigJam and Figma Make" },
+    { name: "Framer", logo: "framer" },
+    { name: "Claude", logo: "claude" },
+    { name: "Cursor", logo: "cursor" },
+    { name: "Lovable", logo: "lovable" },
+    { name: "HTML", logo: "html" },
+    { name: "CSS", logo: "css" },
+    { name: "Maze", logo: "maze" },
+    { name: "Hotjar", logo: "hotjar" },
+    { name: "Miro", logo: "miro" },
+    { name: "Notion", logo: "notion" },
+    { name: "Photoshop", logo: "photoshop" },
+    { name: "Illustrator", logo: "illustrator" },
+    { name: "LottieFiles", logo: "lottie" },
   ],
   // [cv] skills (the chatbot reads these too)
   skills: [

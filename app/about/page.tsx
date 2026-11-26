@@ -3,7 +3,6 @@ import Link from "next/link";
 import SiteShell from "@/components/site/SiteShell";
 import SocialLinks from "@/components/site/SocialLinks";
 import AnimatedContent from "@/components/site/reactbits/AnimatedContent";
-import Weapons from "@/components/site/about/Weapons";
 import site from "@/components/site/site.module.css";
 import s from "@/components/site/beyond.module.css";
 import a from "@/components/site/about/about.module.css";
@@ -108,14 +107,22 @@ export default function AboutPage() {
           </ol>
         </section>
 
-        {/* weapons of choice */}
+        {/* tools */}
         <section className={s.section}>
           <div className={a.loadoutHead}>
-            <span className={site.eyebrow}>Weapons of choice</span>
-            <h2 className={s.h2}>What&apos;s in the bag.</h2>
-            <p className={s.p}>{about.weapons.length} tools, zero regrets. Hover a card (or tap it) to read the fine print.</p>
+            <span className={site.eyebrow}>Toolkit</span>
+            <h2 className={s.h2}>Tools I excel at.</h2>
           </div>
-          <Weapons />
+          <ul className={a.tools}>
+            {about.tools.map((t) => (
+              <li key={t.name}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/images/tools/${t.logo}.svg`} alt="" width={48} height={48} loading="lazy" />
+                <b>{t.name}</b>
+                {t.note && <span>{t.note}</span>}
+              </li>
+            ))}
+          </ul>
         </section>
 
         {/* outside work */}
