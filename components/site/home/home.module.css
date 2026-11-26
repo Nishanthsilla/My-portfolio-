@@ -484,10 +484,11 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 .peekCard {
   --spread: calc((var(--i) - (var(--n) - 1) / 2));
   --w: min(80cqw, 290px, 135cqh);
-  position: absolute; left: 50%; top: 50%; width: var(--w); aspect-ratio: 16 / 11; margin-left: calc(var(--w) / -2);
+  position: absolute; left: 50%; top: 8px; width: var(--w); aspect-ratio: 16 / 11; margin-left: calc(var(--w) / -2); transform-origin: 50% 0;
+  --base: calc(1.04 - var(--n) * 0.035);
   display: flex; align-items: flex-end; padding: 12px 14px; border-radius: 12px; background: var(--tone); color: #fff;
   box-shadow: 0 12px 28px -16px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-  transform: translate(calc(var(--spread) * -5px), calc(-50% + var(--spread) * 6px)) rotate(calc(var(--spread) * -1.6deg));
+  transform: translateY(calc(var(--i) * 9px)) scale(calc(var(--base) - var(--i) * 0.04));
   transition: transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
   transition-delay: calc(var(--i) * 25ms);
 }
@@ -498,11 +499,11 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 /* on hover the deck drops into a column, one below the other: the first on top, each next one
    tucked below it showing its name; the cycle slides the first down to the bottom */
 .door:hover .peekCard, .door:focus-visible .peekCard {
-  transform: translate(0, calc(-50% + var(--spread) * var(--gap))) scale(calc(1.04 - var(--n) * 0.035 - var(--i) * 0.025));
+  transform: translateY(calc(var(--i) * var(--gap))) scale(calc(var(--base) - var(--i) * 0.025));
 }
 .peek { container-type: size; }
 /* the column fits the room it has: the gap shrinks on short screens so the deck never climbs into the text */
-.peekCard { --gap: min(40px, calc((96cqh - var(--w) * 0.62) / (var(--n) - 0.999))); }
+.peekCard { --gap: min(40px, calc((100cqh - 16px - var(--w) * 0.6875 * var(--base)) / (var(--n) - 0.999))); }
 .doors .door { container-type: inline-size; }
 
 /* the room */
@@ -552,8 +553,8 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 .journey[data-mode="touch"] .floor, .journey[data-mode="touch"] .room { height: auto; }
 .journey[data-mode="touch"] .doors { grid-template-columns: 1fr; gap: 12px; }
 .journey[data-mode="touch"] .door { min-height: 0; }
-.journey[data-mode="touch"] .peek { min-height: calc(150px + var(--peek-n, 4) * 36px); }
-.journey[data-mode="touch"] .peekCard { --gap: 34px; --w: min(62%, 240px); transform: translate(0, calc(-50% + var(--spread) * var(--gap))) scale(calc(0.9 - var(--n) * 0.02 - var(--i) * 0.025)); }
+.journey[data-mode="touch"] .peek { min-height: calc(156px + (var(--peek-n, 4) - 1) * 34px); }
+.journey[data-mode="touch"] .peekCard { --gap: 34px; --w: min(62%, 240px); --base: calc(0.92 - var(--n) * 0.02); transform: translateY(calc(var(--i) * var(--gap))) scale(calc(var(--base) - var(--i) * 0.025)); }
 .journey[data-mode="touch"] .door:hover { transform: none; }
 .journey[data-mode="touch"] .floorTitle { font-size: 30px; }
 .journey[data-mode="touch"] .roomHead { grid-template-columns: 1fr; gap: 14px; align-items: start; }
