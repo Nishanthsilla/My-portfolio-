@@ -43,7 +43,16 @@ export function notifySound(kind: Notify) {
     }
     return;
   } else if (kind === "tada") {
-    // "ta-DA!": a short brass pickup, then a big bright major chord with a cymbal shimmer
+    // the magic-chimes clip Nishanth supplied (public/audio/sfx/magic-chimes.mp3)
+    if (chimesBuf) {
+      const src = c.createBufferSource(), g = c.createGain();
+      src.buffer = chimesBuf;
+      g.gain.value = 0.8;
+      src.connect(g).connect(c.destination);
+      src.start(t);
+      return;
+    }
+    // (if the clip couldn't load: "ta-DA!", a short brass pickup, then a big bright major chord with a cymbal shimmer)
     const brass = (at: number, f: number, len: number, vol: number) => {
       const o = c.createOscillator(), o2 = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain();
       o.type = "sawtooth"; o2.type = "sawtooth";
@@ -93,6 +102,21 @@ export function notifySound(kind: Notify) {
     note(c, t + 0.14, 988, 0.5, 0.12);
     note(c, t + 0.28, 1175, 0.7, 0.12);
   }
+}
+
+let chimesBuf: AudioBuffer | null = null;
+let chimesLoading = false;
+/** fetch the ta-da chimes ahead of time (the About page's tools section) */
+export function loadChimes() {
+  const c = context();
+  if (!c || chimesBuf || chimesLoading) return;
+  chimesLoading = true;
+  fetch("/audio/sfx/magic-chimes.mp3")
+    .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(r.status)))
+    .then((b) => c.decodeAudioData(b))
+    .then((b) => (chimesBuf = b))
+    .catch(() => {})
+    .finally(() => (chimesLoading = false));
 }
 
 let callBuf: AudioBuffer | null = null;

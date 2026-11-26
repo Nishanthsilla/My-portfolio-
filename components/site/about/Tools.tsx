@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { about } from "@/lib/site/about";
-import { notifySound } from "@/lib/sound/notify";
+import { loadChimes, notifySound } from "@/lib/sound/notify";
 import a from "./about.module.css";
 
 /** keep a tooltip inside the screen: nudge it sideways when it would run off an edge */
@@ -21,7 +21,7 @@ const HANDS = { x: 0.8, y: 0.55 };
 
 /**
  * The tools from Nishanth's CV, as their logos, presented by Nishanth himself: when the section comes
- * into view he slides in, "ta-da!" plays, and the logos pop out from between his hands to their places.
+ * into view he slides in, magic chimes play, and the logos pop out from between his hands to their places.
  * Hover or focus a logo for its name; it glows in its own colour.
  */
 export default function Tools() {
@@ -29,6 +29,7 @@ export default function Tools() {
   useEffect(() => {
     const el = stage.current;
     if (!el) return;
+    loadChimes();
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const aim = () => {
       // start every logo at the hands
