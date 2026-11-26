@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteShell from "@/components/site/SiteShell";
 import SocialLinks from "@/components/site/SocialLinks";
-import AnimatedContent from "@/components/site/reactbits/AnimatedContent";
 import Tools from "@/components/site/about/Tools";
 import site from "@/components/site/site.module.css";
 import s from "@/components/site/beyond.module.css";
@@ -12,7 +11,7 @@ import { socials } from "@/lib/site/content";
 
 export const metadata: Metadata = { title: "About — Nishanth Silla" };
 
-/** About: who Nishanth is, how he works, the teams he's been on, his loadout and life outside work. Facts are from his CV. */
+/** About: who Nishanth is, the five layers he works through, his tools, the teams he's been on, and life outside work. Facts are from his CV. */
 export default function AboutPage() {
   return (
     <SiteShell>
@@ -47,40 +46,36 @@ export default function AboutPage() {
           ))}
         </ul>
 
-        {/* what I do */}
+        {/* how I work: five layers */}
         <section className={s.section}>
-          <AnimatedContent className={s.split} distance={16} duration={0.6}>
+          <div className={s.split}>
             <div>
-              <span className={site.eyebrow}>What I do</span>
-              <h2 className={s.h2}>Design for agents, and the people who run them.</h2>
+              <span className={site.eyebrow}>How I work</span>
+              <h2 className={s.h2}>Five layers in every project.</h2>
             </div>
-            <p className={s.lead}>{about.whatIDo}</p>
-          </AnimatedContent>
-          <div className={s.loop}>
-            {about.loop.steps.map((st) => (
-              <div key={st.n} className={s.loopStep}>
-                <em>{st.n}</em>
-                <b>{st.t}</b>
-                <p>{st.d}</p>
-                <ul className={s.chips}>{st.tags.map((t) => <li key={t}>{t}</li>)}</ul>
-              </div>
-            ))}
+            <p className={s.lead}>Good design isn&apos;t only the screens. It starts with the business and ends with what ships, and I work through every layer in between.</p>
           </div>
-        </section>
-
-        {/* what I believe */}
-        <section className={s.section}>
-          <span className={site.eyebrow}>What I believe</span>
-          <h2 className={s.h2}>A few things I&apos;ve learned the hard way.</h2>
-          <ol className={a.values}>
-            {about.values.map((v, i) => (
-              <li key={v.t}>
+          <ol className={a.layers}>
+            {about.layers.map((l, i) => (
+              <li key={l.t} style={{ ["--i" as string]: i }}>
                 <em>0{i + 1}</em>
-                <b>{v.t}</b>
-                <p>{v.d}</p>
+                <div>
+                  <b>{l.t}</b>
+                  <p>{l.d}</p>
+                </div>
+                <ul className={s.chips}>{l.does.map((d) => <li key={d}>{d}</li>)}</ul>
               </li>
             ))}
           </ol>
+        </section>
+
+        {/* tools */}
+        <section className={s.section}>
+          <div className={a.loadoutHead}>
+            <span className={site.eyebrow}>Toolkit</span>
+            <h2 className={s.h2}>Tools I excel at.</h2>
+          </div>
+          <Tools />
         </section>
 
         {/* experience */}
@@ -106,15 +101,6 @@ export default function AboutPage() {
               </li>
             ))}
           </ol>
-        </section>
-
-        {/* tools */}
-        <section className={s.section}>
-          <div className={a.loadoutHead}>
-            <span className={site.eyebrow}>Toolkit</span>
-            <h2 className={s.h2}>Tools I excel at.</h2>
-          </div>
-          <Tools />
         </section>
 
         {/* outside work */}
@@ -156,7 +142,7 @@ export default function AboutPage() {
           </div>
           <div>
             <h3>Languages</h3>
-            <ul>{about.languages.map((v) => <li key={v}>{v}</li>)}</ul>
+            <ul className={a.badges}>{about.languages.map((v) => <li key={v}>{v}</li>)}</ul>
           </div>
         </section>
 

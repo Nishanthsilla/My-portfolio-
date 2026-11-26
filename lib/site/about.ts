@@ -7,7 +7,7 @@ export const about = {
   // [cv] headline + summary, in his voice
   hello: "Hi, I'm Nishanth.",
   intro:
-    "I'm a Lead Product Designer in Hyderabad. These days I design how people work alongside AI agents: handing them a task, keeping an eye on them, and stepping in when it matters.",
+    "I'm a Lead Product Designer in Hyderabad. I take products from the business problem to the shipped screen, across enterprise AI, fintech and edtech, and I make complicated things feel simple to use.",
   where: "Hyderabad, India · open to relocation and remote",
   cv: "/nishanth-silla-cv.pdf",
   // [cv] numbers; [brief] "3 design systems end to end"
@@ -30,13 +30,33 @@ export const about = {
       { n: "03", t: "Step in", d: "When a decision needs a person, the interface asks clearly and makes approve, edit or stop easy.", tags: ["Approval workflows", "Handoff patterns"] },
     ],
   },
-  // [brief] values, written for him from his CV and his work (he asked for them to read as human, not corporate)
-  values: [
-    { t: "Make the AI show its work.", d: "If people can't see what an agent is doing, they won't trust it with anything that matters. So the confidence score, the pause button and the undo come first. The clever bits can wait." },
-    { t: "Go find the actual user.", d: "The person in the meeting is rarely the one on the shop floor. Frontline workers, area sales managers, the CXO with four minutes to spare: I'd rather watch them use it than guess." },
-    { t: "Let the data win the argument.", d: "A/B tests have proved me wrong more than once. That's exactly why I keep running them." },
-    { t: "Build the system, then the screen.", d: "Three design systems in, I've learned that consistency is a kindness: to the next designer, and to the engineer who has to build it at 6 pm on a Friday." },
-    { t: "Grow the people, not just the product.", d: "I grew a team from one designer to five. Watching someone I mentored run a whole project on their own still beats any launch." },
+  // [brief] the five layers Nishanth works through on every project (descriptions from his CV and process)
+  layers: [
+    {
+      t: "Business strategy",
+      d: "I start with the business problem: who it's for, what success looks like and which number the work has to move. Every design decision traces back to it.",
+      does: ["Stakeholder workshops", "Success metrics", "Product strategy"],
+    },
+    {
+      t: "Research and discovery",
+      d: "Interviews, usability tests, analytics and competitor reviews, so I design for how people actually work, not how we assume they do.",
+      does: ["User research", "Usability testing", "Analytics", "Competitor analysis"],
+    },
+    {
+      t: "Product definition and synthesis",
+      d: "I turn what we learned into a clear problem, priorities and scope, agreed with product and engineering before anything is drawn.",
+      does: ["Problem framing", "Requirements", "Prioritisation"],
+    },
+    {
+      t: "Experience architecture",
+      d: "The structure underneath: information architecture, user flows and journeys that make a complex product feel obvious.",
+      does: ["Information architecture", "User flows", "Journey maps", "Wireframes"],
+    },
+    {
+      t: "Interface design and validation",
+      d: "Polished UI built on a design system, prototyped and tested with real users, then checked in design QA until what ships matches what we designed.",
+      does: ["UI and visual design", "Design systems", "Prototyping", "A/B testing", "Design QA"],
+    },
   ],
   // [cv] experience
   experienceIntro: "From a Xiaomi internship to leading design for an enterprise agentic AI platform, with EdTech and FinTech in between.",

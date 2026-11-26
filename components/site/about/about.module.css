@@ -27,15 +27,25 @@
   .stats li:nth-child(n + 3) { border-top: 1px solid var(--line); }
 }
 
-/* what I believe */
-.values { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.values li { display: grid; gap: 10px; align-content: start; padding: 28px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
-.values li:first-child { grid-column: span 2; background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.values li:first-child p { color: color-mix(in srgb, var(--bg) 72%, transparent); }
-.values em { font: 500 12px/1 var(--mono); font-style: normal; color: var(--accent); }
-.values b { font-size: clamp(22px, 2.2vw, 30px); line-height: 1.12; letter-spacing: -0.025em; font-weight: 560; }
-.values p { margin: 0; font-size: 16.5px; line-height: 1.6; color: var(--muted); max-width: 40em; }
-@media (max-width: 760px) { .values { grid-template-columns: 1fr; } .values li:first-child { grid-column: auto; } }
+/* how I work: five layers that stack up as you scroll, like layers */
+.layers { list-style: none; margin: 40px 0 0; padding: 0; display: grid; gap: 14px; }
+.layers > li {
+  position: sticky; top: calc(96px + var(--i) * 16px);
+  display: grid; grid-template-columns: 72px minmax(0, 1fr) minmax(0, 0.9fr); gap: 12px 32px; align-items: start;
+  padding: clamp(22px, 2.6vw, 32px); border-radius: 22px; background: var(--surface); border: 1px solid var(--line);
+  box-shadow: 0 -10px 30px -24px rgba(30, 25, 20, 0.35);
+}
+.layers > li > em { font: 500 13px/1 var(--mono); font-style: normal; color: var(--accent); padding-top: 8px; }
+.layers b { display: block; font-size: clamp(24px, 2.4vw, 34px); line-height: 1.1; letter-spacing: -0.03em; font-weight: 560; }
+.layers p { margin: 10px 0 0; font-size: 16.5px; line-height: 1.6; color: var(--muted); max-width: 36em; }
+.layers > li > ul { padding-top: 6px; }
+@media (max-width: 860px) {
+  .layers > li { grid-template-columns: 1fr; gap: 12px; top: calc(80px + var(--i) * 12px); }
+  .layers > li > em { padding-top: 0; }
+}
+/* languages, as badges */
+.facts ul.badges { display: flex; flex-wrap: wrap; gap: 8px; }
+.badges li { padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; line-height: 1.2; }
 
 /* tools */
 .loadoutHead { display: grid; gap: 12px; }
