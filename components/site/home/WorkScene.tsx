@@ -226,35 +226,52 @@ export default function WorkScene() {
   );
 }
 
+/** where card k (0 = current) sits: in the middle, below it, or (the last one) just above, leaving */
+const slot = (k: number, n: number) => (n >= 3 && k === n - 1 ? -1 : k);
+
 /**
- * The case studies behind a door, stacked with their live covers in the middle of the door. Hovering
- * (or focusing) the door lifts the lead card to just under the text and lines the rest up below it;
- * every couple of seconds the column moves up one card, the top one coming back in at the bottom.
+ * The case studies behind a door, with their live covers, in a grey window: the current one in the
+ * middle, the next half visible below and the previous one at the top. While the door is hovered or
+ * focused (on phones, while it is on screen) the column moves up a card every couple of seconds.
  */
 function PeekStack({ ps }: { ps: Project[] }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [front, setFront] = useState(0);
-  const [out, setOut] = useState(-1);
+  const [prev, setPrev] = useState(0);
+  const n = ps.length;
   useEffect(() => {
     const door = ref.current?.closest("button");
-    if (!door || ps.length < 2 || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!door || n < 2 || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let first = 0, every = 0;
-    const step = () => setFront((f) => { setOut(f); return (f + 1) % ps.length; });
-    const start = () => { stop(); first = window.setTimeout(() => { step(); every = window.setInterval(step, 1900); }, 1100); };
+    const step = () => setFront((f) => { setPrev(f); return (f + 1) % n; });
     const stop = () => { clearTimeout(first); clearInterval(every); };
-    const leave = () => { stop(); setOut(-1); setFront(0); };
+    const start = () => { stop(); first = window.setTimeout(() => { step(); every = window.setInterval(step, 2200); }, 900); };
+    if (matchMedia("(hover: none)").matches) {
+      // phones: no hover, so it moves on its own while the door is on screen
+      const io = new IntersectionObserver(([e]) => (e.isIntersecting ? start() : stop()), { threshold: 0.6 });
+      io.observe(door);
+      return () => { stop(); io.disconnect(); };
+    }
+    const leave = () => stop();
     door.addEventListener("pointerenter", start);
     door.addEventListener("focus", start);
     door.addEventListener("pointerleave", leave);
     door.addEventListener("blur", leave);
     return () => { stop(); door.removeEventListener("pointerenter", start); door.removeEventListener("focus", start); door.removeEventListener("pointerleave", leave); door.removeEventListener("blur", leave); };
-  }, [ps.length]);
+  }, [n]);
   return (
-    <span ref={ref} className={h.peek} aria-hidden="true" style={{ ["--peek-n" as string]: ps.length }}>
+    <span ref={ref} className={h.peek} aria-hidden="true">
       {ps.map((p, i) => {
-        const k = (i - front + ps.length) % ps.length;
+        const pos = slot((i - front + n) % n, n);
+        const was = slot((i - prev + n) % n, n);
+        const wraps = front !== prev && pos > was;
         return (
-          <span key={p.slug} className={h.peekCard} data-out={i === out ? "" : undefined} onAnimationEnd={() => i === out && setOut(-1)} style={{ ["--tone" as string]: toneOf(p), ["--i" as string]: k, ["--n" as string]: ps.length }}>
+          <span
+            key={p.slug + (wraps ? `-w${front}` : "")}
+            className={h.peekCard}
+            data-out={wraps ? "" : undefined}
+            style={{ ["--tone" as string]: toneOf(p), ["--p" as string]: pos, ["--from" as string]: was }}
+          >
             <ProjectMedia project={p} className={h.peekMedia} fill={0.86} />
             <b>{p.title.split(" — ")[0]}</b>
           </span>
