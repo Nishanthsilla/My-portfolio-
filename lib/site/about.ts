@@ -50,20 +50,52 @@ export const about = {
   ],
   // [cv] tools, shown with their logos (FigJam and Figma Make live under Figma; Adobe Creative Suite is Photoshop + Illustrator)
   tools: [
-    { name: "Figma, FigJam and Figma Make", logo: "figma", glow: "#A259FF" },
-    { name: "Framer", logo: "framer", glow: "#0055FF", mono: true },
-    { name: "Claude", logo: "claude", glow: "#D97757" },
-    { name: "Cursor", logo: "cursor", glow: "#7C7C7C", mono: true },
-    { name: "Lovable", logo: "lovable", glow: "#FF5A7A" },
-    { name: "HTML", logo: "html", glow: "#E44D26" },
-    { name: "CSS", logo: "css", glow: "#264DE4" },
-    { name: "Maze", logo: "maze", glow: "#4F46E5", mono: true },
-    { name: "Hotjar", logo: "hotjar", glow: "#FF3C00" },
-    { name: "Miro", logo: "miro", glow: "#FFD02F" },
-    { name: "Notion", logo: "notion", glow: "#8A8A8A", mono: true },
-    { name: "Photoshop", logo: "photoshop", glow: "#31A8FF" },
-    { name: "Illustrator", logo: "illustrator", glow: "#FF9A00" },
-    { name: "LottieFiles", logo: "lottie", glow: "#00DDB3" },
+    {
+      group: "Design",
+      items: [
+        { name: "Figma, FigJam and Figma Make", logo: "figma", glow: "#A259FF" },
+        { name: "Framer", logo: "framer", glow: "#0055FF", mono: true },
+        { name: "Webflow", logo: "webflow", glow: "#4353FF" },
+        { name: "Storybook", logo: "storybook", glow: "#FF4785" },
+        { name: "Zeroheight", logo: "zeroheight", glow: "#F63E7C" },
+        { name: "Rive", logo: "rive", glow: "#8A8A8A", mono: true },
+        { name: "LottieFiles", logo: "lottie", glow: "#00DDB3" },
+        { name: "Photoshop", logo: "photoshop", glow: "#31A8FF" },
+        { name: "Illustrator", logo: "illustrator", glow: "#FF9A00" },
+      ],
+    },
+    {
+      group: "AI",
+      items: [
+        { name: "Claude", logo: "claude", glow: "#D97757" },
+        { name: "ChatGPT", logo: "chatgpt", glow: "#10A37F", mono: true },
+        { name: "Gemini", logo: "gemini", glow: "#8E75B2" },
+        { name: "Midjourney", logo: "midjourney", glow: "#8A8A8A", mono: true },
+        { name: "Perplexity", logo: "perplexity", glow: "#20808D" },
+        { name: "v0", logo: "v0", glow: "#8A8A8A", mono: true },
+        { name: "Cursor", logo: "cursor", glow: "#7C7C7C", mono: true },
+        { name: "Lovable", logo: "lovable", glow: "#FF5A7A" },
+      ],
+    },
+    {
+      group: "Build and ship",
+      items: [
+        { name: "HTML", logo: "html", glow: "#E44D26" },
+        { name: "CSS", logo: "css", glow: "#264DE4" },
+        { name: "GitHub", logo: "github", glow: "#8A8A8A", mono: true },
+      ],
+    },
+    {
+      group: "Research and teamwork",
+      items: [
+        { name: "Maze", logo: "maze", glow: "#4F46E5", mono: true },
+        { name: "Hotjar", logo: "hotjar", glow: "#FF3C00" },
+        { name: "Miro", logo: "miro", glow: "#FFD02F" },
+        { name: "Notion", logo: "notion", glow: "#8A8A8A", mono: true },
+        { name: "Jira", logo: "jira", glow: "#2684FF" },
+        { name: "Linear", logo: "linear", glow: "#5E6AD2", mono: true },
+      ],
+    },
   ],
   // [cv] skills (the chatbot reads these too)
   skills: [

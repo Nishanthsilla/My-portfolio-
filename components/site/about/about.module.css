@@ -39,7 +39,9 @@
 
 /* tools */
 .loadoutHead { display: grid; gap: 12px; }
-.tools { list-style: none; margin: 36px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: clamp(24px, 3.4vw, 44px); }
+.toolGroups { display: grid; gap: 36px; margin-top: 40px; }
+.toolGroup h3 { margin: 0 0 18px; font: 500 12px/1.4 var(--mono); letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted); }
+.tools { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: clamp(24px, 3.4vw, 44px); }
 .tools li { position: relative; display: grid; place-items: center; outline: none; cursor: default; }
 .tools img {
   width: 56px; height: 56px; object-fit: contain; display: block;
