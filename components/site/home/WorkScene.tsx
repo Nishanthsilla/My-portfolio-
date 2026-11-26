@@ -239,19 +239,33 @@ function PeekStack({ ps }: { ps: Project[] }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [front, setFront] = useState(0);
   const [prev, setPrev] = useState(0);
+  const [tick, setTick] = useState(0); // total steps taken (the wrap animation alternates by lap)
   const n = ps.length;
   useEffect(() => {
     const door = ref.current?.closest("button");
     if (!door || n < 2 || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let first = 0, every = 0;
-    const step = () => setFront((f) => { setPrev(f); return (f + 1) % n; });
+    const step = () => { setTick((t) => t + 1); setFront((f) => { setPrev(f); return (f + 1) % n; }); };
     const stop = () => { clearTimeout(first); clearInterval(every); };
     const start = () => { stop(); first = window.setTimeout(() => { step(); every = window.setInterval(step, 2200); }, 900); };
     if (matchMedia("(hover: none)").matches) {
-      // phones: no hover, so it moves on its own while the door is on screen
-      const io = new IntersectionObserver(([e]) => (e.isIntersecting ? start() : stop()), { threshold: 0.6 });
+      // phones: no hover, so it moves on its own while the door is on screen,
+      // but holds still while a finger is on the screen, so nothing shifts under a scroll
+      let seen = false, touching = false, rest = 0;
+      const sync = () => (seen && !touching ? start() : stop());
+      const io = new IntersectionObserver(([e]) => { seen = e.isIntersecting; sync(); }, { threshold: 0.6 });
       io.observe(door);
-      return () => { stop(); io.disconnect(); };
+      const down = () => { touching = true; clearTimeout(rest); sync(); };
+      const up = () => { clearTimeout(rest); rest = window.setTimeout(() => { touching = false; sync(); }, 1200); };
+      addEventListener("touchstart", down, { passive: true, capture: true });
+      addEventListener("touchend", up, { passive: true, capture: true });
+      addEventListener("touchcancel", up, { passive: true, capture: true });
+      return () => {
+        stop(); io.disconnect(); clearTimeout(rest);
+        removeEventListener("touchstart", down, { capture: true });
+        removeEventListener("touchend", up, { capture: true });
+        removeEventListener("touchcancel", up, { capture: true });
+      };
     }
     const leave = () => stop();
     door.addEventListener("pointerenter", start);
@@ -268,9 +282,9 @@ function PeekStack({ ps }: { ps: Project[] }) {
         const wraps = front !== prev && pos > was;
         return (
           <span
-            key={p.slug + (wraps ? `-w${front}` : "")}
+            key={p.slug}
             className={h.peekCard}
-            data-out={wraps ? "" : undefined}
+            data-out={wraps ? (Math.floor(tick / n) % 2 ? "a" : "b") : undefined}
             style={{ ["--tone" as string]: toneOf(p), ["--p" as string]: pos, ["--from" as string]: was }}
           >
             <ProjectMedia project={p} className={h.peekMedia} fill={0.86} />
