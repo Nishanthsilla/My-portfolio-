@@ -474,7 +474,7 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 .doorNum { font: 12px/1 var(--mono); color: var(--muted); letter-spacing: 0.04em; }
 .doorTitle { font-size: clamp(22px, 1.9vw, 30px); line-height: 1.08; letter-spacing: -0.03em; font-weight: 560; text-wrap: balance; }
 .doorLine { font-size: 14px; line-height: 1.45; color: var(--muted); max-width: 30ch; }
-.doorFoot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); position: relative; z-index: 2; background: var(--surface); }
+.doorFoot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 4px; font-size: 13px; color: var(--muted); position: relative; z-index: 2; background: var(--surface); }
 .doorGo { color: var(--ink); font-weight: 500; }
 .doorGo span { display: inline-block; transition: transform 300ms var(--ease); }
 .door:hover .doorGo span { transform: translateY(3px); }
