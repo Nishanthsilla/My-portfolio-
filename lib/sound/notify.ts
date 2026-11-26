@@ -3,7 +3,7 @@
  * Browsers only allow sound after the visitor has clicked, tapped or pressed a key on the page;
  * before that these stay silent.
  */
-export type Notify = "ding" | "alarm" | "pop" | "fine" | "call" | "tada";
+export type Notify = "ding" | "alarm" | "pop" | "fine" | "call" | "tada" | "gift";
 
 let ctx: AudioContext | null = null;
 function context() {
@@ -54,6 +54,27 @@ function playNotify(c: AudioContext, kind: Notify) {
       note(c, t + k, f * lo, len, v, "sine");
       note(c, t + k, f * lo * 2, len * 0.5, v * 0.18, "triangle");
     }
+    return;
+  } else if (kind === "gift") {
+    // a gift box opening: a quick paper/ribbon rustle, then the lid pops off with a soft thump
+    const len = 0.42, n = c.createBuffer(1, Math.floor(c.sampleRate * len), c.sampleRate), d = n.getChannelData(0);
+    for (let i = 0; i < d.length; i++) {
+      const k = i / d.length;
+      d[i] = (Math.random() * 2 - 1) * (0.35 + 0.65 * Math.abs(Math.sin(k * 38))) * (1 - k); // crinkly bursts
+    }
+    const rs = c.createBufferSource(), bp = c.createBiquadFilter(), rg = c.createGain();
+    rs.buffer = n; bp.type = "bandpass"; bp.frequency.value = 3200; bp.Q.value = 0.7; rg.gain.value = 0.22;
+    rs.connect(bp).connect(rg).connect(c.destination); rs.start(t);
+    // the lid: a cork-like pop (a fast falling tone) and a low thump
+    const pop = t + 0.36;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(900, pop); o.frequency.exponentialRampToValueAtTime(180, pop + 0.09);
+    g.gain.setValueAtTime(0.0001, pop); g.gain.exponentialRampToValueAtTime(0.32, pop + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, pop + 0.12);
+    o.connect(g).connect(c.destination); o.start(pop); o.stop(pop + 0.14);
+    const th = c.createOscillator(), tg = c.createGain();
+    th.type = "sine"; th.frequency.setValueAtTime(140, pop); th.frequency.exponentialRampToValueAtTime(55, pop + 0.2);
+    tg.gain.setValueAtTime(0.0001, pop); tg.gain.exponentialRampToValueAtTime(0.28, pop + 0.01); tg.gain.exponentialRampToValueAtTime(0.0001, pop + 0.25);
+    th.connect(tg).connect(c.destination); th.start(pop); th.stop(pop + 0.27);
     return;
   } else if (kind === "tada") {
     // the magic-chimes clip Nishanth supplied (public/audio/sfx/magic-chimes.mp3)

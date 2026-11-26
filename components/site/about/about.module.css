@@ -39,34 +39,41 @@
 
 /* tools */
 .loadoutHead { display: grid; gap: 12px; }
-/* Nishanth presents the tools: he slides in, the logos pop out of his hands */
-.toolStage { display: grid; grid-template-columns: clamp(220px, 24vw, 340px) minmax(0, 1fr); gap: clamp(24px, 4vw, 64px); align-items: start; margin-top: 32px; }
-.presenter {
-  width: 100%; height: auto; position: sticky; top: 96px; display: block;
+/* Nishanth, hands up, with the tools in a semicircle around him */
+.arcStage {
+  position: relative; margin: 40px auto 0; max-width: 1080px; height: 720px;
+}
+.arcStage .presenter {
+  position: absolute; left: 50%; bottom: 0; width: var(--pw, 400px); height: auto; transform-origin: 50% 100%;
   filter: drop-shadow(0 0 1px rgba(30, 25, 20, 0.28)) drop-shadow(0 2px 3px rgba(30, 25, 20, 0.12)) drop-shadow(0 26px 36px rgba(30, 25, 20, 0.2));
-  opacity: 0; transform: translateX(-60px) rotate(-4deg); transform-origin: 30% 100%;
-  transition: opacity 400ms ease, transform 700ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 0; transform: translateX(-50%) translateY(40px) scale(0.86);
+  transition: opacity 300ms ease, transform 620ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.toolStage[data-on] .presenter { opacity: 1; transform: none; }
-.toolStage [data-logo] {
-  opacity: 0; transform: translate(var(--fx, 0px), var(--fy, 0px)) scale(0.2) rotate(-25deg);
-  transition: opacity 260ms ease var(--d, 0ms), transform 760ms cubic-bezier(0.34, 1.45, 0.64, 1) var(--d, 0ms);
+.arcStage[data-on] .presenter { opacity: 1; transform: translateX(-50%); }
+.arc { list-style: none; margin: 0; padding: 0; position: absolute; inset: 0; }
+.arc li { position: absolute; left: 0; top: 0; width: var(--size, 56px); height: var(--size, 56px); display: grid; place-items: center; outline: none; isolation: isolate; }
+.arc li img { width: 100%; height: 100%; object-fit: contain; display: block; transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+/* every logo starts behind him (at his chest) and bursts out to its place on the arc */
+.arc [data-logo] {
+  opacity: 0; transform: translate(calc(var(--cx) - var(--size) / 2), calc(var(--cy) - var(--size) / 2)) scale(0.1) rotate(-40deg);
+  transition: opacity 200ms ease var(--d, 0ms), transform 820ms cubic-bezier(0.3, 1.5, 0.55, 1) var(--d, 0ms);
 }
-.toolStage[data-on] [data-logo] { opacity: 1; transform: none; }
-.toolStage h3 { opacity: 0; transition: opacity 500ms ease 900ms; }
-.toolStage[data-on] h3 { opacity: 1; }
-/* phones: he stays on the left (hands pointing at the logos), the logos in a column on the right */
-@media (max-width: 760px) {
-  .toolStage { grid-template-columns: 40% minmax(0, 1fr); gap: 12px; }
-  .presenter { top: 88px; margin-left: -8px; width: calc(100% + 8px); }
-  .toolStage .toolGroups { gap: 26px; padding-top: 4px; }
-  .toolStage .toolGroup h3 { margin-bottom: 12px; font-size: 11px; }
-  .toolStage .tools { gap: 16px 18px; }
-  .toolStage .tools img { width: 34px; height: 34px; }
-  .toolStage .tools li::before { width: 34px; height: 34px; margin: -17px 0 0 -17px; }
+.arcStage[data-on] .arc [data-logo] { opacity: 1; transform: translate(var(--x), var(--y)); }
+.arc li:hover img, .arc li:focus-visible img { transform: translateY(-4px) scale(1.12); }
+.arc li::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; background: var(--src) center / contain no-repeat; filter: blur(14px) saturate(1.5);
+  opacity: 0; transform: translateY(2px) scale(0.9); transition: opacity 300ms ease, transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none;
+}
+.arc li:hover::before, .arc li:focus-visible::before { opacity: 0.75; transform: translateY(10px) scale(1.2); }
+.arc li:hover .tip, .arc li:focus-visible .tip, .arc li:focus .tip { opacity: 1; transform: translate(calc(-50% + var(--shift, 0px)), 0); }
+:global([data-theme="dark"]) .arc li[data-mono] img { filter: invert(1) hue-rotate(180deg); }
+:global([data-theme="dark"]) .arc li[data-mono]::before { filter: invert(1) hue-rotate(180deg) blur(14px); }
+@media (max-width: 560px) {
+  .arcStage { height: 420px; margin-top: 28px; }
+  .arc li::before { filter: blur(9px) saturate(1.5); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .presenter, .toolStage [data-logo], .toolStage h3 { transition: none; opacity: 1; transform: none; }
+  .arcStage .presenter, .arc [data-logo] { transition: none; }
 }
 .toolGroups { display: grid; gap: 36px; padding-top: 12px; }
 .toolGroup h3 { margin: 0 0 18px; font: 500 12px/1.4 var(--mono); letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted); }
