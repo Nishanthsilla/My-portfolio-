@@ -3,7 +3,7 @@
  * Browsers only allow sound after the visitor has clicked, tapped or pressed a key on the page;
  * before that these stay silent.
  */
-export type Notify = "ding" | "alarm" | "pop" | "fine" | "call";
+export type Notify = "ding" | "alarm" | "pop" | "fine" | "call" | "tada";
 
 let ctx: AudioContext | null = null;
 function context() {
@@ -41,6 +41,30 @@ export function notifySound(kind: Notify) {
       note(c, t + k, f * lo, len, v, "sine");
       note(c, t + k, f * lo * 2, len * 0.5, v * 0.18, "triangle");
     }
+    return;
+  } else if (kind === "tada") {
+    // "ta-DA!": a short brass pickup, then a big bright major chord with a cymbal shimmer
+    const brass = (at: number, f: number, len: number, vol: number) => {
+      const o = c.createOscillator(), o2 = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain();
+      o.type = "sawtooth"; o2.type = "sawtooth";
+      o.frequency.setValueAtTime(f * 0.985, at); o.frequency.linearRampToValueAtTime(f, at + 0.05);
+      o2.frequency.setValueAtTime(f * 1.004, at);
+      lp.type = "lowpass"; lp.frequency.setValueAtTime(900, at); lp.frequency.linearRampToValueAtTime(3200, at + 0.08); lp.frequency.exponentialRampToValueAtTime(1400, at + len);
+      g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + 0.03); g.gain.setValueAtTime(vol, at + len * 0.6); g.gain.exponentialRampToValueAtTime(0.0001, at + len);
+      o.connect(lp); o2.connect(lp); lp.connect(g).connect(c.destination);
+      o.start(at); o2.start(at); o.stop(at + len + 0.05); o2.stop(at + len + 0.05);
+    };
+    // ta
+    for (const f of [392, 493.88, 587.33]) brass(t, f, 0.16, 0.035);
+    // DA!
+    for (const f of [523.25, 659.25, 783.99, 1046.5]) brass(t + 0.2, f, 1.15, 0.04);
+    brass(t + 0.2, 261.63, 1.15, 0.05);
+    // cymbal: a burst of bright noise that fades out
+    const n = c.createBuffer(1, Math.floor(c.sampleRate * 1.2), c.sampleRate), d = n.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+    const src = c.createBufferSource(), hp = c.createBiquadFilter(), g = c.createGain();
+    src.buffer = n; hp.type = "highpass"; hp.frequency.value = 6000; g.gain.value = 0.06;
+    src.connect(hp).connect(g).connect(c.destination); src.start(t + 0.2);
     return;
   } else if (kind === "alarm") {
     // a tiny alarm-clock double beep for the EOD deadline
