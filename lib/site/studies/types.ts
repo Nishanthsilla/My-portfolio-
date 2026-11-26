@@ -37,6 +37,8 @@ export type Study = {
   title: string;
   subtitle: string;
   category: string;
+  /** where the back link at the top goes (default: the project's overview page) */
+  back?: { href: string; label: string };
   meta: { k: string; v: string }[];
   hero: string; // screen id shown under the title
   overview: Block[];
@@ -50,7 +52,7 @@ export type Study = {
   decisions: { t: string; d: string }[];
   /** headings for the decisions list (a two-column "decision / why it mattered" table when `why` is set) */
   decisionsHead?: { title: string; lead?: string; why?: string; close?: string };
-  outcome: { lead: string; body: Block[]; note?: string };
+  outcome?: { lead: string; body: Block[]; note?: string };
   reflection: { quote: string; body: string[] };
   closing?: { title: string; body: string };
   screens: Screen[];

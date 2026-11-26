@@ -58,8 +58,8 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
     <article className={s.study}>
       {/* 01 hero */}
       <header className={`${site.container} ${s.hero}`}>
-        <Link className={site.back} href={`/work/${st.slug}`}>
-          <span aria-hidden="true">←</span> {st.title} overview
+        <Link className={site.back} href={st.back?.href ?? `/work/${st.slug}`}>
+          <span aria-hidden="true">←</span> {st.back?.label ?? `${st.title} overview`}
         </Link>
         <p className={site.eyebrow}>Case study · {st.category}</p>
         <h1 className={s.title}>{st.title}</h1>
@@ -241,6 +241,7 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
       </section>
 
       {/* 09 outcome */}
+      {st.outcome && (
       <section className={`${site.container} ${s.section}`} aria-labelledby="outcome">
         <Reveal className={s.outcome}>
           <Label n={N()}>Outcome</Label>
@@ -249,6 +250,7 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
           {st.outcome.note && <p className={s.outcomeNote}>{st.outcome.note}</p>}
         </Reveal>
       </section>
+      )}
 
       {/* 10 reflection */}
       <section className={`${site.container} ${s.section}`} aria-labelledby="reflection">
