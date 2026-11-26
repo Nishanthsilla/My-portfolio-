@@ -2,7 +2,10 @@
 .dock {
   position: fixed; left: max(16px, env(safe-area-inset-left)); bottom: max(16px, env(safe-area-inset-bottom)); z-index: 70;
   display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  /* the dock is only a layout box: it must never catch touches meant for the page (the closed player is invisible) */
+  pointer-events: none;
 }
+.dock > .btn, .dock > .player[data-open] { pointer-events: auto; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border-radius: 999px; border: 0; cursor: pointer;
   background: rgba(24, 23, 21, 0.82); color: #fff; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
