@@ -182,9 +182,12 @@ export default function Journey({
       };
       goRef.current = (i, smooth = true) => {
         const el = scenes()[i];
-        if (el) fr.scrollTo({ left: el.offsetLeft, behavior: smooth ? "smooth" : ("instant" as ScrollBehavior) });
+        if (!el) return;
+        fr.scrollTo({ left: el.offsetLeft, behavior: smooth ? "smooth" : ("instant" as ScrollBehavior) });
+        setActive(i); // the menu shows the scene straight away, even if the strip is already there (no scroll event)
       };
       fr.addEventListener("scroll", onScroll, { passive: true });
+      onScroll(); // in case the strip was already moved (a restored position) before this listener existed
 
       // pulling up where there's nothing more below: the scene stretches like rubber, then springs back
       // (instead of the page scrolling into empty space). Sideways swipes and inner scrolling are left alone.
@@ -327,8 +330,10 @@ export default function Journey({
       saved = JSON.parse(sessionStorage.getItem(SAVE_KEY) || "null");
       sessionStorage.removeItem(SAVE_KEY);
     } catch {}
+    // a link to a scene (/#contact, from "Say hi") wins over "back where you were"
+    const toScene = /^#(about|intro|work|beyond|wall|contact)$/.test(location.hash);
     const off =
-      saved && Date.now() - saved.at < 30 * 60_000
+      saved && !toScene && Date.now() - saved.at < 30 * 60_000
         ? onIntroDone(() =>
             requestAnimationFrame(() => {
               scrollTo({ top: saved!.y, behavior: "instant" as ScrollBehavior });
