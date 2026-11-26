@@ -31,7 +31,11 @@
 
 .track { display: flex; align-items: center; gap: 12px; }
 /* the little screen: a 50px card that plays the music as moving colour */
-.screen { flex: none; display: block; width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(120deg, #ff6a4d, #b8326a 55%, #4b2a8a); }
+.screen { flex: none; display: block; width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: #555; }
+/* the cover breathes gently while the music plays */
+.screen[data-on] { animation: breathe 2.4s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@media (prefers-reduced-motion: reduce) { .screen[data-on] { animation: none; } }
 /* the waveform scrubber: the song's own shape; played bars fill in white */
 .wave { position: relative; display: flex; align-items: center; gap: 2.5px; height: 40px; margin-top: 4px; cursor: pointer; touch-action: none; border-radius: 6px; }
 .wave:focus-visible { outline: 2px solid var(--accent, #ff4938); outline-offset: 3px; }

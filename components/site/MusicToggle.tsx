@@ -7,7 +7,7 @@ import s from "./music.module.css";
 const KEY = "nishanth.music.v2"; // on/off (remembered)
 const VOL_KEY = "nishanth.music.volume";
 const MAX = 0.5; // the slider's top; the default sits at 0.24 so the sticker and chat sounds stay on top
-const TRACK = { title: "Biting Bullets", artist: "Ridgeclub", src: "/audio/ambient/biting-bullets" };
+const TRACK = { title: "Biting Bullets", artist: "Ridgeclub", src: "/audio/ambient/biting-bullets", cover: "/audio/ambient/biting-bullets-cover.webp" };
 
 type Engine = { ctx: AudioContext; gain: GainNode; an: AnalyserNode; src: AudioBufferSourceNode | null; buf: Promise<AudioBuffer | null>; dur: number; startedAt: number; offset: number };
 
@@ -40,7 +40,6 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
   const [dur, setDur] = useState(0);
   const [peaks, setPeaks] = useState<number[]>([]);
   const [hoverAt, setHoverAt] = useState<number | null>(null);
-  const screen = useRef<HTMLCanvasElement>(null);
   const [vol, setVol] = useState(0.24 / MAX);
   const eng = useRef<Engine | null>(null);
   const wanted = useRef(true);
@@ -171,43 +170,6 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
     return () => cancelAnimationFrame(raf);
   }, [open]);
 
-  // the little screen: the music drawn live, like a video of the sound
-  useEffect(() => {
-    const cv = screen.current;
-    if (!open || !cv) return;
-    const g = cv.getContext("2d");
-    if (!g) return;
-    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const freq = new Uint8Array(128);
-    let raf = 0, t = 0;
-    const draw = () => {
-      const w = (cv.width = cv.clientWidth * devicePixelRatio), h = (cv.height = cv.clientHeight * devicePixelRatio);
-      const e = eng.current;
-      if (e?.src) e.an.getByteFrequencyData(freq);
-      else freq.fill(0);
-      t += still ? 0 : 0.012;
-      const bass = freq.slice(1, 8).reduce((a, b) => a + b, 0) / 7 / 255;
-      // a slow-moving colour field that pulses with the beat
-      const bg = g.createLinearGradient(0, 0, w, h);
-      bg.addColorStop(0, `hsl(${(12 + Math.sin(t) * 18 + 360) % 360} 85% ${48 + bass * 12}%)`);
-      bg.addColorStop(0.55, `hsl(${330 + Math.sin(t * 0.7) * 20} 60% ${34 + bass * 10}%)`);
-      bg.addColorStop(1, `hsl(${262 + Math.cos(t * 0.5) * 16} 50% 26%)`);
-      g.fillStyle = bg;
-      g.fillRect(0, 0, w, h);
-      // the spectrum, mirrored from the centre line
-      const n = 48, bw = w / n;
-      g.fillStyle = "rgba(255,255,255,0.85)";
-      for (let i = 0; i < n; i++) {
-        const v = (freq[Math.floor((i / n) * 90) + 2] ?? 0) / 255;
-        const bh = Math.max(2 * devicePixelRatio, v * h * 0.8);
-        g.fillRect(i * bw + bw * 0.25, (h - bh) / 2, bw * 0.5, bh);
-      }
-      raf = requestAnimationFrame(draw);
-    };
-    draw();
-    return () => cancelAnimationFrame(raf);
-  }, [open]);
-
   // phones: a tap outside the player closes it
   useEffect(() => {
     if (!open || !isTouch) return;
@@ -258,7 +220,8 @@ export default function MusicToggle({ hidden = false }: { hidden?: boolean }) {
     <div className={s.dock} data-music onPointerEnter={(e) => e.pointerType === "mouse" && show()} onPointerLeave={(e) => e.pointerType === "mouse" && hide()} onFocus={() => !isTouch && show()} onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node) && hide()}>
       <div className={s.player} data-open={open ? "" : undefined} role="group" aria-label="Music player" aria-hidden={!open} inert={!open}>
         <div className={s.track}>
-          <canvas ref={screen} className={s.screen} aria-hidden="true" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className={s.screen} src={TRACK.cover} alt="" width={50} height={50} data-on={live ? "" : undefined} />
           <span className={s.meta}>
             <b>{TRACK.title}</b>
             <span>{TRACK.artist}</span>
