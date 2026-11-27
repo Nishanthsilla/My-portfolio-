@@ -52,7 +52,9 @@ export default function ReadBadge({ label }: { label: string | null }) {
           </text>
         </g>
       </svg>
-      <span className={h.readBadgeArrow}>{label?.startsWith("Open") ? "↗" : "→"}</span>
+      {/* the same dancing duck as the "Swipe Right" badge */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className={h.scrollHintDuck} src="/images/duck-dance.webp" alt="" width={58} height={70} decoding="async" />
     </div>,
     host,
   );

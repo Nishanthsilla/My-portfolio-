@@ -338,7 +338,7 @@ function RoomIndex({ n, title, line, list, back, open }: { n: number; title: str
               </>
             );
             return (
-              <li key={p.slug} data-on={on === i ? "" : undefined} onPointerEnter={() => { setOn(i); setBadge(p.external ? `Open on ${p.external.label}` : "Read case study"); }} onPointerLeave={() => setBadge(null)}>
+              <li key={p.slug} data-on={on === i ? "" : undefined} onPointerEnter={(e) => { setOn(i); if (e.pointerType === "mouse") setBadge(p.external ? `Open on ${p.external.label}` : "Read case study"); }} onPointerLeave={() => setBadge(null)}>
                 {p.external ? (
                   <a href={p.external.href} target="_blank" rel="noopener noreferrer" onFocus={() => setOn(i)} aria-label={`${p.title} — opens on ${p.external.label}`}>{inner}</a>
                 ) : (
