@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import ProjectMedia from "../ProjectMedia";
 import CursorScope from "../CursorScope";
 import ProjectDrawer, { type DrawerMode } from "./ProjectDrawer";
+import ReadBadge from "./ReadBadge";
 import { projects, type Project } from "@/lib/site/content";
 import type { TileSize } from "@/lib/site/home";
 import { categoryLabel } from "@/lib/site/routes";
@@ -314,9 +315,11 @@ function PeekStack({ ps }: { ps: Project[] }) {
  */
 function RoomIndex({ n, title, line, list, back, open }: { n: number; title: string; line: string; list: Project[]; back: () => void; open: (p: Project, mode: DrawerMode) => void }) {
   const [on, setOn] = useState(0);
+  const [badge, setBadge] = useState<string | null>(null); // the round badge's text while over a name
   const cur = list[on];
   return (
     <div className={h.roomIndex}>
+      <ReadBadge label={badge} />
       <div className={h.indexCol}>
         <button type="button" className={h.backUp} onClick={back}>
           <span aria-hidden="true">↑</span> Back to work
@@ -335,7 +338,7 @@ function RoomIndex({ n, title, line, list, back, open }: { n: number; title: str
               </>
             );
             return (
-              <li key={p.slug} data-on={on === i ? "" : undefined} onPointerEnter={() => setOn(i)} className="cursor-target" data-cursor-label={p.external ? `Open on ${p.external.label}` : "Read case study"}>
+              <li key={p.slug} data-on={on === i ? "" : undefined} onPointerEnter={() => { setOn(i); setBadge(p.external ? `Open on ${p.external.label}` : "Read case study"); }} onPointerLeave={() => setBadge(null)}>
                 {p.external ? (
                   <a href={p.external.href} target="_blank" rel="noopener noreferrer" onFocus={() => setOn(i)} aria-label={`${p.title} — opens on ${p.external.label}`}>{inner}</a>
                 ) : (

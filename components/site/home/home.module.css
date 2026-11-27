@@ -627,3 +627,10 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 .indexPreview :global(.cover-fit) { inset: 7% 6% !important; padding: 0 !important; justify-content: center; }
 .indexMedia > * > div { padding-bottom: 0 !important; }
 .indexPreview .stretch { position: absolute; inset: 0; z-index: 1; }
+
+/* the round "Read case study" badge over a room's list: it stands in for the cursor there */
+.readBadge { width: 124px; height: 124px; }
+.readBadge text { font-size: 10.5px; }
+.readBadgeArrow { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 30px; font-weight: 500; line-height: 1; color: #ff4938; }
+.indexList li, .indexList li a, .indexList li button { cursor: none; }
+:global(html[data-read-badge]) :global(.target-cursor) { visibility: hidden; }
