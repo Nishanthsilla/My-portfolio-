@@ -1,11 +1,11 @@
-import Link from "next/link";
 import h from "./home.module.css";
+import Button from "@/components/site/ui/Button";
 
 /** The intro's About button. */
 export default function AboutFace() {
   return (
-    <Link className={`${h.btnSecondary} ${h.aboutBtn}`} href="/about">
+    <Button className={h.aboutBtn} href="/about">
       About
-    </Link>
+    </Button>
   );
 }

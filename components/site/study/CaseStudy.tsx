@@ -6,6 +6,7 @@ import { screenFile } from "./assets";
 import Catalogue from "./Catalogue";
 import { Flowchart, Screen } from "./Media";
 import s from "./study.module.css";
+import Button from "@/components/site/ui/Button";
 
 /*
  * The long-form case-study layout shared by Ambient AI and Self-Ready:
@@ -420,7 +421,7 @@ export default function CaseStudy({ study: st, media }: { study: Study; media?: 
             {st.next.title} <span aria-hidden="true">→</span>
           </span>
         </Link>
-        <Link href="/#work" className={`${site.btn} ${site.btnSecondary}`}>All work</Link>
+        <Button href="/#work">All work</Button>
       </nav>
     </article>
   );

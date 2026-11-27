@@ -9,6 +9,7 @@ import { projects, type Project } from "@/lib/site/content";
 import type { TileSize } from "@/lib/site/home";
 import { categoryLabel } from "@/lib/site/routes";
 import h from "./home.module.css";
+import Button from "@/components/site/ui/Button";
 
 /** the colour fields behind each project, kept but softened: less saturation and a gentler light-to-dark
  * range, so the backdrops stay warm without being loud */
@@ -181,9 +182,9 @@ export default function WorkScene() {
               {st && (
                 <>
                   <header className={h.roomHead}>
-                    <button type="button" className={h.backUp} onClick={() => goUp()}>
+                    <Button size="sm" className={h.backUp} onClick={() => goUp()}>
                       <span aria-hidden="true">↑</span> Back to work
-                    </button>
+                    </Button>
                     <div>
                       <p className={h.eyebrow}>0{STATEMENTS.indexOf(st) + 1} · {list.length} case {list.length === 1 ? "study" : "studies"}</p>
                       <h3 className={h.roomTitle}>{st.title}</h3>
@@ -321,9 +322,9 @@ function RoomIndex({ n, title, line, list, back, open }: { n: number; title: str
     <div className={h.roomIndex}>
       <ReadBadge label={badge} />
       <div className={h.indexCol}>
-        <button type="button" className={h.backUp} onClick={back}>
+        <Button size="sm" className={h.backUp} onClick={back}>
           <span aria-hidden="true">↑</span> Back to work
-        </button>
+        </Button>
         <p className={h.eyebrow}>0{n} · {list.length} case {list.length === 1 ? "study" : "studies"}</p>
         <h3 className={h.indexTitle}>{title}</h3>
         <p className={h.indexLine}>{line}</p>
@@ -396,9 +397,9 @@ function Tile({ p, size, tone, open }: { p: Project; size: TileSize; tone: strin
     <div style={style} className={`${cls} ${h.stretchTile} cursor-target`} data-cursor-label="View project">
       {body}
       <button type="button" className={h.stretch} onClick={() => open("simple")} aria-label={`${p.title} — open`} />
-      <button type="button" className={h.tileCta} onClick={() => open("deep")}>
+      <Button variant="glass" size="sm" className={h.tileCta} onClick={() => open("deep")}>
         Read full case study <span aria-hidden="true">→</span>
-      </button>
+      </Button>
     </div>
   );
 }

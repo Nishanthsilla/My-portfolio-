@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { requestAccess, useAccess } from "./access";
 import Zoomable from "./Zoomable";
 import s from "./study.module.css";
+import Button from "@/components/site/ui/Button";
 
 /**
  * A confidential client screen. Everyone sees a faithful recreation (no client
@@ -75,7 +76,7 @@ export function AskModal({ onClose }: { onClose: () => void }) {
               <label><b>Why you&rsquo;d like to see them</b><textarea name="reason" required minLength={3} maxLength={400} rows={3} /></label>
               <input name="website" tabIndex={-1} autoComplete="off" className={s.hp} aria-hidden="true" />
               {err && <p className={s.askErr} role="alert">{err}</p>}
-              <button type="submit" className={s.askSend} disabled={busy}>{busy ? "Sending…" : "Request access"}</button>
+              <Button variant="primary" type="submit" disabled={busy} style={{ width: "100%", height: 46 }}>{busy ? "Sending…" : "Request access"}</Button>
             </form>
           </>
         )}

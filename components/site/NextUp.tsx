@@ -1,5 +1,5 @@
-import Link from "next/link";
 import s from "./site.module.css";
+import Button from "@/components/site/ui/Button";
 
 /** A considered "in progress" state for pages that are built after the homepage and case-study direction is approved. */
 export default function NextUp({ eyebrow, title, line }: { eyebrow: string; title: string; line: string }) {
@@ -10,7 +10,7 @@ export default function NextUp({ eyebrow, title, line }: { eyebrow: string; titl
       <h1 className={`${s.display} ${s.csTitle}`}>{title}</h1>
       <p className={`${s.lede} ${s.csLede}`}>{line}</p>
       <div style={{ marginTop: 40 }}>
-        <Link className={`${s.btn} ${s.btnSecondary}`} href="/#work">← Back to work</Link>
+        <Button href="/#work">← Back to work</Button>
       </div>
     </section>
   );

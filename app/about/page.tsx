@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import SiteShell from "@/components/site/SiteShell";
 import SocialLinks from "@/components/site/SocialLinks";
 import Tools from "@/components/site/about/Tools";
@@ -8,6 +7,7 @@ import s from "@/components/site/beyond.module.css";
 import a from "@/components/site/about/about.module.css";
 import { about } from "@/lib/site/about";
 import { socials } from "@/lib/site/content";
+import Button from "@/components/site/ui/Button";
 
 export const metadata: Metadata = { title: "About — Nishanth Silla" };
 
@@ -24,10 +24,10 @@ export default function AboutPage() {
             <p className={a.intro}>{about.intro}</p>
             <p className={a.where}><i aria-hidden="true" />{about.where}</p>
             <div className={a.heroCtas}>
-              <a className={`${site.btn} ${site.btnPrimary}`} href={about.cv} target="_blank" rel="noopener">
+              <Button variant="primary" href={about.cv} target="_blank" rel="noopener">
                 Download my CV <span aria-hidden="true">↓</span>
-              </a>
-              <Link className={`${site.btn} ${site.btnSecondary}`} href="/#contact">Say hi</Link>
+              </Button>
+              <Button href="/#contact">Say hi</Button>
             </div>
           </div>
           <figure className={a.heroPhoto}>
@@ -127,8 +127,8 @@ export default function AboutPage() {
               </ul>
               <SocialLinks links={socials} />
               <div className={a.lifeLinks}>
-                <Link className={`${site.btn} ${site.btnSecondary} ${site.btnSmall}`} href="/photography">See my photography <span aria-hidden="true">→</span></Link>
-                <Link className={`${site.btn} ${site.btnSecondary} ${site.btnSmall}`} href="/beyond">Beyond the interface <span aria-hidden="true">→</span></Link>
+                <Button size="sm" href="/photography">See my photography <span aria-hidden="true">→</span></Button>
+                <Button size="sm" href="/beyond">Beyond the interface <span aria-hidden="true">→</span></Button>
               </div>
             </div>
           </div>

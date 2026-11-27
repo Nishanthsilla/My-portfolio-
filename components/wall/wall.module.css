@@ -581,3 +581,4 @@ img.monkeyArt { width: 96px; height: 96px; object-fit: cover; border-radius: 12p
 }
 .holdHintFull { bottom: 84px; }
 @media (pointer: coarse) { .holdHint { display: flex; } }
+.fabAdd { flex: none; }

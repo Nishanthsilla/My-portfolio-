@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { StickerArt } from "@/lib/wall/stickers";
 import WallApp from "./WallApp";
 import w from "./wall.module.css";
+import Button from "@/components/site/ui/Button";
 
 /** Decorative stickers for the teaser (no messages — decoration only). */
 const DECOR: { id: string; x: number; y: number; r: number; s: number }[] = [
@@ -57,10 +58,10 @@ export default function WallTeaser() {
           <h2 id="wall-title" className={w.teaserTitle}>Leave a little something.</h2>
           <p className={w.teaserLine}>A thought, a note, or just a little sticker. I&apos;d love to see what you leave.</p>
           <div className={w.teaserActions}>
-            <button type="button" className={w.btnPrimary} onClick={() => openWall(true)}>Leave a note</button>
-            <button type="button" className={w.btnGhost} onClick={() => openWall(false)}>
+            <Button variant="primary" onClick={() => openWall(true)}>Leave a note</Button>
+            <Button onClick={() => openWall(false)}>
               Explore the wall <span aria-hidden="true">→</span>
-            </button>
+            </Button>
           </div>
         </div>
         <button type="button" className={w.teaserBoard} onClick={() => openWall(false)} aria-label="Explore the wall">

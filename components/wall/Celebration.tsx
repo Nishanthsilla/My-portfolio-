@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { StickerArt } from "@/lib/wall/stickers";
 import w from "./wall.module.css";
+import Button from "@/components/site/ui/Button";
 
 /**
  * After a note is posted: a small card with the "happy happy happy" cat dancing
@@ -17,7 +18,7 @@ const HAPPY_CAT = true;
 
 export default function Celebration({ offline, onSee }: { offline: boolean; onSee: () => void }) {
   const song = useRef<HTMLAudioElement | null>(null);
-  const btn = useRef<HTMLButtonElement>(null);
+  const btn = useRef<HTMLElement>(null);
 
   useEffect(() => {
     btn.current?.focus();
@@ -54,9 +55,9 @@ export default function Celebration({ offline, onSee }: { offline: boolean; onSe
           ? "Stuck on the wall, saved on this device only (this copy of the site isn't connected)."
           : "Stuck it on the wall! Thanks for leaving a little something."}
       </p>
-      <button ref={btn} type="button" className={w.btnPrimary} onClick={onSee}>
+      <Button variant="primary" elRef={btn} onClick={onSee}>
         See your note <span aria-hidden="true">→</span>
-      </button>
+      </Button>
     </div>
   );
 }

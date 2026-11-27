@@ -138,14 +138,13 @@
 .stretchTile { cursor: pointer; }
 .stretch { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
 .stretch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* the tile's "Read full case study" is the site Button (glass); this only places it */
 .tileCta {
-  position: absolute; right: 18px; bottom: 18px; z-index: 2; font-size: 13.5px; font-weight: 500; color: var(--ink);
-  padding: 7px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line);
-  opacity: 0; transform: translateY(4px); transition: opacity var(--t-hover) var(--ease), transform var(--t-hover) var(--ease), border-color var(--t-hover);
+  position: absolute !important; right: 18px; bottom: 18px; z-index: 2;
+  opacity: 0; transform: translateY(4px); transition: opacity var(--t-hover) var(--ease), transform var(--t-hover) var(--ease);
 }
 .large .tileCta { right: 24px; bottom: 24px; }
 .tile:hover .tileCta, .tileCta:focus-visible { opacity: 1; transform: none; }
-.tileCta:hover { border-color: var(--accent); }
 @media (hover: none) { .tileCta { opacity: 1; transform: none; position: relative; right: auto; bottom: auto; margin: 0 18px 16px; width: max-content; } .large .tileCta { margin: 0 24px 20px; } }
 
 .browse {
@@ -350,9 +349,8 @@
 .arrow { color: rgba(255, 255, 255, 0.6); }
 .tile:hover .arrow { color: #fff; }
 .tileTag { background: rgba(255, 255, 255, 0.88); border: 0; backdrop-filter: blur(6px); }
-.tileCta { top: 14px; right: 14px; bottom: auto; background: rgba(255, 255, 255, 0.92); border: 0; color: #1d1b19; backdrop-filter: blur(6px); }
+.tileCta { top: 14px; right: 14px; bottom: auto; }
 .large .tileCta { top: 18px; right: 18px; bottom: auto; }
-.tileCta:hover { background: var(--surface); }
 @media (hover: none) {
   .tileCta { position: absolute; top: 12px; right: 12px; bottom: auto; margin: 0; }
   .large .tileCta { top: 14px; right: 14px; margin: 0; }
@@ -526,11 +524,6 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 .roomHead .eyebrow { margin: 0 0 8px; }
 .roomHead .workLine { margin: 0; }
 .roomTitle { margin: 0; font-size: clamp(28px, 2.8vw, 42px); line-height: 1.04; letter-spacing: -0.035em; font-weight: 560; }
-.backUp {
-  display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line);
-  background: var(--surface); color: var(--ink); font: 500 14px/1 inherit; font-family: inherit; cursor: pointer; transition: border-color 150ms ease, transform 200ms var(--ease);
-}
-.backUp:hover { border-color: color-mix(in srgb, var(--ink) 30%, transparent); }
 .backUp:hover span { transform: translateY(-2px); }
 .backUp span { display: inline-block; transition: transform 200ms var(--ease); }
 .roomGrid { flex: 1; min-height: 0; display: grid; gap: 16px; grid-auto-flow: dense; }
@@ -600,9 +593,8 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 .journey[data-mode="desktop"] .roomIndex { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(28px, 4vw, 64px); padding-bottom: 8px; }
 .indexCol { min-height: 0; display: flex; flex-direction: column; align-items: flex-start; overflow-y: auto; scrollbar-width: none; }
 .indexCol .backUp { margin-bottom: clamp(16px, 2.6vh, 28px); }
-/* "Back to work": a quiet filled chip (a hairline border all but vanished on some screens) */
-.room .backUp { height: 34px; padding: 0 14px 0 12px; border: 0; background: color-mix(in srgb, var(--ink) 7%, transparent); font-size: 13.5px; gap: 6px; }
-.room .backUp:hover { background: color-mix(in srgb, var(--ink) 12%, transparent); }
+/* "Back to work" is the site Button (secondary, small) */
+.room .backUp { flex: none; gap: 6px; }
 .indexCol .eyebrow { margin: 0 0 10px; }
 .indexTitle { margin: 0; font-size: clamp(26px, 2.4vw, 36px); line-height: 1.04; letter-spacing: -0.035em; font-weight: 560; text-wrap: balance; }
 .indexLine { margin: 12px 0 0; max-width: 46ch; color: var(--muted); font-size: 15.5px; line-height: 1.5; }

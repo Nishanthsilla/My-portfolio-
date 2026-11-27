@@ -6,6 +6,7 @@ import { categories, projects, type Project } from "@/lib/site/content";
 import { bento, type TileSize } from "@/lib/site/home";
 import { caseStudyHref, categoryHref, categoryLabel, overviewHref } from "@/lib/site/routes";
 import h from "./home.module.css";
+import Button from "@/components/site/ui/Button";
 
 /** Rich colour fields behind each project (in turn), so the covers read like product shots on a backdrop. */
 const TONES = [
@@ -125,9 +126,9 @@ function Tile({ p, size, tone }: { p: Project; size: TileSize; tone: number }) {
     <div style={style} className={`${cls} ${h.stretchTile} cursor-target`} data-cursor-label="View project">
       {body}
       <Link className={h.stretch} href={overviewHref(p)} aria-label={`${p.title} — project overview`} />
-      <Link className={h.tileCta} href={caseStudyHref(p)}>
+      <Button variant="glass" size="sm" className={h.tileCta} href={caseStudyHref(p)}>
         Read full case study <span aria-hidden="true">→</span>
-      </Link>
+      </Button>
     </div>
   );
 }

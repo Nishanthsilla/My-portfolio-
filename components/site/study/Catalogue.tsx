@@ -5,6 +5,7 @@ import { useAccess } from "./access";
 import { AskModal } from "./Locked";
 import Zoomable from "./Zoomable";
 import s from "./study.module.css";
+import Button from "@/components/site/ui/Button";
 
 /** the screen drawn at a tiny size and scaled back up, so it reads as big blocks of colour at any zoom */
 function Pixelated({ src, width = 16, height = 9 }: { src: string; width?: number; height?: number }) {
@@ -75,7 +76,7 @@ export default function Catalogue({ items }: { items: Item[] }) {
           <b>{access === "pending" ? "Access requested" : "The real screens are confidential"}</b>
           <p>{access === "pending" ? "I'll look at your request soon. They open here on their own once I approve it." : "What you see above are recreations. Ask for access and, once I approve it, every real screen opens right here."}</p>
           {access !== "pending" && (
-            <button type="button" className={s.askSend} onClick={() => setAsk(true)} disabled={access === "loading"}>Request access</button>
+            <Button variant="primary" className={s.catAsk} onClick={() => setAsk(true)} disabled={access === "loading"}>Request access</Button>
           )}
         </div>
       )}

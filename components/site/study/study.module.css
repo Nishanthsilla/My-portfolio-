@@ -244,3 +244,4 @@
 /* problem / solution: two columns instead of three */
 .twoCol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (max-width: 760px) { .twoCol { grid-template-columns: 1fr; } }
+.catAsk { margin-top: 6px; }

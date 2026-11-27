@@ -17,6 +17,7 @@ import { uiSound } from "@/lib/sound/ui";
 import NoteCard from "./NoteCard";
 import SideEyeMonkey from "./SideEyeMonkey";
 import w from "./wall.module.css";
+import Button from "@/components/site/ui/Button";
 
 type Mode = "loading" | "sqlite" | "postgres" | "unconfigured" | "offline";
 type Step = "browse" | "compose" | "place" | "sent";
@@ -678,9 +679,9 @@ export default function WallApp({
           {step === "browse" && (
             <div className={w.fabBar}>
               <span className={w.fabHint}>Drag to look around · pick up any sticker to move it · stickers: Noto Emoji, CC BY 4.0</span>
-              <button type="button" className={w.btnPrimary} onClick={start}>
+              <Button variant="primary" size="sm" className={w.fabAdd} onClick={start}>
                 Add a note
-              </button>
+              </Button>
             </div>
           )}
         </>

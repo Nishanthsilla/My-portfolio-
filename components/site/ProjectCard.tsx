@@ -3,6 +3,7 @@ import type { Project } from "@/lib/site/content";
 import ProjectMedia from "./ProjectMedia";
 import { caseStudyHref, overviewHref } from "@/lib/site/routes";
 import s from "./site.module.css";
+import Button from "@/components/site/ui/Button";
 
 /** One project in the work grid. Case studies open inside the site; older work opens its original page. */
 export default function ProjectCard({ project }: { project: Project }) {
@@ -72,9 +73,9 @@ function FeaturedCard({ project: p }: { project: Project }) {
         <ul className={s.tags} aria-label="Discipline and domain">
           {f.tags.map((t) => <li key={t} className={s.tag}>{t}</li>)}
         </ul>
-        <Link href={f.caseStudy} className={`${s.btn} ${s.btnSecondary}`} style={{ marginTop: 16, width: "max-content" }}>
+        <Button href={f.caseStudy} style={{ marginTop: 16, width: "max-content" }}>
           Read full case study <span aria-hidden="true">→</span>
-        </Link>
+        </Button>
       </div>
     </div>
   );
