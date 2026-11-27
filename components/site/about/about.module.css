@@ -130,7 +130,7 @@
 .polaroids li:hover { transform: rotate(0deg) translateY(-4px) scale(1.04); }
 .polaroids img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 3px; display: block; }
 .polaroids span { font: 500 12px/1.2 var(--mono); color: #4a4a4a; text-align: center; }
-.lifeLinks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.lifeLinks { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; margin-left: -22px; } /* tertiary buttons: the words line up with the links above; the hover wash reaches past them */
 @media (max-width: 860px) {
   .life { grid-template-columns: 1fr; }
   .lifePhoto { position: static; aspect-ratio: 4 / 4.4; }
