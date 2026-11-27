@@ -241,6 +241,17 @@ function PeekStack({ ps }: { ps: Project[] }) {
   const [prev, setPrev] = useState(0);
   const [tick, setTick] = useState(0); // total steps taken (the wrap animation alternates by lap)
   const n = ps.length;
+  // the window's size in px for the card maths (container units can go stale and leave the cards tiny)
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      el.style.setProperty("--pw", `${el.clientWidth}px`);
+      el.style.setProperty("--ph", `${el.clientHeight}px`);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   useEffect(() => {
     const door = ref.current?.closest("button");
     if (!door || n < 2 || matchMedia("(prefers-reduced-motion: reduce)").matches) return;

@@ -480,13 +480,14 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 /* a grey window the case studies move up through: the current card in the middle, the next one
    half visible below it and the previous one leaving at the top */
 .peek {
+  /* --pw / --ph: the window's size in px, measured by PeekStack (container units alone can go stale in some browsers and shrink the cards) */
   position: relative; flex: 1; min-height: 180px; container-type: size; overflow: hidden; border-radius: 14px;
   background: color-mix(in srgb, var(--ink) 5%, var(--surface));
 }
 .peekCard {
-  --ch: min(calc(min(84cqw, 300px) * 0.6875), calc((100cqh - 28px) / 2));
+  --ch: min(calc(min(var(--pw, 100cqw) * 0.84, 300px) * 0.6875), calc((var(--ph, 100cqh) - 28px) / 2));
   --w: calc(var(--ch) / 0.6875);
-  --yc: calc((100cqh - var(--ch)) / 2);
+  --yc: calc((var(--ph, 100cqh) - var(--ch)) / 2);
   --s: calc(var(--ch) + 16px);
   position: absolute; left: 50%; top: 0; width: var(--w); aspect-ratio: 16 / 11; margin-left: calc(var(--w) / -2);
   display: flex; align-items: flex-end; padding: 12px 14px; border-radius: 12px; background: var(--tone); color: #fff;
@@ -569,7 +570,7 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 .journey[data-mode="touch"] .door { min-height: 0; }
 /* phones: big cards (most of the door's width) so they read without bringing the phone closer */
 .journey[data-mode="touch"] .peek, .journey[data-mode="stack"] .peek { min-height: 0; flex: none; height: min(calc(121cqw + 28px), 520px); }
-.journey[data-mode="touch"] .peekCard, .journey[data-mode="stack"] .peekCard { --ch: min(calc(88cqw * 0.6875), calc((100cqh - 28px) / 2)); }
+.journey[data-mode="touch"] .peekCard, .journey[data-mode="stack"] .peekCard { --ch: min(calc(var(--pw, 100cqw) * 0.88 * 0.6875), calc((var(--ph, 100cqh) - 28px) / 2)); }
 .journey[data-mode="touch"] .peekCard b, .journey[data-mode="stack"] .peekCard b { font-size: 15px; }
 /* reduced motion (the scenes stacked): the doors wrap instead of squeezing into one row */
 .journey[data-mode="stack"] .doors { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
