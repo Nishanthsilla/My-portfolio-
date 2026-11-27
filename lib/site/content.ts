@@ -37,7 +37,7 @@ export type Project = {
     | { kind: "visual"; id: VisualId }
     | { kind: "image"; src: string; alt: string; fit?: "cover" | "contain" | "window"; bg?: string }
     /** an animated product-UI cover (Self-Ready) */
-    | { kind: "scene"; id: "self-ready" | "field-ops" | "ambient" | "portfolio" }
+    | { kind: "scene"; id: "self-ready" | "field-ops" | "ambient" | "portfolio" | "learn-loop" | "targets" }
     /** no visual yet: a designed "ADD IMAGE HERE" cover */
     | { kind: "placeholder"; need: string };
   /** facts that still need Nishanth's confirmation, shown with a marker */
@@ -121,7 +121,7 @@ export const projects: Project[] = [
       "Integrated usability testing and product analytics into sprint reviews, enabling the team to identify friction points and improve adoption.",
       "Collaborated with product and engineering to define AI-assisted feature requirements and interaction flows, ensuring design decisions were technically feasible and built to scale.",
     ],
-    preview: { kind: "visual", id: "learning" },
+    preview: { kind: "scene", id: "learn-loop" },
     source: "site",
   },
   {
@@ -140,7 +140,7 @@ export const projects: Project[] = [
       "Ran stakeholder workshops and competitor analysis sessions to align product vision with user expectations, translating findings into interaction flows, prototypes, and usability test frameworks.",
       "Worked closely with cross-functional teams in an Agile setup, aligning design goals with product and engineering to keep delivery fast without compromising experience quality.",
     ],
-    preview: { kind: "visual", id: "ab-test" },
+    preview: { kind: "scene", id: "targets" },
     source: "site",
   },
   {

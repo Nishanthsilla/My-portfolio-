@@ -33,7 +33,7 @@ const TONE_FOR: Record<string, string> = {
 export const STATEMENTS: { id: string; title: string; line: string; slugs: string[] }[] = [
   {
     id: "idea-to-launch",
-    title: "I can take a product from business requirement to delivery",
+    title: "I can take a product end to end",
     line: "Products I owned from the business problem to the shipped release.",
     slugs: ["ambient-ai", "self-ready", "thriving-springs-e-learning", "ryzeup", "this-portfolio"],
   },
@@ -159,14 +159,13 @@ export default function WorkScene() {
                   const ps = roomProjects(s.id);
                   return (
                     <li key={s.id}>
-                      <button type="button" className={`${h.door} cursor-target`} data-cursor-label="Go down" onClick={() => goDown(s.id)} aria-label={`${s.title}: ${ps.length} case ${ps.length === 1 ? "study" : "studies"}`}>
+                      <button type="button" className={`${h.door} cursor-target`} data-cursor-label="See the work" onClick={() => goDown(s.id)} aria-label={`${s.title}: ${ps.length} case ${ps.length === 1 ? "study" : "studies"}`}>
                         <span className={h.doorNum}>0{n + 1}</span>
                         <span className={h.doorTitle}>{s.title}</span>
                         <span className={h.doorLine}>{s.line}</span>
                         <PeekStack ps={ps} />
                         <span className={h.doorFoot}>
                           <span>{ps.length} case {ps.length === 1 ? "study" : "studies"}</span>
-                          <span className={h.doorGo}>Go down <span aria-hidden="true">↓</span></span>
                         </span>
                       </button>
                     </li>
@@ -336,7 +335,7 @@ function RoomIndex({ n, title, line, list, back, open }: { n: number; title: str
               </>
             );
             return (
-              <li key={p.slug} data-on={on === i ? "" : undefined} onPointerEnter={() => setOn(i)}>
+              <li key={p.slug} data-on={on === i ? "" : undefined} onPointerEnter={() => setOn(i)} className="cursor-target" data-cursor-label={p.external ? `Open on ${p.external.label}` : "Read case study"}>
                 {p.external ? (
                   <a href={p.external.href} target="_blank" rel="noopener noreferrer" onFocus={() => setOn(i)} aria-label={`${p.title} — opens on ${p.external.label}`}>{inner}</a>
                 ) : (
@@ -347,7 +346,7 @@ function RoomIndex({ n, title, line, list, back, open }: { n: number; title: str
           })}
         </ol>
       </div>
-      <div className={`${h.indexPreview} cursor-target`} data-cursor-label={cur.external ? `Open on ${cur.external.label}` : "View project"}>
+      <div className={h.indexPreview}>
         {list.map((p, i) => (
           <div key={p.slug} className={h.indexCover} data-on={on === i ? "" : undefined} style={{ ["--tone" as string]: toneOf(p) }} aria-hidden={on === i ? undefined : true}>
             <ProjectMedia project={p} className={h.indexMedia} fill={0.86} />
@@ -356,12 +355,7 @@ function RoomIndex({ n, title, line, list, back, open }: { n: number; title: str
         {cur.external ? (
           <a className={h.stretch} href={cur.external.href} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden="true" />
         ) : (
-          <>
-            <button type="button" className={h.stretch} tabIndex={-1} aria-hidden="true" onClick={() => open(cur, "simple")} />
-            <button type="button" className={h.indexCta} onClick={() => open(cur, "deep")}>
-              Read full case study <span aria-hidden="true">→</span>
-            </button>
-          </>
+          <button type="button" className={h.stretch} tabIndex={-1} aria-hidden="true" onClick={() => open(cur, "simple")} />
         )}
       </div>
     </div>

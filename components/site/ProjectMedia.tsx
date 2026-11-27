@@ -8,6 +8,8 @@ import type { Project, VisualId } from "@/lib/site/content";
 import { CoverScene } from "./selfready/Scenes";
 import FieldOpsMini from "./fieldops/Mini";
 import AgentPush from "./ambient/AgentPush";
+import LearnLoop from "./covers/LearnLoop";
+import TargetRewards from "./covers/TargetRewards";
 import PortfolioCover from "./portfolioCover/PortfolioCover";
 import s from "./site.module.css";
 
@@ -58,7 +60,7 @@ export default function ProjectMedia({ project, className = "", fill, eager = fa
             <b>ADD IMAGE HERE — {p.need}</b>
           </div>
         ) : p.kind === "scene" ? (
-          p.id === "field-ops" ? <FieldOpsMini /> : p.id === "portfolio" ? <PortfolioCover /> : p.id === "ambient" ? <div className="cover-fit"><AgentPush /></div> : <div className="cover-fit"><CoverScene /></div>
+          p.id === "field-ops" ? <FieldOpsMini /> : p.id === "portfolio" ? <PortfolioCover /> : p.id === "ambient" ? <div className="cover-fit"><AgentPush /></div> : p.id === "learn-loop" ? <div className="cover-fit"><LearnLoop /></div> : p.id === "targets" ? <div className="cover-fit"><TargetRewards /></div> : <div className="cover-fit"><CoverScene /></div>
         ) : p.kind === "visual" ? (
           <FitVisual id={p.id} fill={fill} />
         ) : p.fit === "window" ? (
