@@ -1,40 +1,41 @@
-/* the site's liquid-glass button (see Button.tsx) */
+/* the site's button with a liquid fill (see Button.tsx) */
 .btn {
-  position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center;
-  border: 0; padding: 0; margin: 0; background: none; border-radius: 999px; cursor: pointer; text-decoration: none;
+  --fill: #ff4938; --on-fill: #fff;
+  position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center;
+  margin: 0; padding: 0; border-radius: 999px; cursor: pointer; text-decoration: none;
   font: 500 15px/1 var(--sans, var(--font-geist-sans), system-ui, sans-serif); letter-spacing: -0.005em; white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-  /* a drop of liquid: it swells a touch on hover and squashes when pressed */
-  transition: transform 450ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms ease;
+  -webkit-tap-highlight-color: transparent; transition: transform 200ms ease, box-shadow 300ms ease;
 }
-.btn:hover { transform: scale(1.035); }
-.btn:active { transform: scale(1.06, 0.92); transition-duration: 120ms; }
+.btn:active { transform: scale(0.97); }
 .btn:focus-visible { outline: 2px solid #ff4938; outline-offset: 3px; }
 .btn[aria-disabled="true"], .btn:disabled { opacity: 0.5; pointer-events: none; }
 .md { height: 44px; }
 .sm { height: 36px; font-size: 14px; }
 
-.surface { position: absolute !important; inset: 0; z-index: 0; }
-.surface :global(.glass-surface__content) { padding: 0; }
-.tint { position: absolute; inset: 0; z-index: 1; border-radius: inherit; pointer-events: none; transition: background-color 250ms ease; }
-.label { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 8px; padding: 0 22px; }
+/* the liquid: a disc that swells from the pointer to cover the pill, and shrinks back out */
+.fill {
+  position: absolute; z-index: 0; left: var(--fx, 50%); top: var(--fy, 100%); width: var(--fd, 300px); height: var(--fd, 300px);
+  border-radius: 50%; background: var(--fill); pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 560ms cubic-bezier(0.3, 0.75, 0.25, 1);
+}
+.btn[data-flow] .fill, .btn:focus-visible .fill { transform: translate(-50%, -50%) scale(1); transition-duration: 620ms; }
+.label { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; padding: 0 22px; transition: color 320ms ease; }
 .sm .label { padding: 0 16px; gap: 6px; }
+/* the label turns once the colour has reached it (and turns back straight away when it drains) */
+.btn[data-flow] .label, .btn:focus-visible .label { color: var(--on-fill); transition: color 240ms ease 150ms; }
 .label > span[aria-hidden="true"] { display: inline-block; transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1); }
-.btn:hover .label > span[aria-hidden="true"] { transform: translateX(3px); }
+.btn[data-flow] .label > span[aria-hidden="true"] { transform: translateX(3px); }
 
-/* primary: glass tinted the site red; a bright top edge keeps it glassy */
-.primary { color: #fff; box-shadow: 0 12px 26px -14px rgba(226, 58, 42, 0.8); }
-.primary .tint { background: linear-gradient(180deg, rgba(255, 98, 80, 0.86), rgba(240, 58, 40, 0.9)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(120, 20, 10, 0.25); }
-.primary:hover .tint { background: linear-gradient(180deg, rgba(255, 98, 80, 0.8), rgba(240, 58, 40, 0.86)); }
+/* primary: solid red at rest, ink pours in */
+.primary { --fill: #1d1b19; background: #ff4938; color: #fff; border: 0; box-shadow: 0 12px 26px -16px rgba(226, 58, 42, 0.85); }
+/* secondary: an outline at rest, red pours in */
+.secondary { background: transparent; color: var(--ink, #222); border: 1.5px solid color-mix(in srgb, var(--ink, #222) 80%, transparent); }
+.secondary[data-flow] { border-color: #ff4938; }
+/* glass: frosted white on pictures, red pours in */
+.glass { background: rgba(255, 255, 255, 0.9); color: #1d1b19; border: 0; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); box-shadow: 0 8px 22px -12px rgba(0, 0, 0, 0.35); }
 
-/* secondary: clear glass with a whisper of white so it reads on plain pages */
-.secondary { color: var(--ink, #222); box-shadow: 0 10px 22px -16px rgba(20, 16, 12, 0.45); }
-.secondary .tint { background: rgba(255, 255, 255, 0.38); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(34, 34, 34, 0.08); }
-.secondary:hover .tint { background: rgba(255, 255, 255, 0.55); }
-:global(html[data-theme="dark"]) .secondary { color: #eceae4; }
-:global(html[data-theme="dark"]) .secondary .tint { background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.1); }
+:global(html[data-theme="dark"]) .primary { --fill: #f2efe8; --on-fill: #1d1b19; }
+:global(html[data-theme="dark"]) .secondary { color: #eceae4; border-color: rgba(236, 234, 228, 0.7); }
 
-/* glass: on pictures and covers, a little more frost so the label stays readable */
-.glass { color: #1d1b19; box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.4); }
-.glass .tint { background: rgba(255, 255, 255, 0.55); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95); }
-.glass:hover .tint { background: rgba(255, 255, 255, 0.7); }
+@media (prefers-reduced-motion: reduce) { .fill { transition-duration: 1ms !important; } }
