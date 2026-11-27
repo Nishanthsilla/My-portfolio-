@@ -11,13 +11,16 @@ import b from "./button.module.css";
  * the droplets trailing behind. On touch screens it pours from the finger. Use it for every call to action, as a link
  * (`href`) or a button (`onClick`).
  *
- *  · primary   — the main action: solid red; ink pours in
- *  · secondary — the other actions: an outline; red pours in, the label turns white
- *  · glass     — on top of pictures: frosted white; red pours in
+ * The three levels follow the usual emphasis ladder (Material's filled → tonal → text):
+ *  · primary   — the one main action on a screen: filled red, its arrow in a white chip; ink pours in
+ *  · secondary — supporting actions: a soft tonal pill (no hairline outline); ink pours in
+ *  · tertiary  — low-emphasis, navigational ("Back to work", "See my photography"): just the words,
+ *                an underline flows in from the side the cursor comes from
+ *  · glass     — any level sitting on a picture: frosted white; red pours in
  *
  * Sizes: "sm" (36 px tall) and "md" (44 px, the default). Follows light/dark mode.
  */
-export type ButtonVariant = "primary" | "secondary" | "glass";
+export type ButtonVariant = "primary" | "secondary" | "tertiary" | "glass";
 type Props = {
   children?: ReactNode;
   variant?: ButtonVariant;
@@ -47,6 +50,7 @@ function aim(el: HTMLElement, x: number, y: number) {
   el.style.setProperty("--dx", `${r.width / 2 - px}px`);
   el.style.setProperty("--dy", `${r.height / 2 - py}px`);
   el.style.setProperty("--h", `${r.height}px`);
+  el.style.setProperty("--ox", px < r.width / 2 ? "left" : "right"); // the tertiary underline grows from this side
 }
 
 /** the "goo" filter every button's liquid shares: blur, then a hard alpha edge, so drops merge like fluid */

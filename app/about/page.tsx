@@ -127,8 +127,8 @@ export default function AboutPage() {
               </ul>
               <SocialLinks links={socials} />
               <div className={a.lifeLinks}>
-                <Button size="sm" href="/photography">See my photography <span aria-hidden="true">→</span></Button>
-                <Button size="sm" href="/beyond">Beyond the interface <span aria-hidden="true">→</span></Button>
+                <Button variant="tertiary" href="/photography">See my photography <span aria-hidden="true">→</span></Button>
+                <Button variant="tertiary" href="/beyond">Beyond the interface <span aria-hidden="true">→</span></Button>
               </div>
             </div>
           </div>

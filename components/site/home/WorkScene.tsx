@@ -182,7 +182,7 @@ export default function WorkScene() {
               {st && (
                 <>
                   <header className={h.roomHead}>
-                    <Button size="sm" className={h.backUp} onClick={() => goUp()}>
+                    <Button variant="tertiary" size="sm" className={h.backUp} onClick={() => goUp()}>
                       <span aria-hidden="true">↑</span> Back to work
                     </Button>
                     <div>
@@ -322,7 +322,7 @@ function RoomIndex({ n, title, line, list, back, open }: { n: number; title: str
       <ReadBadge label={badge} />
       {/* scrolls on its own when the list is taller than the screen (data-room-scroll lets the wheel through) */}
       <div className={h.indexCol} data-room-scroll>
-        <Button size="sm" className={h.backUp} onClick={back}>
+        <Button variant="tertiary" size="sm" className={h.backUp} onClick={back}>
           <span aria-hidden="true">↑</span> Back to work
         </Button>
         <p className={h.eyebrow}>0{n} · {list.length} case {list.length === 1 ? "study" : "studies"}</p>
