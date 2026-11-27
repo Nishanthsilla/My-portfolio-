@@ -33,7 +33,7 @@ const TONE_FOR: Record<string, string> = {
 export const STATEMENTS: { id: string; title: string; line: string; slugs: string[] }[] = [
   {
     id: "idea-to-launch",
-    title: "I can take a product from idea to launch",
+    title: "I can take a product from business requirement to delivery",
     line: "Products I owned from the business problem to the shipped release.",
     slugs: ["ambient-ai", "self-ready", "thriving-springs-e-learning", "ryzeup", "this-portfolio"],
   },
@@ -68,7 +68,7 @@ const roomSize = (n: number, i: number): TileSize => (n === 1 || n === 2 || (n =
 /**
  * Scene 2 of the homepage: the work as one floor with four doors (one per thing Nishanth does well).
  * Hovering a door fans out the case studies inside; opening it takes the view down a level into
- * that room, a bento grid sized to how many projects it holds. "Back to the floor" (or Esc, or the
+ * that room, an index of its projects with the hovered cover beside it (stacked cards on phones). "Back to work" (or Esc, or the
  * browser's back button) rises again. After the floor comes "All work", then the journey goes on.
  */
 export default function WorkScene() {
@@ -182,7 +182,7 @@ export default function WorkScene() {
                 <>
                   <header className={h.roomHead}>
                     <button type="button" className={h.backUp} onClick={() => goUp()}>
-                      <span aria-hidden="true">↑</span> Back to the floor
+                      <span aria-hidden="true">↑</span> Back to work
                     </button>
                     <div>
                       <p className={h.eyebrow}>0{STATEMENTS.indexOf(st) + 1} · {list.length} case {list.length === 1 ? "study" : "studies"}</p>
@@ -190,6 +190,8 @@ export default function WorkScene() {
                     </div>
                     <p className={h.workLine}>{st.line}</p>
                   </header>
+                  {/* desktop: the names as an index, the hovered one's cover big beside them */}
+                  <RoomIndex key={st.id} n={STATEMENTS.indexOf(st) + 1} title={st.title} line={st.line} list={list} back={() => goUp()} open={open} />
                   <div className={h.roomGrid} data-count={Math.min(list.length, 5)} data-room-scroll role="list">
                     {list.map((p, i) => (
                       <Tile key={p.slug} p={p} size={roomSize(list.length, i)} tone={toneOf(p)} open={(mode) => open(p, mode)} />
@@ -304,6 +306,65 @@ function PeekStack({ ps }: { ps: Project[] }) {
         );
       })}
     </span>
+  );
+}
+
+/**
+ * A room on a computer: "Back to work", the statement and its line above an index of the projects;
+ * the hovered (or focused) one's live cover fills the right side. Click a name to open it.
+ */
+function RoomIndex({ n, title, line, list, back, open }: { n: number; title: string; line: string; list: Project[]; back: () => void; open: (p: Project, mode: DrawerMode) => void }) {
+  const [on, setOn] = useState(0);
+  const cur = list[on];
+  return (
+    <div className={h.roomIndex}>
+      <div className={h.indexCol}>
+        <button type="button" className={h.backUp} onClick={back}>
+          <span aria-hidden="true">↑</span> Back to work
+        </button>
+        <p className={h.eyebrow}>0{n} · {list.length} case {list.length === 1 ? "study" : "studies"}</p>
+        <h3 className={h.indexTitle}>{title}</h3>
+        <p className={h.indexLine}>{line}</p>
+        <ol className={h.indexList}>
+          {list.map((p, i) => {
+            const meta = [categoryLabel(p.category), p.year].filter(Boolean).join(" · ");
+            const inner = (
+              <>
+                <b>{p.title}</b>
+                <span>{meta}</span>
+                <em aria-hidden="true">{p.external ? "↗" : "→"}</em>
+              </>
+            );
+            return (
+              <li key={p.slug} data-on={on === i ? "" : undefined} onPointerEnter={() => setOn(i)}>
+                {p.external ? (
+                  <a href={p.external.href} target="_blank" rel="noopener noreferrer" onFocus={() => setOn(i)} aria-label={`${p.title} — opens on ${p.external.label}`}>{inner}</a>
+                ) : (
+                  <button type="button" onFocus={() => setOn(i)} onClick={() => open(p, "simple")}>{inner}</button>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+      <div className={`${h.indexPreview} cursor-target`} data-cursor-label={cur.external ? `Open on ${cur.external.label}` : "View project"}>
+        {list.map((p, i) => (
+          <div key={p.slug} className={h.indexCover} data-on={on === i ? "" : undefined} style={{ ["--tone" as string]: toneOf(p) }} aria-hidden={on === i ? undefined : true}>
+            <ProjectMedia project={p} className={h.indexMedia} fill={0.86} />
+          </div>
+        ))}
+        {cur.external ? (
+          <a className={h.stretch} href={cur.external.href} target="_blank" rel="noopener noreferrer" tabIndex={-1} aria-hidden="true" />
+        ) : (
+          <>
+            <button type="button" className={h.stretch} tabIndex={-1} aria-hidden="true" onClick={() => open(cur, "simple")} />
+            <button type="button" className={h.indexCta} onClick={() => open(cur, "deep")}>
+              Read full case study <span aria-hidden="true">→</span>
+            </button>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 

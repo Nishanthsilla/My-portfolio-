@@ -105,7 +105,13 @@ function useTall(ref: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const el = ref.current?.parentElement;
     if (!el) return;
-    const fit = () => setBox({ tall: el.clientHeight > el.clientWidth * 0.7, w: el.clientWidth, h: el.clientHeight });
+    // the content box (padding left out), so the scene never runs past the card's edge
+    const fit = () => {
+      const cs = getComputedStyle(el);
+      const w = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const h = el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      setBox({ tall: h > w * 0.7, w, h });
+    };
     fit();
     const ro = new ResizeObserver(fit);
     ro.observe(el);
