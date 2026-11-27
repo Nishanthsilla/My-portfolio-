@@ -449,6 +449,12 @@ button.tileCta { font-family: inherit; cursor: pointer; }
     linear-gradient(var(--line), var(--line)) top / 100% 1px no-repeat;
 }
 
+/* laptops: going down a floor opens a whole new screen, edge to edge (no inset box) */
+.journey[data-mode="desktop"] .workScene { padding-left: 0; padding-bottom: 24px; }
+.journey[data-mode="desktop"] .shaft { flex-basis: var(--jw, 100vw); border-radius: 0; }
+.journey[data-mode="desktop"] .floor { padding-left: var(--gutter); padding-right: var(--gutter); padding-bottom: 60px; }
+.journey[data-mode="desktop"] .room { padding: 0 var(--gutter); }
+
 /* the floor */
 .floor { display: flex; flex-direction: column; gap: clamp(18px, 2.4vh, 28px); padding: 8px 0 4px; }
 .floorHead { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
@@ -528,15 +534,16 @@ button.tileCta { font-family: inherit; cursor: pointer; }
 .backUp span { display: inline-block; transition: transform 200ms var(--ease); }
 .roomGrid { flex: 1; min-height: 0; display: grid; gap: 16px; grid-auto-flow: dense; }
 .roomGrid > * { min-height: 0; grid-column: auto; grid-row: auto; }
-.roomGrid[data-count="1"] { grid-template-columns: 1fr; }
-.roomGrid[data-count="2"] { grid-template-columns: repeat(2, 1fr); }
+/* the bento, by how many case studies the room holds:
+   1 → one full cover · 2 → split view · 3 → one big, two stacked · 4 → quadrants · 5 → two big on top, three below */
+.roomGrid[data-count="1"] { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+.roomGrid[data-count="2"] { grid-template-columns: repeat(2, 1fr); grid-template-rows: 1fr; }
 .roomGrid[data-count="3"] { grid-template-columns: 1.6fr 1fr; grid-template-rows: repeat(2, 1fr); }
 .roomGrid[data-count="3"] > :first-child { grid-row: span 2; }
 .roomGrid[data-count="4"] { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
-.roomGrid[data-count="5"] { grid-template-columns: 1.5fr 1fr 1fr; grid-template-rows: repeat(2, 1fr); }
-.roomGrid[data-count="5"] > :first-child { grid-row: span 2; }
-.roomGrid[data-count="5"] > :nth-child(n+2) { grid-column: auto; }
-/* five: the lead tile, then four in a 2×2 next to it */
+.roomGrid[data-count="5"] { grid-template-columns: repeat(6, 1fr); grid-template-rows: 1.25fr 1fr; }
+.roomGrid[data-count="5"] > :nth-child(-n+2) { grid-column: span 3; }
+.roomGrid[data-count="5"] > :nth-child(n+3) { grid-column: span 2; }
 .roomGrid .small .tileDesc { -webkit-line-clamp: 1; }
 
 /* All work: a compact list */

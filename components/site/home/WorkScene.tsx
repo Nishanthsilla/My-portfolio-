@@ -63,7 +63,7 @@ const ALL: Project[] = projects.filter((p) => !HIDDEN.includes(p.slug));
 const toneOf = (p: Project) => TONE_FOR[p.slug] ?? TONES[Math.max(0, ALL.indexOf(p)) % TONES.length];
 const roomProjects = (id: string) => (STATEMENTS.find((s) => s.id === id)?.slugs ?? []).map(bySlug).filter((p): p is Project => !!p);
 /** in a room the first project leads (large) once there are three or more; two or four share the space */
-const roomSize = (n: number, i: number): TileSize => (i === 0 && (n === 1 || n === 3 || n >= 5) ? "large" : "small");
+const roomSize = (n: number, i: number): TileSize => (n === 1 || n === 2 || (n === 3 && i === 0) || (n >= 5 && i < 2) ? "large" : "small");
 
 /**
  * Scene 2 of the homepage: the work as one floor with four doors (one per thing Nishanth does well).
