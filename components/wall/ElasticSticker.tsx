@@ -9,6 +9,8 @@ const X = [0.04, 0.96], Y = [0.03, 0.97];
 const reduced = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 /** touch: how long a finger rests on a note before it lifts off the wall */
 export const HOLD_MS = 1000;
+/** touch: how long it rests before the note starts showing it's about to lift */
+const CUE_MS = 220;
 
 /**
  * A sticker you can pick up and move anywhere on the wall. It behaves like a
@@ -63,7 +65,7 @@ export default function ElasticSticker({
     let moved = false, live = !touch, lastX = e.clientX, lastT = performance.now(), nx = x, ny = y, ox = 0, oy = 0;
     const tilt = gsap.quickTo(art, "rotation", { duration: 0.45, ease: "power3.out" });
     const skew = gsap.quickTo(art, "skewX", { duration: 0.5, ease: "power3.out" });
-    let hold = 0;
+    let hold = 0, pre = 0, cue = false;
 
     const lift = (cx: number, cy: number) => {
       const rect = b.getBoundingClientRect();
@@ -80,6 +82,7 @@ export default function ElasticSticker({
     };
     const finish = (drop: boolean) => {
       clearTimeout(hold);
+      clearTimeout(pre);
       removeEventListener("pointermove", move);
       removeEventListener("pointerup", up);
       removeEventListener("pointercancel", cancel);
@@ -87,7 +90,8 @@ export default function ElasticSticker({
       removeEventListener("touchmove", noScroll);
       delete el.dataset.holding;
       if (!moved) {
-        if (touch && !calm) gsap.to(art, { scale: 1, duration: 0.25, ease: "power2.out", overwrite: true });
+        // only undo the "about to lift" cue if it had started (a quick swipe never shows it)
+        if (touch && cue && !calm) gsap.to(art, { scale: 1, duration: 0.25, ease: "power2.out", overwrite: true });
         return;
       }
       dragging.current = false;
@@ -151,8 +155,13 @@ export default function ElasticSticker({
     if (touch) {
       addEventListener("touchstart", twoFingers, { passive: true });
       addEventListener("touchmove", noScroll, { passive: false });
-      el.dataset.holding = "";
-      if (!calm) gsap.to(art, { scale: 1.04, duration: HOLD_MS / 1000, ease: "power1.in", overwrite: true });
+      // the "about to lift" cue (a slow grow and a deeper shadow) waits until the finger has rested a
+      // moment: a finger that's scrolling the wall touches notes all the time, and they mustn't pulse
+      pre = window.setTimeout(() => {
+        cue = true;
+        el.dataset.holding = "";
+        if (!calm) gsap.to(art, { scale: 1.04, duration: (HOLD_MS - CUE_MS) / 1000, ease: "power1.in", overwrite: true });
+      }, CUE_MS);
       hold = window.setTimeout(() => {
         live = true;
         lift(sx, sy);

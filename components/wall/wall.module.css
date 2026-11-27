@@ -49,7 +49,9 @@
   background-image: radial-gradient(#d9d1c4 1px, transparent 1.2px); background-size: 22px 22px;
 }
 .placed { position: absolute; width: max-content; transform: translate(-50%, -50%); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
-.placed > [data-sticker-art] { transform-origin: 50% 50%; will-change: transform; }
+.placed > [data-sticker-art] { transform-origin: 50% 50%; }
+/* only a note that's being held or dragged gets its own graphics layer (dozens of always-on layers with shadows made phones flash) */
+.placed[data-holding] > [data-sticker-art], .placed[data-lifted] > [data-sticker-art] { will-change: transform; }
 .placed[data-lifted] { cursor: grabbing; }
 .placed[data-lifted] .note { filter: drop-shadow(0 2px 0 rgba(34, 34, 34, 0.06)) drop-shadow(0 26px 22px rgba(34, 34, 34, 0.28)); }
 .placed:focus-visible { outline: none; }
