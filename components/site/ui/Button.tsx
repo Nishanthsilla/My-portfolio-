@@ -1,61 +1,79 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-import SpecularButton, { type SpecularButtonProps } from "../reactbits/SpecularButton";
+import Link from "next/link";
+import type { CSSProperties, MouseEventHandler, ReactNode } from "react";
+import GlassSurface from "../reactbits/GlassSurface";
 import b from "./button.module.css";
 
 /**
- * The site's one button. Built on React Bits' SpecularButton: a pill whose edge catches a light
- * that follows the cursor, in the site's colours. Use it for every call to action (as a link with
- * `href`, or a button with `onClick`).
+ * The site's one button: a liquid-glass pill (React Bits' Glass Surface bends whatever is behind it,
+ * with a soft coloured rim) that squishes like a drop when pressed. Use it for every call to action,
+ * as a link (`href`) or a button (`onClick`).
  *
- *  · primary   — the main action on a screen: the site's red, white label, a white light on the edge
- *  · secondary — the other actions: white body, ink label, hairline edge, coral light
- *  · glass     — on top of pictures and covers: frosted white, ink label
+ *  · primary   — the main action on a screen: glass tinted the site's red, white label
+ *  · secondary — the other actions: clear glass, ink label
+ *  · glass     — on top of pictures and covers: clear glass with a little frost, ink label
  *
- * Colours follow the light/dark theme. Sizes: "sm" (36 px tall) and "md" (44 px, the default).
+ * Sizes: "sm" (36 px tall) and "md" (44 px, the default). Where the browser can't bend the
+ * backdrop (Safari, Firefox) it falls back to frosted glass, so it always looks finished.
  */
 export type ButtonVariant = "primary" | "secondary" | "glass";
-type Props = Omit<SpecularButtonProps, "size" | "tint" | "tintOpacity" | "textColor" | "lineColor" | "baseColor"> & {
+type Props = {
+  children?: ReactNode;
   variant?: ButtonVariant;
   size?: "sm" | "md";
+  href?: string;
+  target?: string;
+  rel?: string;
+  download?: boolean | string;
+  onClick?: MouseEventHandler<HTMLElement>;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+  className?: string;
+  style?: CSSProperties;
+  "aria-label"?: string;
+  /** gets the rendered element (e.g. to move focus to it) */
+  elRef?: { current: HTMLElement | null };
 };
 
-const subscribe = (cb: () => void) => {
-  const mo = new MutationObserver(cb);
-  mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-  return () => mo.disconnect();
-};
-const isDark = () => document.documentElement.dataset.theme === "dark";
+const H = { sm: 36, md: 44 };
 
-const LOOK: Record<"light" | "dark", Record<ButtonVariant, Pick<SpecularButtonProps, "tint" | "tintOpacity" | "textColor" | "lineColor" | "baseColor" | "blur">>> = {
-  light: {
-    primary: { tint: "#ff4938", tintOpacity: 1, textColor: "#ffffff", lineColor: "#ffffff", baseColor: "#c2301f" },
-    secondary: { tint: "#ffffff", tintOpacity: 1, textColor: "#222222", lineColor: "#ff4938", baseColor: "#d6d1c8" },
-    glass: { tint: "#ffffff", tintOpacity: 0.88, textColor: "#1d1b19", lineColor: "#ff4938", baseColor: "#ffffff", blur: 8 },
-  },
-  dark: {
-    primary: { tint: "#ff4938", tintOpacity: 1, textColor: "#ffffff", lineColor: "#ffffff", baseColor: "#c2301f" },
-    secondary: { tint: "#30302e", tintOpacity: 1, textColor: "#eceae4", lineColor: "#ff6a55", baseColor: "#55524d" },
-    glass: { tint: "#ffffff", tintOpacity: 0.88, textColor: "#1d1b19", lineColor: "#ff4938", baseColor: "#ffffff", blur: 8 },
-  },
-};
-
-export default function Button({ variant = "secondary", size = "md", className = "", ...rest }: Props) {
-  const dark = useSyncExternalStore(subscribe, isDark, () => false);
+export default function Button({ children, variant = "secondary", size = "md", href, target, rel, download, onClick, type = "button", disabled, className = "", style, elRef, ...rest }: Props) {
+  const cls = `${b.btn} ${b[size]} ${b[variant]} ${className}`;
+  const inner = (
+    <>
+      <GlassSurface
+        width="100%"
+        height="100%"
+        borderRadius={H[size] / 2}
+        displace={0.4}
+        distortionScale={-110}
+        brightness={variant === "primary" ? 55 : 60}
+        opacity={0.9}
+        blur={variant === "glass" ? 8 : 6}
+        backgroundOpacity={variant === "glass" ? 0.25 : 0.06}
+        saturation={1.3}
+        className={b.surface}
+      />
+      <span className={b.tint} aria-hidden="true" />
+      <span className={b.label}>{children}</span>
+    </>
+  );
+  const ref = (el: HTMLElement | null) => {
+    if (elRef) elRef.current = el;
+  };
+  if (href) {
+    const external = /^(https?:|mailto:|tel:)/.test(href) || !!download || target === "_blank";
+    const common = { ref, className: cls, style, onClick, "aria-disabled": disabled || undefined, ...rest };
+    return external ? (
+      <a {...common} href={href} target={target} rel={rel} download={download}>{inner}</a>
+    ) : (
+      <Link {...common} href={href} target={target} rel={rel}>{inner}</Link>
+    );
+  }
   return (
-    <SpecularButton
-      {...LOOK[dark ? "dark" : "light"][variant]}
-      size={size === "sm" ? "sm" : "md"}
-      radius={999}
-      intensity={1.1}
-      idleIntensity={variant === "primary" ? 0.45 : 0.3}
-      shineSize={12}
-      shineFade={38}
-      thickness={1.4}
-      proximity={220}
-      className={`${b.btn} ${b[size]} ${b[variant]} ${className}`}
-      {...rest}
-    />
+    <button ref={ref} type={type} disabled={disabled} onClick={onClick} className={cls} style={style} {...rest}>
+      {inner}
+    </button>
   );
 }

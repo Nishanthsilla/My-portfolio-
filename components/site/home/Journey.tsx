@@ -79,8 +79,10 @@ export default function Journey({
     const sec = section.current, fr = frame.current, tr = track.current;
     if (!sec || !fr || !tr) return;
     if (mode === "desktop") {
-      /* Free scroll: the page moves sideways exactly as far as the visitor scrolls (wheel,
-       * trackpad, keys, scrollbar), with a light smoothing. No page steps, no snapping. */
+      /* The page moves sideways as far as the visitor scrolls (wheel, trackpad, keys, scrollbar),
+       * with a light smoothing. When the scrolling stops part-way between screens, it settles on
+       * the nearest whole screen (each intro screen, Work and the end of its list, Beyond, the Wall,
+       * Contact), so a screen is never left cut in half. */
       let dist = 0, top = 0, target = 0, current = 0, raf = 0, shown = -1, moving = false;
       const measure = () => {
         // every full-width scene is exactly the visible frame (100vw would include the scrollbar)
@@ -120,9 +122,36 @@ export default function Journey({
       const kick = () => {
         if (!raf) raf = requestAnimationFrame(paint);
       };
+      // the snap points: every scene's start; a scene wider than the screen also stops at each
+      // further screen-width and at its very end
+      const points = () => {
+        const fw = fr.clientWidth, out = new Set<number>();
+        for (const el of scenes()) {
+          const a = el.offsetLeft, w = el.offsetWidth;
+          out.add(a);
+          for (let x = a + fw; x < a + w - fw - 2; x += fw) out.add(x);
+          if (w > fw + 2) out.add(a + w - fw);
+        }
+        return [...out].map((x) => Math.min(dist, x)).sort((x, y) => x - y);
+      };
+      let idle = 0, held = false;
+      const settle = () => {
+        idle = 0;
+        // not while a button is held on the scrollbar, a note is being placed, or something is open over the page
+        if (held || html.dataset.placing !== undefined || html.dataset.overlay !== undefined || html.dataset.workRoom !== undefined) return;
+        const at = Math.min(dist, Math.max(0, scrollY - top));
+        const near = points().reduce((best, x) => (Math.abs(x - at) < Math.abs(best - at) ? x : best), 0);
+        if (Math.abs(near - at) > 2) scrollTo({ top: top + near, behavior: "smooth" });
+      };
+      const onDown = () => { held = true; };
+      const onUp = () => { held = false; clearTimeout(idle); idle = window.setTimeout(settle, 160); };
+      addEventListener("pointerdown", onDown, { passive: true });
+      addEventListener("pointerup", onUp, { passive: true });
       const onScroll = () => {
         target = Math.min(dist, Math.max(0, scrollY - top));
         kick();
+        clearTimeout(idle);
+        idle = window.setTimeout(settle, 160);
       };
       goRef.current = (i, smooth = true) => {
         const el = scenes()[i];
@@ -158,6 +187,9 @@ export default function Journey({
         cancelAnimationFrame(raf);
         removeEventListener("scroll", onScroll);
         removeEventListener("wheel", onWheel);
+        removeEventListener("pointerdown", onDown);
+        removeEventListener("pointerup", onUp);
+        clearTimeout(idle);
         html.style.overscrollBehaviorX = prevOver;
         delete html.dataset.paging;
         sec.style.height = "";

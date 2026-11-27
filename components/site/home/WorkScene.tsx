@@ -302,7 +302,6 @@ function PeekStack({ ps }: { ps: Project[] }) {
             style={{ ["--tone" as string]: toneOf(p), ["--p" as string]: pos, ["--from" as string]: was }}
           >
             <ProjectMedia project={p} className={h.peekMedia} fill={0.86} />
-            <b>{p.title.split(" — ")[0]}</b>
           </span>
         );
       })}
@@ -321,14 +320,15 @@ function RoomIndex({ n, title, line, list, back, open }: { n: number; title: str
   return (
     <div className={h.roomIndex}>
       <ReadBadge label={badge} />
-      <div className={h.indexCol}>
+      {/* scrolls on its own when the list is taller than the screen (data-room-scroll lets the wheel through) */}
+      <div className={h.indexCol} data-room-scroll>
         <Button size="sm" className={h.backUp} onClick={back}>
           <span aria-hidden="true">↑</span> Back to work
         </Button>
         <p className={h.eyebrow}>0{n} · {list.length} case {list.length === 1 ? "study" : "studies"}</p>
         <h3 className={h.indexTitle}>{title}</h3>
         <p className={h.indexLine}>{line}</p>
-        <ol className={h.indexList}>
+        <ol className={h.indexList} onPointerLeave={() => setBadge(null)}>
           {list.map((p, i) => {
             const meta = [categoryLabel(p.category), p.year].filter(Boolean).join(" · ");
             const inner = (
